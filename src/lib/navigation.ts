@@ -41,6 +41,7 @@ export const NAV_GROUPS: NavGroup[] = [
         heading: "Discover",
         links: [
           { label: "Legacy & Tradition", href: "/about-riverbend", description: "Over 60 years of camp magic" },
+          { label: "Camp Map", href: "/camp-map", description: "Explore our 30-acre campus" },
           { label: "Activities", href: "/activities" },
           { label: "Sports", href: "/sports" },
           { label: "Video Library", href: "/videos" },

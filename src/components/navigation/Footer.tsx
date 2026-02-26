@@ -10,6 +10,7 @@ const footerLinks = {
     { label: "Riverbend Experience", href: "/riverbend-experience" },
     { label: "Day Trippers", href: "/day-trippers" },
     { label: "Activities", href: "/activities" },
+    { label: "Camp Map", href: "/camp-map" },
     { label: "Rates & Dates", href: "/rates-dates-application-2026" },
   ],
   "Current Families": [

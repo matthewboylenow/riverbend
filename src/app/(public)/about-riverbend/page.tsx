@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/Button";
 import { LinkCard } from "@/components/ui/LinkCard";
 import { EXTERNAL_LINKS } from "@/lib/navigation";
 import Image from "next/image";
+import { TreeLine } from "@/components/illustrations/TreeLine";
+import { MountainRange } from "@/components/illustrations/MountainRange";
+import { Campfire } from "@/components/illustrations/Campfire";
 
 export const metadata: Metadata = {
   title: "About Camp Riverbend | Legacy & Tradition Since 1962",
@@ -23,7 +26,7 @@ export default function AboutPage() {
       <PageHeader
         title="Legacy & Tradition"
         subtitle="Camp Riverbend has hosted generations of families for over 60 years in Warren Township, New Jersey"
-        bgImage="https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV07104-scaled.jpg"
+        bgImage="/images/ADV07104-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "About Riverbend" },
@@ -75,6 +78,11 @@ export default function AboutPage() {
         </Container>
       </Section>
 
+      {/* Illustration: TreeLine between Legacy and Philosophy */}
+      <div className="py-8 bg-cream">
+        <TreeLine />
+      </div>
+
       {/* Section 2: Our Philosophy (id="philosophy") */}
       <Section id="philosophy" bg="white" padding="default">
         <Container>
@@ -104,7 +112,7 @@ export default function AboutPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="https://cdn.campriverbend.com/wp-content/uploads/2019/07/ADV01122-1024x682.jpg"
+                  src="/images/ADV01122.jpg"
                   alt="Camper and staff member talking together"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -167,16 +175,19 @@ export default function AboutPage() {
               <div className="space-y-4">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg bg-sand">
                   <Image
-                    src="https://cdn.campriverbend.com/wp-content/uploads/2022/04/2022-Camp-Map-JPG-scaled.jpg"
+                    src="/images/2022-Camp-Map-JPG-scaled.jpg"
                     alt="Camp Riverbend campus map"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-contain"
                   />
                 </div>
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Button variant="primary" href="/camp-map">
+                    Explore Interactive Map
+                  </Button>
                   <a
-                    href="https://cdn.campriverbend.com/wp-content/uploads/2022/04/2022-Camp-Map-JPG-scaled.jpg"
+                    href="/images/2022-Camp-Map-JPG-scaled.jpg"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm font-semibold text-camp-red hover:underline"
@@ -189,6 +200,11 @@ export default function AboutPage() {
           </div>
         </Container>
       </Section>
+
+      {/* Illustration: MountainRange below map */}
+      <div className="py-8 bg-cream">
+        <MountainRange />
+      </div>
 
       {/* Section 4: Our Staff (id="staff") */}
       <Section id="staff" bg="white" padding="default">
@@ -232,6 +248,11 @@ export default function AboutPage() {
         </Container>
       </Section>
 
+      {/* Illustration: Campfire between Staff and Learn More */}
+      <div className="py-10 bg-white">
+        <Campfire />
+      </div>
+
       {/* Section 5: Learn More Links */}
       <Section bg="cream" padding="default">
         <Container>
@@ -244,19 +265,19 @@ export default function AboutPage() {
             <LinkCard
               title="Activities Offered"
               href="/activities"
-              image="https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV01169-scaled.jpg"
+              image="/images/ADV01169.jpg"
               index={0}
             />
             <LinkCard
               title="Rates & Dates"
               href="/rates-dates-application-2026"
-              image="https://cdn.campriverbend.com/wp-content/uploads/2019/06/Canoe.jpg"
+              image="/images/Canoe.jpg"
               index={1}
             />
             <LinkCard
               title="Our Programs"
               href="/programs"
-              image="https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV06620-scaled.jpg"
+              image="/images/ADV06620.jpg-marketing-scaled.jpg"
               index={2}
             />
           </div>

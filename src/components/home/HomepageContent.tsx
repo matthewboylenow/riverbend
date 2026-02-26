@@ -10,47 +10,51 @@ import { LinkCard } from "@/components/ui/LinkCard";
 import { ProgramCard } from "@/components/ui/ProgramCard";
 import { CTAStrip } from "@/components/ui/CTAStrip";
 import { AnimateIn } from "@/components/ui/AnimateIn";
+import { TreeLine } from "@/components/illustrations/TreeLine";
+import { CanoeRiver } from "@/components/illustrations/CanoeRiver";
+import { SunRays } from "@/components/illustrations/SunRays";
+import { Campfire } from "@/components/illustrations/Campfire";
 
 const gridCards = [
   {
     title: "Our Programs",
     href: "/programs",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV06620-scaled.jpg",
+    image: "/images/ADV06620.jpg-marketing-scaled.jpg",
   },
   {
     title: "Rates, Dates & Application 2026",
     href: "/rates-dates-application-2026",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2019/06/Canoe.jpg",
+    image: "/images/Canoe.jpg",
   },
   {
     title: "Legacy & Tradition",
     href: "/about-riverbend",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV07104-scaled.jpg",
+    image: "/images/ADV07104-scaled.jpg",
   },
   {
     title: "Activities",
     href: "/activities",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV01169-scaled.jpg",
+    image: "/images/ADV01169.jpg",
   },
   {
     title: "Transportation",
     href: "/transportation",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2018/09/DSC06927.jpg",
+    image: "/images/DSC06927-scaled.jpg",
   },
   {
     title: "Lunch & Snacks",
     href: "/lunch",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2019/06/IMG_370.jpg",
+    image: "/images/IMG_370.jpg",
   },
   {
     title: "Health & Safety",
     href: "/health-safety",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV06446-scaled.jpg",
+    image: "/images/ADV06446-scaled.jpg",
   },
   {
     title: "Video Library",
     href: "/videos",
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV07400-scaled.jpg",
+    image: "/images/ADV07400.jpg-marketing-scaled.jpg",
   },
 ];
 
@@ -64,7 +68,7 @@ const programs = [
       { label: "Learn About The Clubhouse", href: "/clubhouse" },
       { label: "A Day in the Life", href: "/clubhouse#video" },
     ],
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV06620-scaled.jpg",
+    image: "/images/ADV06620.jpg-marketing-scaled.jpg",
     imageAlt: "Young campers enjoying activities at The Clubhouse",
     reversed: false,
   },
@@ -77,7 +81,7 @@ const programs = [
       { label: "Learn About Riverbend Experience", href: "/riverbend-experience" },
       { label: "A Day in the Life", href: "/riverbend-experience#video" },
     ],
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV07104-scaled.jpg",
+    image: "/images/ADV07104-scaled.jpg",
     imageAlt: "Kids exploring and playing at Riverbend Experience",
     reversed: true,
   },
@@ -90,7 +94,7 @@ const programs = [
       { label: "Learn About The Day Trippers", href: "/day-trippers" },
       { label: "A Day in the Life", href: "/day-trippers#video" },
     ],
-    image: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV01169-scaled.jpg",
+    image: "/images/ADV01169.jpg",
     imageAlt: "Day Trippers on an outdoor adventure",
     reversed: false,
   },
@@ -113,6 +117,11 @@ export function HomepageContent() {
         {/* Hero */}
         <Hero />
 
+        {/* Illustration: TreeLine between Hero and Card Grid */}
+        <div className="py-8 bg-cream">
+          <TreeLine />
+        </div>
+
         {/* Section 2: Card Grid */}
         <Section bg="cream" padding="default">
           <Container>
@@ -130,6 +139,11 @@ export function HomepageContent() {
           </Container>
         </Section>
 
+        {/* Illustration: CanoeRiver between Card Grid and Programs */}
+        <div className="py-4 bg-white">
+          <CanoeRiver />
+        </div>
+
         {/* Section 3: Program Detail Blocks */}
         <Section bg="white" padding="default">
           <Container>
@@ -143,12 +157,24 @@ export function HomepageContent() {
             </AnimateIn>
 
             <div className="space-y-20 lg:space-y-28">
-              {programs.map((program) => (
-                <ProgramCard key={program.title} {...program} />
+              {programs.map((program, i) => (
+                <div key={program.title}>
+                  <ProgramCard {...program} />
+                  {i === 0 && (
+                    <div className="flex justify-end mt-16 mr-8">
+                      <SunRays />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </Container>
         </Section>
+
+        {/* Illustration: Campfire above CTA */}
+        <div className="py-10 bg-white">
+          <Campfire />
+        </div>
 
         {/* Section 4: CTA Strip */}
         <CTAStrip variant="red" />

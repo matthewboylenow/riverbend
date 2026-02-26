@@ -1,16 +1,30 @@
 "use client";
 
+import { useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Volume2, VolumeX } from "lucide-react";
 import { EXTERNAL_LINKS } from "@/lib/navigation";
+import { useParallax } from "@/hooks/useParallax";
 
 export function Hero() {
+  const { ref, y } = useParallax({ offset: 80 });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const toggleSound = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  }, []);
+
   return (
-    <section className="relative h-screen min-h-[600px] max-h-[1000px] flex items-center overflow-hidden">
+    <section ref={ref as React.RefObject<HTMLElement>} className="relative h-screen min-h-[600px] max-h-[1000px] flex items-center overflow-hidden">
       {/* Background — hero video */}
-      <div className="absolute inset-0">
+      <motion.div className="absolute -inset-20" style={{ y }}>
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
@@ -23,7 +37,26 @@ export function Hero() {
         {/* Cinematic gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-      </div>
+      </motion.div>
+
+      {/* Sound toggle button */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 0.5 }}
+        onClick={toggleSound}
+        className="absolute bottom-8 right-6 z-20 flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-sm px-4 py-2.5 text-white/80 hover:bg-white/25 hover:text-white transition-all duration-300 border border-white/20"
+        aria-label={isMuted ? "Unmute video" : "Mute video"}
+      >
+        {isMuted ? (
+          <VolumeX className="h-4 w-4" />
+        ) : (
+          <Volume2 className="h-4 w-4" />
+        )}
+        <span className="text-xs font-semibold tracking-wide uppercase">
+          {isMuted ? "Sound On" : "Sound Off"}
+        </span>
+      </motion.button>
 
       {/* Content */}
       <div className="relative z-10 container-default">
@@ -47,7 +80,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="text-white/80 text-lg sm:text-xl leading-relaxed max-w-lg"
           >
-            A summer day camp for 3–14 year olds in Warren, New Jersey.
+            A summer day camp for 3-14 year olds in Warren, New Jersey.
             Building confidence since 1962.
           </motion.p>
 

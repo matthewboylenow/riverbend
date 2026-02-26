@@ -1,5 +1,9 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Container } from "./Container";
+import { useParallax } from "@/hooks/useParallax";
 
 interface PageHeaderProps {
   title: string;
@@ -16,8 +20,11 @@ export function PageHeader({
   bgImage,
   className,
 }: PageHeaderProps) {
+  const { ref, y } = useParallax({ offset: 40 });
+
   return (
     <div
+      ref={ref as React.RefObject<HTMLDivElement>}
       className={cn(
         "relative overflow-hidden bg-charcoal py-20 md:py-28 lg:py-32",
         className
@@ -25,12 +32,12 @@ export function PageHeader({
     >
       {/* Background image */}
       {bgImage && (
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${bgImage})` }}
+        <motion.div
+          className="absolute -inset-10 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgImage})`, y }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70" />
-        </div>
+        </motion.div>
       )}
 
       {/* Content */}

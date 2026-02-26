@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Button } from "./Button";
 import { AnimateIn } from "./AnimateIn";
 import { cn } from "@/lib/utils";
+import { useParallax } from "@/hooks/useParallax";
 
 interface ProgramCardProps {
   badge: string;
@@ -24,6 +26,8 @@ export function ProgramCard({
   imageAlt,
   reversed = false,
 }: ProgramCardProps) {
+  const { ref, y } = useParallax({ offset: 30 });
+
   return (
     <div
       className={cn(
@@ -33,14 +37,19 @@ export function ProgramCard({
     >
       {/* Image */}
       <AnimateIn direction={reversed ? "right" : "left"}>
-        <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg lg:direction-ltr">
-          <Image
-            src={image}
-            alt={imageAlt}
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover"
-          />
+        <div
+          ref={ref as React.RefObject<HTMLDivElement>}
+          className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg lg:direction-ltr"
+        >
+          <motion.div className="absolute -inset-8" style={{ y }}>
+            <Image
+              src={image}
+              alt={imageAlt}
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
+          </motion.div>
         </div>
       </AnimateIn>
 

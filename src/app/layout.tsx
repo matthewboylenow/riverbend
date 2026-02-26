@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
-const dmSans = DM_Sans({
+const nunito = Nunito({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
@@ -58,7 +58,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${dmSans.variable} ${campFont.variable} antialiased`}
+        className={`${nunito.variable} ${campFont.variable} antialiased`}
       >
         <a href="#main-content" className="skip-to-content">
           Skip to main content

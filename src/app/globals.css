@@ -169,13 +169,13 @@
 
   body {
     @apply bg-cream text-charcoal;
-    font-family: var(--font-body), "DM Sans", system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body), "Nunito", system-ui, -apple-system, sans-serif;
     font-feature-settings: "kern" 1, "liga" 1;
   }
 
   /* ── Heading hierarchy — use camp display font ───── */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-camp), var(--font-body), "DM Sans", system-ui, sans-serif;
+    font-family: var(--font-camp), var(--font-body), "Nunito", system-ui, sans-serif;
     font-weight: 700;
     color: var(--color-charcoal);
     letter-spacing: -0.01em;
