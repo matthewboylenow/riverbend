@@ -26,7 +26,7 @@ export default function AboutPage() {
       <PageHeader
         title="Legacy & Tradition"
         subtitle="Camp Riverbend has hosted generations of families for over 60 years in Warren Township, New Jersey"
-        bgImage="/images/ADV07104-scaled.jpg"
+        bgImage="/images/IMG_2726.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "About Riverbend" },
@@ -112,8 +112,8 @@ export default function AboutPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/images/ADV01122.jpg"
-                  alt="Camper and staff member talking together"
+                  src="/images/ADV06620.jpg-marketing-scaled.jpg"
+                  alt="Young campers building confidence together at camp"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"

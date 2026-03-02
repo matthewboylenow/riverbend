@@ -6,57 +6,12 @@ import { AnnouncementBar } from "@/components/ui/AnnouncementBar";
 import { Hero } from "./Hero";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
-import { LinkCard } from "@/components/ui/LinkCard";
 import { ProgramCard } from "@/components/ui/ProgramCard";
 import { CTAStrip } from "@/components/ui/CTAStrip";
 import { AnimateIn } from "@/components/ui/AnimateIn";
-import { TreeLine } from "@/components/illustrations/TreeLine";
-import { CanoeRiver } from "@/components/illustrations/CanoeRiver";
-import { SunRays } from "@/components/illustrations/SunRays";
-import { Campfire } from "@/components/illustrations/Campfire";
-
-const gridCards = [
-  {
-    title: "Our Programs",
-    href: "/programs",
-    image: "/images/ADV06620.jpg-marketing-scaled.jpg",
-  },
-  {
-    title: "Rates, Dates & Application 2026",
-    href: "/rates-dates-application-2026",
-    image: "/images/Canoe.jpg",
-  },
-  {
-    title: "Legacy & Tradition",
-    href: "/about-riverbend",
-    image: "/images/ADV07104-scaled.jpg",
-  },
-  {
-    title: "Activities",
-    href: "/activities",
-    image: "/images/ADV01169.jpg",
-  },
-  {
-    title: "Transportation",
-    href: "/transportation",
-    image: "/images/DSC06927-scaled.jpg",
-  },
-  {
-    title: "Lunch & Snacks",
-    href: "/lunch",
-    image: "/images/IMG_370.jpg",
-  },
-  {
-    title: "Health & Safety",
-    href: "/health-safety",
-    image: "/images/ADV06446-scaled.jpg",
-  },
-  {
-    title: "Video Library",
-    href: "/videos",
-    image: "/images/ADV07400.jpg-marketing-scaled.jpg",
-  },
-];
+import { BentoGrid } from "@/components/home/BentoGrid";
+import { EXTERNAL_LINKS } from "@/lib/navigation";
+import { Button } from "@/components/ui/Button";
 
 const programs = [
   {
@@ -68,7 +23,7 @@ const programs = [
       { label: "Learn About The Clubhouse", href: "/clubhouse" },
       { label: "A Day in the Life", href: "/clubhouse#video" },
     ],
-    image: "/images/ADV06620.jpg-marketing-scaled.jpg",
+    image: "/images/DSC_0553-scaled.jpg",
     imageAlt: "Young campers enjoying activities at The Clubhouse",
     reversed: false,
   },
@@ -81,7 +36,7 @@ const programs = [
       { label: "Learn About Riverbend Experience", href: "/riverbend-experience" },
       { label: "A Day in the Life", href: "/riverbend-experience#video" },
     ],
-    image: "/images/ADV07104-scaled.jpg",
+    image: "/images/DSC07006-scaled.jpg",
     imageAlt: "Kids exploring and playing at Riverbend Experience",
     reversed: true,
   },
@@ -94,7 +49,7 @@ const programs = [
       { label: "Learn About The Day Trippers", href: "/day-trippers" },
       { label: "A Day in the Life", href: "/day-trippers#video" },
     ],
-    image: "/images/ADV01169.jpg",
+    image: "/images/IMG_1650-scaled.jpg",
     imageAlt: "Day Trippers on an outdoor adventure",
     reversed: false,
   },
@@ -110,73 +65,81 @@ export function HomepageContent() {
         linkText="Apply Now"
       />
 
-      {/* Transparent nav for hero */}
-      <Navbar transparent />
+      {/* Nav */}
+      <Navbar />
 
-      <main id="main-content">
+      <main id="main-content" className="relative z-0">
         {/* Hero */}
         <Hero />
 
-        {/* Illustration: TreeLine between Hero and Card Grid */}
-        <div className="py-8 bg-cream">
-          <TreeLine />
-        </div>
-
-        {/* Section 2: Card Grid */}
+        {/* Section 2: Bento Grid */}
         <Section bg="cream" padding="default">
-          <Container>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              {gridCards.map((card, i) => (
-                <LinkCard
-                  key={card.href}
-                  title={card.title}
-                  href={card.href}
-                  image={card.image}
-                  index={i}
-                />
-              ))}
-            </div>
+          <Container size="wide">
+            <BentoGrid />
           </Container>
         </Section>
 
-        {/* Illustration: CanoeRiver between Card Grid and Programs */}
-        <div className="py-4 bg-white">
-          <CanoeRiver />
-        </div>
+        {/* Section 3: Big statement / philosophy */}
+        <section className="relative py-24 sm:py-32 overflow-hidden bg-charcoal">
+          {/* Subtle background texture */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+          <Container size="narrow">
+            <AnimateIn>
+              <div className="text-center space-y-8">
+                <span className="text-caption text-white/50 tracking-widest">
+                  Our Philosophy
+                </span>
+                <h2 className="font-camp text-white">
+                  &ldquo;Confidence,{" "}
+                  <span className="text-white/70 italic">not</span>{" "}
+                  Competition&rdquo;
+                </h2>
+                <p className="text-white/70 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto">
+                  We honor each camper&apos;s talents and efforts. Camp Riverbend is a
+                  place where each child can be themself, explore the world and learn new
+                  skills in a fun and supportive environment.
+                </p>
+                <div className="flex justify-center gap-4 pt-4">
+                  <Button variant="primary" size="lg" href="/about-riverbend">
+                    Our Story
+                  </Button>
+                  <Button
+                    variant="white"
+                    size="lg"
+                    href={EXTERNAL_LINKS.inquiryForm}
+                    external
+                  >
+                    Book a Tour
+                  </Button>
+                </div>
+              </div>
+            </AnimateIn>
+          </Container>
+        </section>
 
-        {/* Section 3: Program Detail Blocks */}
+        {/* Section 4: Program Detail Blocks */}
         <Section bg="white" padding="default">
           <Container>
             <AnimateIn>
               <div className="text-center mb-16">
                 <span className="text-caption text-camp-red tracking-widest">
-                  Discover
+                  Ages 3 to 14
                 </span>
                 <h2 className="font-camp mt-2">Our Programs</h2>
               </div>
             </AnimateIn>
 
             <div className="space-y-20 lg:space-y-28">
-              {programs.map((program, i) => (
-                <div key={program.title}>
-                  <ProgramCard {...program} />
-                  {i === 0 && (
-                    <div className="flex justify-end mt-16 mr-8">
-                      <SunRays />
-                    </div>
-                  )}
-                </div>
+              {programs.map((program) => (
+                <ProgramCard key={program.title} {...program} />
               ))}
             </div>
           </Container>
         </Section>
 
-        {/* Illustration: Campfire above CTA */}
-        <div className="py-10 bg-white">
-          <Campfire />
-        </div>
-
-        {/* Section 4: CTA Strip */}
+        {/* Section 5: CTA Strip */}
         <CTAStrip variant="red" />
       </main>
 

@@ -248,7 +248,7 @@ export default function BreeneFamilyPage() {
       <PageHeader
         title="Directors & Senior Staff"
         subtitle="The Breene family and senior staff have been running Camp Riverbend for over 60 years"
-        bgImage="https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV06620-scaled.jpg"
+        bgImage="/images/ADV06620.jpg-marketing-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "About Riverbend", href: "/about-riverbend" },

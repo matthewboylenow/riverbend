@@ -1,63 +1,96 @@
 "use client";
 
-import { type Variants, motion } from "framer-motion";
-
-const draw: Variants = {
-  hidden: { pathLength: 0, opacity: 0 },
-  visible: (i: number) => ({
-    pathLength: 1,
-    opacity: 1,
-    transition: {
-      pathLength: { duration: 1.5, delay: i * 0.2, ease: "easeInOut" as const },
-      opacity: { duration: 0.3, delay: i * 0.2 },
-    },
-  }),
-};
+import { motion } from "framer-motion";
 
 export function MountainRange({ className = "" }: { className?: string }) {
   return (
     <motion.svg
       viewBox="0 0 800 150"
       fill="none"
+      preserveAspectRatio="xMidYMax meet"
       className={`w-full max-w-3xl mx-auto ${className}`}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-50px" }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Back range — lighter */}
+      {/* Sky gradient hint */}
+      <defs>
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#87CEEB" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="#87CEEB" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="mtBack" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#D4CFC6" />
+          <stop offset="100%" stopColor="#C5BFB5" />
+        </linearGradient>
+        <linearGradient id="mtFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#3D6B1E" />
+          <stop offset="100%" stopColor="#2D5016" />
+        </linearGradient>
+      </defs>
+
+      <rect x="0" y="0" width="800" height="150" fill="url(#skyGrad)" />
+
+      {/* Back range — filled, softer color */}
       <motion.path
-        d="M0 130 L100 70 L180 100 L280 40 L380 90 L450 55 L530 85 L620 30 L720 80 L800 130"
-        stroke="#D4CFC6"
-        strokeWidth="2"
-        fill="none"
-        variants={draw}
-        custom={0}
+        d="M0 150 L0 110 L60 85 L120 100 L200 60 L280 90 L360 50 L440 78 L500 55 L580 75 L640 45 L720 80 L800 110 L800 150Z"
+        fill="url(#mtBack)"
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 0.5, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       />
 
-      {/* Front range — darker */}
+      {/* Front range — filled, forest green */}
       <motion.path
-        d="M0 140 L120 85 L200 110 L320 55 L420 100 L500 70 L600 95 L700 50 L800 140"
-        stroke="#2D5016"
-        strokeWidth="2.5"
-        fill="none"
-        variants={draw}
-        custom={1}
+        d="M0 150 L0 120 L80 90 L160 108 L260 65 L340 95 L420 72 L500 100 L560 78 L650 55 L730 88 L800 120 L800 150Z"
+        fill="url(#mtFront)"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 0.6, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
       />
 
-      {/* Winding trail */}
+      {/* Trees on ridgeline */}
+      {[
+        { x: 150, h: 12 },
+        { x: 170, h: 16 },
+        { x: 340, h: 10 },
+        { x: 500, h: 14 },
+        { x: 520, h: 18 },
+        { x: 540, h: 12 },
+        { x: 650, h: 15 },
+        { x: 670, h: 11 },
+      ].map((tree, i) => {
+        const baseY = i < 2 ? 108 - (i * 3) : i < 3 ? 95 : i < 6 ? 100 - ((i - 3) * 4) : 55 + ((i - 6) * 8);
+        return (
+          <motion.path
+            key={i}
+            d={`M${tree.x} ${baseY} L${tree.x - 4} ${baseY} L${tree.x} ${baseY - tree.h} L${tree.x + 4} ${baseY}Z`}
+            fill="#2D5016"
+            opacity="0.5"
+            initial={{ opacity: 0, y: 5 }}
+            whileInView={{ opacity: 0.5, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.4 + i * 0.05 }}
+          />
+        );
+      })}
+
+      {/* Trail — dashed */}
       <motion.path
-        d="M350 140 Q360 120 370 115 Q390 105 380 90 Q370 75 360 70 Q340 60 345 55"
-        stroke="#6B5B4E"
+        d="M370 140 Q375 120 365 105 Q355 90 360 80 Q365 70 358 60"
+        stroke="#8A7A6D"
         strokeWidth="1.5"
         strokeLinecap="round"
-        strokeDasharray="4 4"
-        variants={draw}
-        custom={2}
+        strokeDasharray="3 5"
+        opacity="0.4"
+        initial={{ pathLength: 0 }}
+        whileInView={{ pathLength: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.5, delay: 0.6, ease: "easeInOut" }}
       />
-
-      {/* Small trees on front range */}
-      <motion.path d="M150 105 L150 95 L146 105 L150 88 L154 105" stroke="#3D6B1E" strokeWidth="1.5" strokeLinecap="round" variants={draw} custom={2.5} />
-      <motion.path d="M550 90 L550 80 L546 90 L550 73 L554 90" stroke="#3D6B1E" strokeWidth="1.5" strokeLinecap="round" variants={draw} custom={2.8} />
     </motion.svg>
   );
 }

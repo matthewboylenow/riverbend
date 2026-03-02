@@ -69,7 +69,7 @@ export function VideoEmbed({
 
       {(isLoaded || isVisible) && (
         <iframe
-          src={`https://player.vimeo.com/video/${vimeoId}?dnt=1${isLoaded ? "&autoplay=1" : ""}`}
+          src={`https://player.vimeo.com/video/${vimeoId}?badge=0&title=0&byline=0&portrait=0${isLoaded ? "&autoplay=1" : ""}`}
           title={title}
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen

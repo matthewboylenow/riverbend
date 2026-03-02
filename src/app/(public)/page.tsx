@@ -11,7 +11,7 @@ export const metadata: Metadata = {
       "A family-run summer day camp in Warren, New Jersey for ages 3-14. Over 60 years of tradition.",
     images: [
       {
-        url: "https://cdn.campriverbend.com/wp-content/uploads/2022/07/ADV07400-scaled.jpg",
+        url: "/images/ADV07400.jpg-marketing-scaled.jpg",
         width: 1920,
         height: 1080,
         alt: "Camp Riverbend",

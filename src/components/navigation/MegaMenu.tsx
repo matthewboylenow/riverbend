@@ -170,7 +170,7 @@ export function MegaMenu({ group, onClose }: MegaMenuProps) {
       <div className="h-[3px] bg-gradient-to-r from-camp-red via-camp-red-light to-camp-red" />
 
       {/* Panel */}
-      <div className="bg-white/[0.98] backdrop-blur-xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] border-b border-sand/50">
+      <div className="bg-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] border-b border-sand/50">
         <div className="container-default py-8 lg:py-10">
           {/* Tagline */}
           {group.tagline && (

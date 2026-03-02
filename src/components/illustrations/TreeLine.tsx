@@ -1,53 +1,114 @@
 "use client";
 
-import { type Variants, motion } from "framer-motion";
-
-const draw: Variants = {
-  hidden: { pathLength: 0, opacity: 0 },
-  visible: (i: number) => ({
-    pathLength: 1,
-    opacity: 1,
-    transition: {
-      pathLength: { duration: 1.5, delay: i * 0.15, ease: "easeInOut" as const },
-      opacity: { duration: 0.3, delay: i * 0.15 },
-    },
-  }),
-};
+import { motion } from "framer-motion";
 
 export function TreeLine({ className = "" }: { className?: string }) {
+  const trees = [
+    { x: 130, trunkH: 20, crownW: 14, crownH: 28, delay: 0 },
+    { x: 200, trunkH: 30, crownW: 18, crownH: 40, delay: 0.08 },
+    { x: 280, trunkH: 24, crownW: 15, crownH: 32, delay: 0.16 },
+    { x: 370, trunkH: 35, crownW: 20, crownH: 48, delay: 0.24 },
+    { x: 430, trunkH: 18, crownW: 12, crownH: 25, delay: 0.32 },
+    { x: 520, trunkH: 32, crownW: 18, crownH: 44, delay: 0.40 },
+    { x: 600, trunkH: 22, crownW: 14, crownH: 30, delay: 0.48 },
+    { x: 670, trunkH: 26, crownW: 16, crownH: 35, delay: 0.56 },
+  ];
+
+  const groundY = 108;
+
   return (
     <motion.svg
       viewBox="0 0 800 120"
       fill="none"
+      preserveAspectRatio="xMidYMax meet"
       className={`w-full max-w-3xl mx-auto ${className}`}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-50px" }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.6 }}
     >
-      {/* Tree 1 — small */}
-      <motion.path d="M160 110 L160 85" stroke="#7A8F6D" strokeWidth="3" strokeLinecap="round" variants={draw} custom={0} />
-      <motion.path d="M160 90 L145 105 L160 65 L175 105 Z" stroke="#2D5016" strokeWidth="2" fill="none" variants={draw} custom={0.5} />
+      <defs>
+        <linearGradient id="trunkGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#7A8F6D" />
+          <stop offset="100%" stopColor="#6B5B4E" />
+        </linearGradient>
+      </defs>
 
-      {/* Tree 2 — tall */}
-      <motion.path d="M280 110 L280 55" stroke="#7A8F6D" strokeWidth="3" strokeLinecap="round" variants={draw} custom={1} />
-      <motion.path d="M280 65 L258 100 L280 35 L302 100 Z" stroke="#2D5016" strokeWidth="2" fill="none" variants={draw} custom={1.5} />
-      <motion.path d="M280 80 L264 100 L280 50 L296 100 Z" stroke="#3D6B1E" strokeWidth="1.5" fill="none" variants={draw} custom={1.8} />
+      {/* Ground */}
+      <motion.path
+        d="M60 108 Q200 106 400 108 Q600 110 740 108"
+        stroke="#9AAD8F"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity="0.4"
+        initial={{ pathLength: 0 }}
+        whileInView={{ pathLength: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.2, ease: "easeInOut" }}
+      />
 
-      {/* Tree 3 — medium */}
-      <motion.path d="M400 110 L400 70" stroke="#7A8F6D" strokeWidth="3" strokeLinecap="round" variants={draw} custom={2} />
-      <motion.path d="M400 78 L382 108 L400 48 L418 108 Z" stroke="#2D5016" strokeWidth="2" fill="none" variants={draw} custom={2.5} />
+      {/* Trees */}
+      {trees.map((tree, i) => {
+        const trunkTop = groundY - tree.trunkH;
+        const crownTop = trunkTop - tree.crownH + 8;
+        return (
+          <motion.g
+            key={i}
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: tree.delay, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Shadow */}
+            <ellipse
+              cx={tree.x}
+              cy={groundY + 2}
+              rx={tree.crownW * 0.6}
+              ry={2.5}
+              fill="#2D5016"
+              opacity="0.1"
+            />
 
-      {/* Tree 4 — tallest */}
-      <motion.path d="M520 110 L520 40" stroke="#7A8F6D" strokeWidth="3" strokeLinecap="round" variants={draw} custom={3} />
-      <motion.path d="M520 52 L495 100 L520 20 L545 100 Z" stroke="#2D5016" strokeWidth="2" fill="none" variants={draw} custom={3.5} />
-      <motion.path d="M520 70 L503 100 L520 40 L537 100 Z" stroke="#3D6B1E" strokeWidth="1.5" fill="none" variants={draw} custom={3.8} />
+            {/* Trunk */}
+            <rect
+              x={tree.x - 2}
+              y={trunkTop}
+              width={4}
+              height={tree.trunkH}
+              rx={2}
+              fill="url(#trunkGrad)"
+              opacity="0.7"
+            />
 
-      {/* Tree 5 — small */}
-      <motion.path d="M640 110 L640 80" stroke="#7A8F6D" strokeWidth="3" strokeLinecap="round" variants={draw} custom={4} />
-      <motion.path d="M640 87 L625 108 L640 60 L655 108 Z" stroke="#2D5016" strokeWidth="2" fill="none" variants={draw} custom={4.5} />
+            {/* Crown — layered triangles */}
+            <path
+              d={`M${tree.x} ${crownTop} L${tree.x - tree.crownW} ${trunkTop + 4} L${tree.x + tree.crownW} ${trunkTop + 4}Z`}
+              fill="#2D5016"
+              opacity="0.55"
+            />
+            <path
+              d={`M${tree.x} ${crownTop + tree.crownH * 0.2} L${tree.x - tree.crownW * 0.85} ${trunkTop + 4} L${tree.x + tree.crownW * 0.85} ${trunkTop + 4}Z`}
+              fill="#3D6B1E"
+              opacity="0.45"
+            />
+          </motion.g>
+        );
+      })}
 
-      {/* Ground line */}
-      <motion.path d="M100 110 Q250 108 400 110 Q550 112 700 110" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" variants={draw} custom={5} />
+      {/* Ground grass tufts */}
+      {[180, 310, 480, 640].map((x, i) => (
+        <motion.path
+          key={i}
+          d={`M${x - 4} 108 Q${x} 102 ${x + 4} 108`}
+          stroke="#7A8F6D"
+          strokeWidth="1"
+          opacity="0.3"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 0.3 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.8 + i * 0.1 }}
+        />
+      ))}
     </motion.svg>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS, EXTERNAL_LINKS } from "@/lib/navigation";
 import { MobileNav } from "./MobileNav";
@@ -17,6 +18,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -36,10 +38,31 @@ export function Navbar({ transparent = false }: NavbarProps) {
     return () => window.removeEventListener("keydown", handleEscape);
   }, []);
 
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeout.current) clearTimeout(closeTimeout.current);
+    };
+  }, []);
+
   const isTransparent = transparent && !scrolled && !activeMenu;
 
   const handleMenuToggle = useCallback((label: string) => {
     setActiveMenu((prev) => (prev === label ? null : label));
+  }, []);
+
+  const handleMouseEnter = useCallback((label: string) => {
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+      closeTimeout.current = null;
+    }
+    setActiveMenu(label);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    closeTimeout.current = setTimeout(() => {
+      setActiveMenu(null);
+    }, 250);
   }, []);
 
   return (
@@ -47,10 +70,10 @@ export function Navbar({ transparent = false }: NavbarProps) {
       {/* Top utility bar */}
       <div
         className={cn(
-          "hidden lg:block transition-all duration-300 relative z-50",
+          "hidden lg:block transition-all duration-300 relative z-[60]",
           isTransparent
             ? "bg-gradient-to-b from-black/50 to-black/10 text-white/90"
-            : "bg-charcoal text-white/90"
+            : "bg-camp-red text-white/90"
         )}
       >
         <div className="container-default flex items-center justify-between py-2 text-xs">
@@ -107,11 +130,12 @@ export function Navbar({ transparent = false }: NavbarProps) {
 
       {/* Main nav */}
       <header
+        onMouseLeave={handleMouseLeave}
         className={cn(
-          "sticky top-0 z-40 transition-all duration-500",
+          "sticky top-0 z-50 transition-all duration-500",
           isTransparent
             ? "bg-gradient-to-b from-black/30 to-transparent"
-            : "bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
+            : "bg-camp-red shadow-[0_2px_8px_rgba(196,30,58,0.3)]"
         )}
       >
         <nav className="container-default" role="navigation" aria-label="Main">
@@ -119,16 +143,16 @@ export function Navbar({ transparent = false }: NavbarProps) {
             {/* Logo */}
             <Link
               href="/"
-              className="relative z-10 flex items-center gap-2 font-camp text-2xl lg:text-3xl font-bold tracking-tight"
+              className="relative z-10 flex items-center gap-2"
             >
-              <span
-                className={cn(
-                  "transition-colors duration-300",
-                  isTransparent ? "text-white drop-shadow-md" : "text-camp-red"
-                )}
-              >
-                Camp Riverbend
-              </span>
+              <Image
+                src="/images/Camp-Riverbend-Logo-white-1.png"
+                alt="Camp Riverbend"
+                width={180}
+                height={48}
+                className="h-10 lg:h-12 w-auto drop-shadow-md"
+                priority
+              />
             </Link>
 
             {/* Desktop nav items */}
@@ -136,14 +160,15 @@ export function Navbar({ transparent = false }: NavbarProps) {
               {NAV_GROUPS.map((group) => (
                 <button
                   key={group.label}
+                  onMouseEnter={() => handleMouseEnter(group.label)}
                   onClick={() => handleMenuToggle(group.label)}
                   className={cn(
                     "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-200",
                     activeMenu === group.label
-                      ? "bg-camp-red text-white shadow-sm shadow-camp-red/25"
+                      ? "bg-white text-camp-red shadow-sm"
                       : isTransparent
                         ? "text-white/90 hover:text-white hover:bg-white/15"
-                        : "text-charcoal hover:text-camp-red hover:bg-camp-red/5"
+                        : "text-white/90 hover:text-white hover:bg-white/15"
                   )}
                 >
                   {group.label}
@@ -151,7 +176,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                   {activeMenu === group.label && (
                     <motion.span
                       layoutId="navDot"
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-camp-red"
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white"
                       transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
                     />
                   )}
@@ -167,7 +192,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                   "hidden sm:flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300",
                   isTransparent
                     ? "bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 border border-white/20"
-                    : "bg-camp-red text-white hover:bg-camp-red-dark shadow-sm hover:shadow-md"
+                    : "bg-white text-camp-red hover:bg-white/90 shadow-sm hover:shadow-md"
                 )}
               >
                 <ShoppingBag className="h-4 w-4" />
@@ -181,7 +206,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                   "lg:hidden p-2 rounded-lg transition-colors",
                   isTransparent
                     ? "text-white hover:bg-white/10"
-                    : "text-charcoal hover:bg-sand"
+                    : "text-white hover:bg-white/10"
                 )}
                 aria-label="Open menu"
               >
@@ -199,13 +224,24 @@ export function Navbar({ transparent = false }: NavbarProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 top-[calc(4rem+2.5rem)] bg-black/20 z-30"
+                className="fixed inset-0 bg-black/20 z-[-1]"
                 onClick={() => setActiveMenu(null)}
               />
-              <MegaMenu
-                group={NAV_GROUPS.find((g) => g.label === activeMenu)!}
-                onClose={() => setActiveMenu(null)}
-              />
+              <div
+                className="relative z-[60]"
+                onMouseEnter={() => {
+                  if (closeTimeout.current) {
+                    clearTimeout(closeTimeout.current);
+                    closeTimeout.current = null;
+                  }
+                }}
+                onMouseLeave={handleMouseLeave}
+              >
+                <MegaMenu
+                  group={NAV_GROUPS.find((g) => g.label === activeMenu)!}
+                  onClose={() => setActiveMenu(null)}
+                />
+              </div>
             </>
           )}
         </AnimatePresence>
