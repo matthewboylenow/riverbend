@@ -135,7 +135,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
           "sticky top-0 z-50 transition-all duration-500",
           isTransparent
             ? "bg-gradient-to-b from-black/30 to-transparent"
-            : "bg-camp-red shadow-[0_2px_8px_rgba(196,30,58,0.3)]"
+            : "bg-camp-red shadow-[0_2px_8px_rgba(219,56,50,0.3)]"
         )}
       >
         <nav className="container-default" role="navigation" aria-label="Main">
@@ -155,37 +155,36 @@ export function Navbar({ transparent = false }: NavbarProps) {
               />
             </Link>
 
-            {/* Desktop nav items */}
-            <div className="hidden lg:flex items-center gap-1">
-              {NAV_GROUPS.map((group) => (
-                <button
-                  key={group.label}
-                  onMouseEnter={() => handleMouseEnter(group.label)}
-                  onClick={() => handleMenuToggle(group.label)}
-                  className={cn(
-                    "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-200",
-                    activeMenu === group.label
-                      ? "bg-white text-camp-red shadow-sm"
-                      : isTransparent
-                        ? "text-white/90 hover:text-white hover:bg-white/15"
-                        : "text-white/90 hover:text-white hover:bg-white/15"
-                  )}
-                >
-                  {group.label}
-                  {/* Active dot indicator */}
-                  {activeMenu === group.label && (
-                    <motion.span
-                      layoutId="navDot"
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white"
-                      transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Right side actions */}
+            {/* Right side actions — nav items + store grouped together */}
             <div className="flex items-center gap-3">
+              {/* Desktop nav items */}
+              <div className="hidden lg:flex items-center gap-1">
+                {NAV_GROUPS.map((group) => (
+                  <button
+                    key={group.label}
+                    onMouseEnter={() => handleMouseEnter(group.label)}
+                    onClick={() => handleMenuToggle(group.label)}
+                    className={cn(
+                      "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-200",
+                      activeMenu === group.label
+                        ? "bg-white text-camp-red shadow-sm"
+                        : isTransparent
+                          ? "text-white/90 hover:text-white hover:bg-white/15"
+                          : "text-white/90 hover:text-white hover:bg-white/15"
+                    )}
+                  >
+                    {group.label}
+                    {/* Active dot indicator */}
+                    {activeMenu === group.label && (
+                      <motion.span
+                        layoutId="navDot"
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white"
+                        transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
               <Link
                 href="/shop"
                 className={cn(

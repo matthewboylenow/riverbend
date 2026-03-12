@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -76,6 +77,86 @@ function BentoCard({
   );
 }
 
+/* Countdown card — counts down to first day of camp */
+function CountdownCard({
+  targetDate,
+  label,
+  href,
+  index,
+  className = "",
+}: {
+  targetDate: Date;
+  label: string;
+  href: string;
+  index: number;
+  className?: string;
+}) {
+  const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(targetDate));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(getTimeLeft(targetDate));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{
+        duration: 0.5,
+        delay: index * 0.08,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className={className}
+    >
+      <Link
+        href={href}
+        className="group relative flex flex-col justify-center items-center h-full rounded-2xl bg-camp-red text-white p-4 overflow-hidden transition-all duration-300 hover:bg-camp-red-dark"
+      >
+        {/* Decorative ring */}
+        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full border border-white/10" />
+        <span className="text-caption text-white/70 text-[0.6rem] tracking-widest mb-2 uppercase">
+          {label}
+        </span>
+        <div className="flex gap-3 text-center">
+          {timeLeft.days > 0 && (
+            <div>
+              <span className="font-camp text-3xl sm:text-4xl font-bold leading-none">{timeLeft.days}</span>
+              <span className="block text-[0.6rem] font-semibold text-white/60 uppercase mt-0.5">Days</span>
+            </div>
+          )}
+          <div>
+            <span className="font-camp text-3xl sm:text-4xl font-bold leading-none">{String(timeLeft.hours).padStart(2, "0")}</span>
+            <span className="block text-[0.6rem] font-semibold text-white/60 uppercase mt-0.5">Hrs</span>
+          </div>
+          <div>
+            <span className="font-camp text-3xl sm:text-4xl font-bold leading-none">{String(timeLeft.minutes).padStart(2, "0")}</span>
+            <span className="block text-[0.6rem] font-semibold text-white/60 uppercase mt-0.5">Min</span>
+          </div>
+          <div>
+            <span className="font-camp text-3xl sm:text-4xl font-bold leading-none">{String(timeLeft.seconds).padStart(2, "0")}</span>
+            <span className="block text-[0.6rem] font-semibold text-white/60 uppercase mt-0.5">Sec</span>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+function getTimeLeft(target: Date) {
+  const now = new Date();
+  const diff = Math.max(0, target.getTime() - now.getTime());
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60),
+  };
+}
+
 /* Small stat card — no image, solid background */
 function StatCard({
   number,
@@ -142,17 +223,17 @@ export function BentoGrid() {
         index={1}
         cta="See all activities"
       />
-      <StatCard
-        number="62+"
-        label="Years of tradition"
-        href="/about-riverbend"
+      <CountdownCard
+        targetDate={new Date("2026-06-29T09:00:00")}
+        label="First Day of Camp"
+        href="/rates-dates-application-2026"
         index={2}
         className="col-span-1 row-span-1"
       />
       <StatCard
-        number="30"
-        label="Acres of adventure"
-        href="/camp-map"
+        number="62+"
+        label="Years of tradition"
+        href="/about-riverbend"
         index={3}
         className="col-span-1 row-span-1"
       />
@@ -217,7 +298,7 @@ export function BentoGrid() {
         cta="Our protocols"
       />
       <BentoCard
-        title="Campus Map"
+        title="Camp Map"
         subtitle="Explore our grounds"
         href="/camp-map"
         image="/images/2022-Camp-Map-JPG-scaled.jpg"

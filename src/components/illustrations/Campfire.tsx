@@ -29,7 +29,7 @@ export function Campfire({ className = "" }: { className?: string }) {
         cy="105"
         rx="18"
         ry="8"
-        fill="#C41E3A"
+        fill="#DB3832"
         opacity="0.15"
         animate={{ rx: [18, 22, 18], opacity: [0.15, 0.25, 0.15] }}
         transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
@@ -38,7 +38,7 @@ export function Campfire({ className = "" }: { className?: string }) {
       {/* Flame: outer glow */}
       <motion.path
         d="M100 108 Q85 85 90 65 Q95 45 100 30 Q105 45 110 65 Q115 85 100 108Z"
-        fill="#C41E3A"
+        fill="#DB3832"
         opacity="0.12"
         animate={{ d: [
           "M100 108 Q85 85 90 65 Q95 45 100 30 Q105 45 110 65 Q115 85 100 108Z",
