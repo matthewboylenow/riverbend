@@ -28,7 +28,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-camp-red text-white shadow-[0_1px_3px_rgba(196,30,58,0.3),0_4px_12px_rgba(196,30,58,0.15)] hover:bg-camp-red-dark hover:shadow-[0_2px_6px_rgba(196,30,58,0.4),0_8px_24px_rgba(196,30,58,0.2)] hover:scale-[1.02] active:scale-[0.98]",
+        "bg-camp-red text-white shadow-[0_1px_3px_rgba(219,56,50,0.3),0_4px_12px_rgba(219,56,50,0.15)] hover:bg-camp-red-dark hover:shadow-[0_2px_6px_rgba(219,56,50,0.4),0_8px_24px_rgba(219,56,50,0.2)] hover:scale-[1.02] active:scale-[0.98]",
       secondary:
         "border-2 border-camp-red text-camp-red bg-transparent hover:bg-camp-red hover:text-white hover:scale-[1.02] active:scale-[0.98]",
       ghost:

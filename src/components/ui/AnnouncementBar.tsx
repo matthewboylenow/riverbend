@@ -26,7 +26,7 @@ export function AnnouncementBar({
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-forest text-white overflow-hidden relative z-50"
+          className="bg-camp-red text-white overflow-hidden relative z-50"
         >
           <div className="container-default flex items-center justify-center gap-3 py-2.5 text-sm">
             <p className="font-medium">

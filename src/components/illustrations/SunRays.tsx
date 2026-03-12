@@ -47,7 +47,7 @@ export function SunRays({ className = "" }: { className?: string }) {
               d={`M${cx + innerR * Math.cos(rad - spread)} ${cy + innerR * Math.sin(rad - spread)}
                   L${cx + outerR * Math.cos(rad)} ${cy + outerR * Math.sin(rad)}
                   L${cx + innerR * Math.cos(rad + spread)} ${cy + innerR * Math.sin(rad + spread)}Z`}
-              fill="#C41E3A"
+              fill="#DB3832"
               opacity="0.12"
             />
           );

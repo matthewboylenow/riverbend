@@ -26,7 +26,7 @@ export const CATEGORY_META: Record<
   ZoneCategory,
   { label: string; color: string; bgClass: string }
 > = {
-  sports: { label: "Sports", color: "#C41E3A", bgClass: "bg-camp-red" },
+  sports: { label: "Sports", color: "#DB3832", bgClass: "bg-camp-red" },
   aquatics: { label: "Aquatics", color: "#3B7EA1", bgClass: "bg-river" },
   arts: { label: "Arts", color: "#7A8F6D", bgClass: "bg-sage" },
   adventure: { label: "Adventure", color: "#2D5016", bgClass: "bg-forest" },

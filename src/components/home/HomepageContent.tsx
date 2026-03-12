@@ -58,19 +58,19 @@ const programs = [
 export function HomepageContent() {
   return (
     <>
-      {/* Announcement bar */}
-      <AnnouncementBar
-        message="Registration for Summer 2026 Now Open!"
-        href="/rates-dates-application-2026"
-        linkText="Apply Now"
-      />
-
       {/* Nav */}
       <Navbar />
 
       <main id="main-content" className="relative z-0">
         {/* Hero */}
         <Hero />
+
+        {/* Announcement bar — red bar below video */}
+        <AnnouncementBar
+          message="Now accepting applications for 2026 season — Limited spaces still available"
+          href="/rates-dates-application-2026"
+          linkText="Apply Now"
+        />
 
         {/* Section 2: Bento Grid */}
         <Section bg="cream" padding="default">

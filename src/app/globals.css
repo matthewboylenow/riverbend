@@ -53,8 +53,8 @@
   --radius-4xl: calc(var(--radius) + 16px);
 
   /* ── Camp Riverbend Brand Colors (Tailwind utilities) ── */
-  --color-camp-red: #C41E3A;
-  --color-camp-red-dark: #9B1830;
+  --color-camp-red: #DB3832;
+  --color-camp-red-dark: #B52D28;
   --color-camp-red-light: #E8324F;
   --color-forest: #2D5016;
   --color-forest-light: #3D6B1E;
@@ -93,7 +93,7 @@
   --card-foreground: #2C2C2C;
   --popover: #FFFFFF;
   --popover-foreground: #2C2C2C;
-  --primary: #C41E3A;
+  --primary: #DB3832;
   --primary-foreground: #FFFFFF;
   --secondary: #F0EBE1;
   --secondary-foreground: #2C2C2C;
@@ -101,13 +101,13 @@
   --muted-foreground: #6B5B4E;
   --accent: #F0EBE1;
   --accent-foreground: #2C2C2C;
-  --destructive: #C41E3A;
+  --destructive: #DB3832;
   --border: #D4CFC6;
   --input: #D4CFC6;
-  --ring: #C41E3A;
+  --ring: #DB3832;
 
   /* Charts use camp palette */
-  --chart-1: #C41E3A;
+  --chart-1: #DB3832;
   --chart-2: #3B7EA1;
   --chart-3: #2D5016;
   --chart-4: #7A8F6D;
@@ -116,12 +116,12 @@
   /* Sidebar (admin) */
   --sidebar: #FFFFFF;
   --sidebar-foreground: #2C2C2C;
-  --sidebar-primary: #C41E3A;
+  --sidebar-primary: #DB3832;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #F0EBE1;
   --sidebar-accent-foreground: #2C2C2C;
   --sidebar-border: #D4CFC6;
-  --sidebar-ring: #C41E3A;
+  --sidebar-ring: #DB3832;
 }
 
 /* ─── Dark mode (admin only) ──────────────────────────── */
@@ -219,7 +219,7 @@
 
   /* ── Selection ────────────────────────────────────── */
   ::selection {
-    background: #C41E3A;
+    background: #DB3832;
     color: white;
   }
 }
@@ -316,12 +316,12 @@
     color: white;
     padding: 0.75rem 2rem;
     font-size: 0.9375rem;
-    box-shadow: 0 1px 3px rgba(196, 30, 58, 0.3), 0 4px 12px rgba(196, 30, 58, 0.15);
+    box-shadow: 0 1px 3px rgba(219, 56, 50, 0.3), 0 4px 12px rgba(219, 56, 50, 0.15);
   }
 
   .btn-primary:hover {
     background: var(--color-camp-red-dark);
-    box-shadow: 0 2px 6px rgba(196, 30, 58, 0.4), 0 8px 24px rgba(196, 30, 58, 0.2);
+    box-shadow: 0 2px 6px rgba(219, 56, 50, 0.4), 0 8px 24px rgba(219, 56, 50, 0.2);
   }
 
   .btn-secondary {
