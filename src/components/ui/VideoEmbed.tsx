@@ -54,6 +54,7 @@ export function VideoEmbed({
           aria-label={`Play ${title}`}
         >
           {poster && (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={poster}
               alt=""

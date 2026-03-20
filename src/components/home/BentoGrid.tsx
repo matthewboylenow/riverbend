@@ -65,6 +65,9 @@ function BentoCard({
           <h3 className="text-white text-lg sm:text-xl lg:text-2xl font-bold leading-tight tracking-tight">
             {title}
           </h3>
+          {subtitle && (
+            <p className="mt-1 text-sm text-white/70">{subtitle}</p>
+          )}
 
           {/* Arrow indicator */}
           <div className="mt-3 flex items-center gap-2 text-white/60 group-hover:text-white transition-colors duration-300">

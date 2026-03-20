@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
+import { CartProvider } from "@/hooks/useCart";
+import { CartDrawer } from "@/components/shop/CartDrawer";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -63,7 +65,10 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
-        {children}
+        <CartProvider>
+          {children}
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   );

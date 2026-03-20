@@ -61,6 +61,7 @@ export default function AdminStaffEditPage() {
           <div className="flex items-start gap-4">
             <div className="h-32 w-32 rounded-2xl bg-sand flex items-center justify-center border-2 border-dashed border-stone overflow-hidden">
               {form.photoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={form.photoUrl}
                   alt="Preview"
