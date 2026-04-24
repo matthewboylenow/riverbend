@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "tsx src/lib/db/migrate.ts",
+    "db:seed": "tsx src/lib/db/seed/index.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -21,6 +23,7 @@
     "@tiptap/extension-link": "^3.20.0",
     "@tiptap/react": "^3.20.0",
     "@tiptap/starter-kit": "^3.20.0",
+    "@types/ws": "^8.18.1",
     "@vercel/blob": "^2.3.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -37,7 +40,8 @@
     "resend": "^6.9.2",
     "slugify": "^1.6.6",
     "stripe": "^20.3.1",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

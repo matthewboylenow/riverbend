@@ -22,15 +22,20 @@ async function migrate() {
     console.log(`\nApplying ${file} (${statements.length} statements)`);
     for (const stmt of statements) {
       try {
-        await sql.unsafe(stmt);
+        // Use .query(text) to execute raw DDL; sql.unsafe() only wraps, it does NOT execute.
+        await sql.query(stmt);
       } catch (err) {
         const msg = (err as Error).message;
-        // Ignore already-exists errors — makes this idempotent
-        if (msg.includes('already exists') || msg.includes('duplicate key')) {
+        // Idempotent: skip already-exists errors.
+        if (
+          msg.includes('already exists') ||
+          msg.includes('duplicate key') ||
+          msg.includes('duplicate_object')
+        ) {
           console.log(`  skip (exists): ${stmt.split('\n')[0].slice(0, 60)}...`);
           continue;
         }
-        console.error(`  FAIL: ${stmt.split('\n')[0].slice(0, 80)}...`);
+        console.error(`  FAIL: ${stmt.split('\n')[0].slice(0, 80)}`);
         throw err;
       }
     }
