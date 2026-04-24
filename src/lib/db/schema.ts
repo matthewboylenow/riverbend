@@ -1,9 +1,9 @@
 import {
-  pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, serial, pgEnum
+  pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, serial, pgEnum, unique
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Enums
+// ─── Enums ──────────────────────────────────────────────
 export const adminRoleEnum = pgEnum('admin_role', ['super_admin', 'admin']);
 export const staffSectionEnum = pgEnum('staff_section', ['directors', 'division_heads', 'assistant_heads', 'founders']);
 export const paymentMethodEnum = pgEnum('payment_method', ['stripe', 'account_billing']);
@@ -11,6 +11,7 @@ export const orderStatusEnum = pgEnum('order_status', [
   'pending', 'paid', 'shipped', 'fulfilled', 'cancelled',
   'pending_invoice', 'invoiced'
 ]);
+export const contentTypeEnum = pgEnum('content_type', ['text', 'rich_html']);
 
 // ─── Admin Users ────────────────────────────────────────
 export const adminUsers = pgTable('admin_users', {
@@ -118,6 +119,61 @@ export const shippingRates = pgTable('shipping_rates', {
   isActive: boolean('is_active').default(true),
 });
 
+// ─── Tuition Rates (Rates/Dates/Application page) ───────
+export const tuitionRates = pgTable('tuition_rates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  duration: text('duration').notNull(), // "7 Weeks", "Any 6 Weeks", etc.
+  inCamp: text('in_camp').notNull(),           // "$8,375"
+  dayTripper: text('day_tripper').notNull(),   // "$9,170"
+  threeQuarter: text('three_quarter').notNull(), // "$7,450"
+  sortOrder: integer('sort_order').default(0),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+// ─── Tuition Discounts ──────────────────────────────────
+export const tuitionDiscounts = pgTable('tuition_discounts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  heading: text('heading').notNull(),
+  body: text('body').notNull(),
+  sortOrder: integer('sort_order').default(0),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+// ─── Payment Schedule ───────────────────────────────────
+export const paymentSchedule = pgTable('payment_schedule', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  label: text('label').notNull(),   // "At Application"
+  detail: text('detail').notNull(), // "$500 deposit per camper..."
+  sortOrder: integer('sort_order').default(0),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+// ─── Site Settings (singleton-style key/value) ──────────
+export const siteSettings = pgTable('site_settings', {
+  key: text('key').primaryKey(),
+  value: text('value'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+// ─── Page Content (CMS for public pages) ────────────────
+// One row per (page_slug, section_key) — each is an editable content block
+export const pageContent = pgTable(
+  'page_content',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    pageSlug: text('page_slug').notNull(),         // e.g. "homepage", "rates-dates-application-2026"
+    sectionKey: text('section_key').notNull(),     // e.g. "hero_title", "intro_body"
+    label: text('label').notNull(),                // Human-readable name for admin UI
+    contentType: contentTypeEnum('content_type').notNull().default('text'),
+    content: text('content').notNull().default(''),
+    sortOrder: integer('sort_order').default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (t) => ({
+    pageSection: unique('page_content_page_section_unique').on(t.pageSlug, t.sectionKey),
+  })
+);
+
 // ─── Relations ──────────────────────────────────────────
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
@@ -142,5 +198,9 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   order: one(orders, {
     fields: [orderItems.orderId],
     references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [orderItems.productId],
+    references: [products.id],
   }),
 }));
