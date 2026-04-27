@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Plus, Trash2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, ExternalLink, AlertCircle } from "lucide-react";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { RevisionsButton } from "@/components/admin/RevisionsButton";
+import { RATES_DEFAULTS } from "@/lib/page-defaults/rates-dates";
 
 const PAGE_SLUG = "rates-dates-application-2026";
 
@@ -36,18 +37,19 @@ interface State {
   whats_included_html: string;
 }
 
+// Defaults shared with the public page so the editor always opens populated
+// with current visible content — even before anything is in the DB.
 const DEFAULT: State = {
-  hero_title: "Rates, Dates & Application",
-  hero_subtitle: "2026 Season — June 29 through August 14",
-  intro_html: "",
-  tuition_note: "2025 rates shown for reference. 2026 rates will be updated soon.",
-  tuition_rows: [],
-  tuition_footer:
-    "3 and 4 Year Old Three-Quarter Day tuition rates and discounts listed above are for 5 days a week and will be pro-rated for 3 or 4 days a week.",
-  discounts: [],
-  payment_schedule: [],
-  payment_footer_html: "",
-  whats_included_html: "",
+  hero_title: RATES_DEFAULTS.hero_title,
+  hero_subtitle: RATES_DEFAULTS.hero_subtitle,
+  intro_html: RATES_DEFAULTS.intro_html,
+  tuition_note: RATES_DEFAULTS.tuition_note,
+  tuition_rows: RATES_DEFAULTS.tuition_rows as TuitionRow[],
+  tuition_footer: RATES_DEFAULTS.tuition_footer,
+  discounts: RATES_DEFAULTS.discounts as DiscountRow[],
+  payment_schedule: RATES_DEFAULTS.payment_schedule as PaymentRow[],
+  payment_footer_html: RATES_DEFAULTS.payment_footer_html,
+  whats_included_html: RATES_DEFAULTS.whats_included_html,
 };
 
 export default function RatesEditor() {
@@ -56,17 +58,42 @@ export default function RatesEditor() {
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [usingDefaults, setUsingDefaults] = useState(false);
 
   async function load() {
     setLoading(true);
+    setError(null);
     const res = await fetch(`/api/pages/${PAGE_SLUG}`);
     if (!res.ok) {
+      setError(
+        res.status === 401
+          ? "Session expired — please reload."
+          : "Couldn't load saved content. Showing current site copy as a starting point."
+      );
+      setUsingDefaults(true);
       setLoading(false);
       return;
     }
     const data = await res.json();
     const blocks: Record<string, { type: string; content: Record<string, unknown> }> =
       data.blocks || {};
+
+    // Track whether ANY block came from the DB. If none did (fresh page or
+    // empty DB), surface a banner so admins know to hit Save to lock in
+    // current content.
+    const presentKeys = [
+      "hero_title",
+      "hero_subtitle",
+      "intro",
+      "tuition_note",
+      "tuition_rows",
+      "tuition_footer",
+      "discounts",
+      "payment_schedule",
+      "payment_footer",
+      "whats_included",
+    ].filter((k) => blocks[k] != null);
+    setUsingDefaults(presentKeys.length === 0);
 
     setState({
       hero_title: (blocks.hero_title?.content?.value as string) ?? DEFAULT.hero_title,
@@ -171,6 +198,18 @@ export default function RatesEditor() {
 
       {error && (
         <p className="mb-4 text-sm text-red-700 bg-red-50 px-4 py-2 rounded-lg">{error}</p>
+      )}
+
+      {usingDefaults && !loading && (
+        <div className="mb-4 flex items-start gap-3 text-sm bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-lg">
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>This page hasn&apos;t been saved through the editor yet.</strong> The
+            fields below show the current live site copy. Click <em>Save All Changes</em>{" "}
+            to lock these values into the editor — after that, every edit you make will
+            persist and roll-back.
+          </div>
+        </div>
       )}
 
       <div className="space-y-8">
