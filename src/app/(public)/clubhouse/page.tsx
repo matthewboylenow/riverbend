@@ -114,6 +114,46 @@ export default function ClubhousePage() {
         </Container>
       </Section>
 
+      {/* Sample Schedules */}
+      <Section id="sample-schedules" bg="cream">
+        <Container size="narrow">
+          <AnimateIn direction="up">
+            <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
+              Sample Schedules
+            </h2>
+            <p className="text-center text-gray-700 mb-8">
+              See how a typical day is structured for our youngest campers.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+              <a
+                href="/assets/documents/schedules/clubhouse-three-quarter-day.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 px-5 py-4 bg-white border border-stone/30 rounded-xl hover:border-camp-red hover:shadow-sm transition-all"
+              >
+                <div>
+                  <div className="font-semibold text-charcoal">Three-Quarter Day</div>
+                  <div className="text-sm text-bark">3-year-olds · 9:00 am – 2:00 pm</div>
+                </div>
+                <span className="text-camp-red font-semibold text-sm">PDF →</span>
+              </a>
+              <a
+                href="/assets/documents/schedules/clubhouse-full-day.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 px-5 py-4 bg-white border border-stone/30 rounded-xl hover:border-camp-red hover:shadow-sm transition-all"
+              >
+                <div>
+                  <div className="font-semibold text-charcoal">Full Day</div>
+                  <div className="text-sm text-bark">4–5 year-olds · Pre-K and K</div>
+                </div>
+                <span className="text-camp-red font-semibold text-sm">PDF →</span>
+              </a>
+            </div>
+          </AnimateIn>
+        </Container>
+      </Section>
+
       {/* Learn More */}
       <Section id="learn-more" bg="white">
         <Container>

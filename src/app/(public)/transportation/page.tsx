@@ -31,11 +31,20 @@ export default function TransportationPage() {
           <AnimateIn>
             <div className="space-y-6 text-center">
               <p className="text-body-lg text-bark leading-relaxed">
+                All bus service is at neighborhood or centralized bus stops,
+                with the exception of three-quarter day afternoon bus drop offs.
+              </p>
+              <p className="text-body-lg text-bark leading-relaxed">
                 Camp tuition includes either bus transportation or a place in
                 the extended day program. Campers travel in small or large
                 yellow school buses; each bus has a riding counselor to
                 supervise campers during the bus route and everyone wears a
                 seat belt.
+              </p>
+              <p className="text-body-lg text-bark leading-relaxed">
+                Bus transportation to and from Camp Riverbend is provided from
+                many communities in Essex, Hudson, Morris, Somerset and Union
+                counties. Contact us for information about specific towns.
               </p>
             </div>
           </AnimateIn>

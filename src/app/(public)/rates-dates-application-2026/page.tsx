@@ -28,12 +28,16 @@ const discounts = [
     body: "Deduct $300 from 7 or 6 week tuition, $250 from 5 week, $200 from 4 or 3 week, or $150 from 2 week tuition.",
   },
   {
-    heading: "3rd+ Child",
-    body: "Deduct $500 from 7 or 6 week, $400 from 5 week, $300 from 4 or 3 week, or $200 from 2 week tuition.",
+    heading: "Sibling Discount (3rd Child)",
+    body: "Deduct $600 from 7 or 6 week tuition, $500 from 5 week, $400 from 4 or 3 week, or $300 from 2 week tuition.",
   },
   {
-    heading: "Early Bird (First Two Weeks Only)",
+    heading: "July 4 Holiday Discount",
     body: "If you enroll only for the first two weeks of camp (June 29 and July 7), deduct $300 from total tuition.",
+  },
+  {
+    heading: "Referral Discount",
+    body: "Receive a $100 discount on your summer tuition for each first-time camper you refer ($50 for Three-Quarter Day).",
   },
 ];
 
@@ -44,7 +48,7 @@ const paymentSchedule = [
   },
   {
     label: "January 6",
-    detail: "$2,000 per camper payment",
+    detail: "$1,500 per camper payment",
   },
   {
     label: "April 1",

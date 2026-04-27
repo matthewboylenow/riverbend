@@ -23,17 +23,17 @@ const roles = [
   {
     title: "Specialty Instructors",
     description:
-      "Teach specific skills — arts & crafts, ceramics, woodworking, baseball, canoeing, cooking, drama, team building and soccer. Camp pays for required certifications.",
+      "Teach specific skills — arts & crafts, ceramics, woodworking, baseball, canoeing, cooking, drama, team building and soccer. Camp pays for required certifications (high ropes challenge course, canoeing, archery).",
   },
   {
     title: "Waterfront Counselors",
     description:
-      "Teach swimming lessons every morning and lifeguard every afternoon. Must have or earn Lifeguard certification.",
+      "Teach swimming lessons every morning and lifeguard every afternoon. Must have or earn Lifeguard certification before camp begins; training provided in June.",
   },
   {
-    title: "Photographer",
+    title: "Photo Team",
     description:
-      "Takes photos of campers daily. Strong interest in photography is a plus but training provided.",
+      "Document campers daily for the Riverbend app. Photography background and DSLR experience preferred but training is provided. An active outdoor role.",
   },
 ];
 
@@ -149,13 +149,15 @@ export default function StaffPage() {
             <div className="space-y-6">
               <h2 className="font-camp text-center">2026 Dates &amp; Logistics</h2>
               <p className="text-body-lg text-bark leading-relaxed">
-                Camp Riverbend is a 7 week summer day camp. Regular staff hours
-                are Monday&ndash;Friday, 8:30 AM&ndash;4:00 PM. Camp
-                Riverbend&apos;s 2026 season begins Monday, June 29.
+                Camp Riverbend is a 7 week summer day camp running Monday, June
+                29 through Friday, August 14, 2026 (closed July 3). Regular
+                staff hours are Monday&ndash;Friday, 8:30 AM&ndash;4:00 PM.
+                Staff training is held June 17, 18, 20, and 21, 2026.
               </p>
               <p className="text-body-lg text-bark leading-relaxed">
                 Unfortunately, we are unable to provide lodging. We recommend
-                finding accommodation within about 20 miles of Camp.
+                finding accommodation within about 20 miles of Camp. Bus driver
+                positions are also available with additional compensation.
               </p>
             </div>
           </AnimateIn>
@@ -180,6 +182,13 @@ export default function StaffPage() {
                   className="font-semibold text-white hover:underline"
                 >
                   908-580-CAMP
+                </a>{" "}
+                or text{" "}
+                <a
+                  href="tel:9087212598"
+                  className="font-semibold text-white hover:underline"
+                >
+                  908-721-2598
                 </a>
               </p>
             </div>

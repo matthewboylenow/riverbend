@@ -28,7 +28,7 @@ const videos = [
   { id: "361309800", title: "Counselors / Staff" },
   { id: "386555082", title: "Family Camp Day" },
   { id: "386555546", title: "Carnival & Special Days" },
-  { id: "386592102", title: "Testimonials" },
+  { id: "386592102", title: "Testimonials from Campers, Staff & Parents" },
 ];
 
 export default function VideosPage() {

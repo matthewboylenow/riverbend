@@ -64,6 +64,10 @@ export default function HealthSafetyPage() {
                 sanitation, transportation, food safety, staff qualifications,
                 fire prevention and medical record keeping.
               </p>
+              <p className="text-body-lg text-bark leading-relaxed">
+                Parent visits are not allowed during the camp season. Security
+                staff at the entrance check all arriving adults.
+              </p>
             </div>
           </AnimateIn>
         </Container>

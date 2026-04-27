@@ -81,6 +81,19 @@ export default function CampAppPage() {
                 You will need an access code to install the app; this code is
                 listed in our Parent Handbook.
               </p>
+              <p className="text-body-lg text-bark leading-relaxed">
+                Prefer your computer? A desktop version of the photo viewer is
+                available at{" "}
+                <a
+                  href="https://photoviewer.my1218app.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-camp-red font-semibold hover:underline"
+                >
+                  photoviewer.my1218app.com
+                </a>
+                .
+              </p>
               <div className="flex flex-wrap gap-4 justify-center items-center pt-4">
                 <a
                   href="https://apps.apple.com/app/camp-riverbend-nj"

@@ -16,15 +16,18 @@ export const metadata: Metadata = {
 const keyDates = [
   { date: "January 6", event: "$2,000 per camper tuition payment charged" },
   { date: "April 1", event: "Final tuition payment charged" },
-  { date: "May 15", event: "Camper medical forms due" },
+  { date: "Mid-April", event: "Bus assignments distributed" },
+  { date: "May 15", event: "Camper medical forms and authorization documents due" },
   {
     date: "Mid-May",
-    event: "Bus assignments, Parent Handbook, Riverbend App setup",
+    event: "Parent Handbook distribution and Riverbend App setup",
   },
   {
     date: "Early June",
-    event: "Zoom pre-orientation sessions; Lunch orders open",
+    event: "Division head orientation sessions; Lunch orders open",
   },
+  { date: "June 18", event: "Week 1 lunch orders close" },
+  { date: "June 19", event: "Bus rider introductions sent" },
   { date: "June 20–21", event: "Welcome Weekend at Camp" },
   { date: "June 29", event: "Opening day of the 2026 season" },
   { date: "July 3", event: "Camp is closed" },

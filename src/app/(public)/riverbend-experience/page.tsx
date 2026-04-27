@@ -12,7 +12,7 @@ import Image from "next/image";
 export const metadata: Metadata = {
   title: "Riverbend Experience | Grades 1-8 | Camp Riverbend",
   description:
-    "Campers entering 1st through 8th grades explore, grow and gain confidence! During the day, each group rotates through seven different activities and has many new experiences.",
+    "Campers entering 1st through 8th grades explore, grow and gain confidence! During the day, each group rotates through eight different activities and has many new experiences.",
 };
 
 export default function RiverbendExperiencePage() {
@@ -123,6 +123,49 @@ export default function RiverbendExperiencePage() {
                   </p>
                 </div>
               </AnimateIn>
+            </div>
+          </AnimateIn>
+        </Container>
+      </Section>
+
+      {/* Sample Schedules */}
+      <Section id="sample-schedules" bg="cream">
+        <Container>
+          <AnimateIn direction="up">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">Sample Schedules</h2>
+              <p className="text-gray-700 max-w-2xl mx-auto">
+                Each grade has its own daily rotation. Click any schedule to see how a typical
+                week is structured.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+              {[
+                { label: "1st Grade — Boys", href: "/assets/documents/schedules/1st-grade-boys.pdf" },
+                { label: "1st Grade — Girls", href: "/assets/documents/schedules/1st-grade-girls.pdf" },
+                { label: "2nd Grade — Boys", href: "/assets/documents/schedules/2nd-grade-boys.pdf" },
+                { label: "2nd Grade — Girls", href: "/assets/documents/schedules/2nd-grade-girls.pdf" },
+                { label: "3rd Grade — Boys", href: "/assets/documents/schedules/3rd-grade-boys.pdf" },
+                { label: "3rd Grade — Girls", href: "/assets/documents/schedules/3rd-grade-girls.pdf" },
+                { label: "4th Grade — Boys", href: "/assets/documents/schedules/4th-grade-boys.pdf" },
+                { label: "4th Grade — Girls", href: "/assets/documents/schedules/4th-grade-girls.pdf" },
+                { label: "5th Grade — Boys", href: "/assets/documents/schedules/5th-grade-boys.pdf" },
+                { label: "5th Grade — Girls", href: "/assets/documents/schedules/5th-grade-girls.pdf" },
+                { label: "6th–7th — Boys", href: "/assets/documents/schedules/6th-7th-grade-boys.pdf" },
+                { label: "6th–7th — Girls", href: "/assets/documents/schedules/6th-7th-grade-girls.pdf" },
+                { label: "8th Grade (Coed)", href: "/assets/documents/schedules/8th-grade-coed.pdf" },
+              ].map((s) => (
+                <a
+                  key={s.href}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-2 px-4 py-3 bg-white border border-stone/30 rounded-lg hover:border-camp-red hover:shadow-sm transition-all text-sm"
+                >
+                  <span className="font-medium text-charcoal">{s.label}</span>
+                  <span className="text-camp-red font-semibold">PDF →</span>
+                </a>
+              ))}
             </div>
           </AnimateIn>
         </Container>

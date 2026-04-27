@@ -60,7 +60,7 @@ export default function DayTrippersPage() {
                     Day Trippers Program
                   </h2>
                   <p className="text-gray-700 leading-relaxed">
-                    The group takes day trips every day, traveling on a regular camp bus. For summer 2026, we&apos;re planning trips to the Jersey shore, amusement parks, and more.
+                    The group takes day trips every day, traveling on a regular camp bus. For summer 2026, we&apos;re planning trips that include the Jersey shore, amusement parks, drone racing, water tubing, challenge courses, boating, river rafting, art-making, martial arts, and cooking classes.
                   </p>
                   <p className="text-gray-700 leading-relaxed">
                     Four days a week the Day Trippers return back to camp in time to go home on the regular bus or into the extended day program. One night a week is a late night; parents must come to camp around 5:30 pm for pick up.
@@ -127,6 +127,34 @@ export default function DayTrippersPage() {
                 </div>
               </AnimateIn>
             </div>
+          </AnimateIn>
+        </Container>
+      </Section>
+
+      {/* 2026 Day Trippers Calendar */}
+      <Section id="trippers-calendar" bg="white">
+        <Container size="narrow">
+          <AnimateIn direction="up">
+            <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
+              2026 Day Trippers Calendar
+            </h2>
+            <p className="text-center text-gray-700 mb-8">
+              See where this summer&apos;s adventures will take us.
+            </p>
+            <a
+              href="/assets/site/Day-Trippers-2026.png"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-2xl overflow-hidden border border-stone/30 hover:shadow-md transition-shadow"
+            >
+              <Image
+                src="/assets/site/Day-Trippers-2026.png"
+                alt="Camp Riverbend 2026 Day Trippers calendar"
+                width={1200}
+                height={1500}
+                className="w-full h-auto"
+              />
+            </a>
           </AnimateIn>
         </Container>
       </Section>
