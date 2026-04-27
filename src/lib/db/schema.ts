@@ -108,6 +108,50 @@ export const staffMembers = pgTable('staff_members', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
+// ─── Page Content (CMS) ─────────────────────────────────
+// One row per (page_slug, block_key). block_type tells the renderer how to
+// interpret content_json:
+//   - "richtext"  → { html: string }   (TipTap output, sanitized)
+//   - "text"      → { value: string }  (single-line plain text — titles, subtitles)
+//   - "image"     → { url: string, alt?: string }
+//   - "document"  → { url: string, label?: string }
+//   - "rows"      → { rows: Array<Record<string, string>> }  (structured tables)
+export const pageContent = pgTable('page_content', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  pageSlug: text('page_slug').notNull(),
+  blockKey: text('block_key').notNull(),
+  blockType: text('block_type').notNull(),
+  contentJson: jsonb('content_json').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedBy: uuid('updated_by').references(() => adminUsers.id),
+});
+
+// Up to 5 prior revisions per (page_slug, block_key). App code trims older.
+export const pageContentRevisions = pgTable('page_content_revisions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  pageSlug: text('page_slug').notNull(),
+  blockKey: text('block_key').notNull(),
+  blockType: text('block_type').notNull(),
+  contentJson: jsonb('content_json').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  createdBy: uuid('created_by').references(() => adminUsers.id),
+});
+
+// ─── Documents (PDFs etc.) ──────────────────────────────
+// Logical handles for PDFs/files admins manage. The CMS references these
+// by id so replacing a file updates every page that uses it.
+export const documents = pgTable('documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  key: text('key').unique().notNull(), // stable identifier e.g. "1st-grade-boys-schedule"
+  title: text('title').notNull(),
+  blobPath: text('blob_path').notNull(), // e.g. "documents/schedules/1st-grade-boys.pdf"
+  blobUrl: text('blob_url').notNull(), // absolute Blob URL (or /assets/... if rewritten)
+  contentType: text('content_type'),
+  sizeBytes: integer('size_bytes'),
+  uploadedAt: timestamp('uploaded_at', { withTimezone: true }).defaultNow().notNull(),
+  uploadedBy: uuid('uploaded_by').references(() => adminUsers.id),
+});
+
 // ─── Shipping Rates ─────────────────────────────────────
 export const shippingRates = pgTable('shipping_rates', {
   id: uuid('id').primaryKey().defaultRandom(),
