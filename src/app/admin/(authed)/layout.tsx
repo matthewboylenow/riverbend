@@ -59,22 +59,30 @@ export default async function AdminLayout({
                 View Site →
               </Link>
               {session?.user && (
-                <form
-                  action={async () => {
-                    "use server";
-                    await signOut({ redirectTo: "/admin/login" });
-                  }}
-                  className="ml-2"
-                >
-                  <button
-                    type="submit"
-                    title={`Sign out (${session.user.email})`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                <>
+                  <Link
+                    href="/admin/profile"
+                    className="ml-1 px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    title={session.user.email ?? undefined}
                   >
-                    <LogOut className="h-3.5 w-3.5" />
-                    Sign out
-                  </button>
-                </form>
+                    {session.user.name?.split(" ")[0] || "Profile"}
+                  </Link>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await signOut({ redirectTo: "/admin/login" });
+                    }}
+                    className="ml-1"
+                  >
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      Sign out
+                    </button>
+                  </form>
+                </>
               )}
             </nav>
           </div>
