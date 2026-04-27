@@ -1,57 +1,93 @@
 import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { orders, orderItems } from "@/lib/db/schema";
+import { sendOrderEmails } from "@/lib/email";
+
+interface ItemPayload {
+  productId?: string;
+  variantId?: string;
+  productName: string;
+  variantName?: string;
+  price: number; // dollars
+  quantity: number;
+}
 
 export async function POST(request: Request) {
   try {
-    const { items, customerInfo, shippingInfo, subtotal, shippingCost, total } =
-      await request.json();
+    const body = await request.json();
+    const items: ItemPayload[] = body.items || [];
+    const customerInfo = body.customerInfo || {};
+    const shippingInfo = body.shippingInfo || null;
 
-    if (!items?.length) {
+    if (!items.length) {
       return NextResponse.json({ error: "No items" }, { status: 400 });
     }
-
-    if (!customerInfo?.name || !customerInfo?.email || !customerInfo?.camperName) {
+    if (!customerInfo.name || !customerInfo.email || !customerInfo.camperName) {
       return NextResponse.json(
         { error: "Name, email, and camper name are required" },
         { status: 400 }
       );
     }
 
-    // Generate a simple order number for now
-    const orderNumber = `CR-${Date.now().toString(36).toUpperCase()}`;
+    const subtotal = Number(body.subtotal ?? 0);
+    const shippingCost = Number(body.shippingCost ?? 0);
+    const total = Number(body.total ?? subtotal + shippingCost);
 
-    // TODO: When DB is connected and seeded, create order in DB:
-    // const order = await db.insert(orders).values({
-    //   customerName: customerInfo.name,
-    //   customerEmail: customerInfo.email,
-    //   camperName: customerInfo.camperName,
-    //   phone: customerInfo.phone,
-    //   shippingAddress: shippingInfo,
-    //   paymentMethod: 'account_billing',
-    //   status: 'pending_invoice',
-    //   subtotal,
-    //   shippingCost,
-    //   total,
-    // }).returning();
+    const [order] = await db
+      .insert(orders)
+      .values({
+        customerName: customerInfo.name,
+        customerEmail: customerInfo.email,
+        camperName: customerInfo.camperName,
+        phone: customerInfo.phone ?? null,
+        shippingAddress: shippingInfo,
+        paymentMethod: "account_billing",
+        status: "pending_invoice",
+        subtotal: subtotal.toFixed(2),
+        shippingCost: shippingCost.toFixed(2),
+        total: total.toFixed(2),
+      })
+      .returning();
 
-    // TODO: Send notification email to abby@campriverbend.com via Resend
-    // TODO: Send confirmation email to customer
+    await db.insert(orderItems).values(
+      items.map((it) => ({
+        orderId: order.id,
+        productId: it.productId || null,
+        variantId: it.variantId || null,
+        productName: it.productName,
+        variantName: it.variantName ?? null,
+        quantity: it.quantity,
+        unitPrice: Number(it.price).toFixed(2),
+      }))
+    );
 
-    console.log("Account billing order:", {
-      orderNumber,
-      customer: customerInfo,
-      items,
+    // Fire-and-forget email; don't block order success on Resend
+    void sendOrderEmails({
+      orderNumber: order.orderNumber,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      camperName: order.camperName,
+      phone: order.phone,
+      paymentMethod: "account_billing",
       subtotal,
       shippingCost,
       total,
-      shipping: shippingInfo,
+      items: items.map((i) => ({
+        productName: i.productName,
+        variantName: i.variantName ?? null,
+        quantity: i.quantity,
+        unitPrice: i.price,
+      })),
+      shippingAddress: shippingInfo,
     });
 
-    return NextResponse.json({ success: true, orderNumber });
+    return NextResponse.json({
+      success: true,
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+    });
   } catch (err) {
-    console.error("Account billing error:", err);
-    return NextResponse.json(
-      { error: "Failed to place order" },
-      { status: 500 }
-    );
+    console.error("Account billing order failed:", err);
+    return NextResponse.json({ error: "Failed to place order" }, { status: 500 });
   }
 }

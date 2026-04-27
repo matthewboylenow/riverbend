@@ -19,7 +19,7 @@ export default function LunchPage() {
       <PageHeader
         title="Lunch & Snacks"
         subtitle="Kid favorites and healthy choices, every day"
-        bgImage="/images/IMG_370.jpg"
+        bgImage="/assets/site/IMG_370.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Lunch" },
@@ -46,7 +46,7 @@ export default function LunchPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/images/IMG_370.jpg"
+                  src="/assets/site/IMG_370.jpg"
                   alt="Lunch at Camp Riverbend"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"

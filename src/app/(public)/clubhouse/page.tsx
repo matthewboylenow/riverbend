@@ -20,7 +20,7 @@ export default function ClubhousePage() {
       <PageHeader
         title="The Clubhouse"
         subtitle="A wonderful introduction to camp for ages 3-5"
-        bgImage="/images/DSC_0553-scaled.jpg"
+        bgImage="/assets/site/DSC_0553-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Programs", href: "/programs" },
@@ -103,7 +103,7 @@ export default function ClubhousePage() {
               </div>
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                 <Image
-                  src="/images/ADV06620.jpg-marketing-scaled.jpg"
+                  src="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
                   alt="Clubhouse counselors with young campers"
                   fill
                   className="object-cover"
@@ -125,19 +125,19 @@ export default function ClubhousePage() {
               <LinkCard
                 title="All Programs"
                 href="/programs"
-                image="/images/ADV07104-scaled.jpg"
+                image="/assets/site/ADV07104-scaled.jpg"
                 index={0}
               />
               <LinkCard
                 title="Activities"
                 href="/activities"
-                image="/images/ADV01169.jpg"
+                image="/assets/site/ADV01169.jpg"
                 index={1}
               />
               <LinkCard
                 title="Rates & Dates"
                 href="/rates-dates-application-2026"
-                image="/images/Canoe.jpg"
+                image="/assets/site/Canoe.jpg"
                 index={2}
               />
             </div>

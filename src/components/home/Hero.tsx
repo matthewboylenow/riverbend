@@ -54,7 +54,7 @@ export function Hero() {
           </video>
         ) : (
           <Image
-            src="/images/ADV01122.jpg"
+            src="/assets/site/ADV01122.jpg"
             alt="Campers enjoying summer at Camp Riverbend"
             fill
             priority

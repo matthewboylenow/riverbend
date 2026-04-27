@@ -44,7 +44,7 @@ export default function CalendarPage() {
       <PageHeader
         title="2026 Calendar"
         subtitle="Important dates for the upcoming season"
-        bgImage="/images/ADV06620.jpg-marketing-scaled.jpg"
+        bgImage="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Calendar" },
@@ -57,7 +57,7 @@ export default function CalendarPage() {
           <AnimateIn>
             <div className="relative aspect-[3/4] max-w-2xl mx-auto overflow-hidden rounded-2xl shadow-lg">
               <Image
-                src="https://cdn.campriverbend.com/2026/01/23122356/2026-program-calendar-1-791x1024.png"
+                src="/assets/site/2026-program-calendar.png"
                 alt="2026 Camp Riverbend Program Calendar"
                 fill
                 className="object-contain"
@@ -66,7 +66,7 @@ export default function CalendarPage() {
             </div>
             <div className="mt-4 text-center">
               <a
-                href="https://cdn.campriverbend.com/2026/01/23122356/2026-program-calendar-1-791x1024.png"
+                href="/assets/site/2026-program-calendar.png"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-semibold text-camp-red hover:underline"

@@ -96,7 +96,7 @@ export default function TestimonialsPage() {
       <PageHeader
         title="Testimonials"
         subtitle="Hear from our campers and families"
-        bgImage="/images/ADV07400.jpg-marketing-scaled.jpg"
+        bgImage="/assets/site/ADV07400.jpg-marketing-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Testimonials" },

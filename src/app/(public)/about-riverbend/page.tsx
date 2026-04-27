@@ -26,7 +26,7 @@ export default function AboutPage() {
       <PageHeader
         title="Legacy & Tradition"
         subtitle="Camp Riverbend has hosted generations of families for over 60 years in Warren Township, New Jersey"
-        bgImage="/images/IMG_2726.jpg"
+        bgImage="/assets/site/IMG_2726.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "About Riverbend" },
@@ -112,7 +112,7 @@ export default function AboutPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/images/ADV06620.jpg-marketing-scaled.jpg"
+                  src="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
                   alt="Young campers building confidence together at camp"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -175,7 +175,7 @@ export default function AboutPage() {
               <div className="space-y-4">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg bg-sand">
                   <Image
-                    src="/images/2022-Camp-Map-JPG-scaled.jpg"
+                    src="/assets/site/2022-Camp-Map-JPG-scaled.jpg"
                     alt="Camp Riverbend campus map"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -187,7 +187,7 @@ export default function AboutPage() {
                     Explore Interactive Map
                   </Button>
                   <a
-                    href="/images/2022-Camp-Map-JPG-scaled.jpg"
+                    href="/assets/site/2022-Camp-Map-JPG-scaled.jpg"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm font-semibold text-camp-red hover:underline"
@@ -265,19 +265,19 @@ export default function AboutPage() {
             <LinkCard
               title="Activities Offered"
               href="/activities"
-              image="/images/ADV01169.jpg"
+              image="/assets/site/ADV01169.jpg"
               index={0}
             />
             <LinkCard
               title="Rates & Dates"
               href="/rates-dates-application-2026"
-              image="/images/Canoe.jpg"
+              image="/assets/site/Canoe.jpg"
               index={1}
             />
             <LinkCard
               title="Our Programs"
               href="/programs"
-              image="/images/ADV06620.jpg-marketing-scaled.jpg"
+              image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
               index={2}
             />
           </div>

@@ -43,7 +43,7 @@ export default function StaffPage() {
       <PageHeader
         title="Join Our Riverbend Family"
         subtitle="Make a difference this summer"
-        bgImage="https://cdn.campriverbend.com/wp-content/uploads/2022/02/23171034/d-22-1024x682.jpg"
+        bgImage="/assets/site/d-22-1024x682.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Staff" },

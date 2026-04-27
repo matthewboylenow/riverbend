@@ -211,7 +211,7 @@ export function BentoGrid() {
         title="Our Programs"
         subtitle="Ages 3 to 14"
         href="/programs"
-        image="/images/ADV06620.jpg-marketing-scaled.jpg"
+        image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
         icon={<Heart className="h-4 w-4" />}
         className="col-span-2 row-span-2"
         index={0}
@@ -221,7 +221,7 @@ export function BentoGrid() {
         title="Activities"
         subtitle="50+ to explore"
         href="/activities"
-        image="/images/ADV01169.jpg"
+        image="/assets/site/ADV01169.jpg"
         className="col-span-1 row-span-2"
         index={1}
         cta="See all activities"
@@ -246,7 +246,7 @@ export function BentoGrid() {
         title="Rates & Dates 2026"
         subtitle="Apply now"
         href="/rates-dates-application-2026"
-        image="/images/Canoe.jpg"
+        image="/assets/site/Canoe.jpg"
         icon={<Calendar className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={4}
@@ -256,7 +256,7 @@ export function BentoGrid() {
         title="Legacy & Tradition"
         subtitle="Since 1962"
         href="/about-riverbend"
-        image="/images/ADV07104-scaled.jpg"
+        image="/assets/site/ADV07104-scaled.jpg"
         className="col-span-1 row-span-1"
         index={5}
         cta="Our story"
@@ -265,7 +265,7 @@ export function BentoGrid() {
         title="Video Library"
         subtitle="See camp in action"
         href="/videos"
-        image="/images/ADV07400.jpg-marketing-scaled.jpg"
+        image="/assets/site/ADV07400.jpg-marketing-scaled.jpg"
         icon={<Play className="h-4 w-4" />}
         className="col-span-2 row-span-1"
         index={6}
@@ -276,7 +276,7 @@ export function BentoGrid() {
       <BentoCard
         title="Transportation"
         href="/transportation"
-        image="/images/DSC06927-scaled.jpg"
+        image="/assets/site/DSC06927-scaled.jpg"
         icon={<Bus className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={7}
@@ -285,7 +285,7 @@ export function BentoGrid() {
       <BentoCard
         title="Lunch & Snacks"
         href="/lunch"
-        image="/images/IMG_370.jpg"
+        image="/assets/site/IMG_370.jpg"
         icon={<Utensils className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={8}
@@ -294,7 +294,7 @@ export function BentoGrid() {
       <BentoCard
         title="Health & Safety"
         href="/health-safety"
-        image="/images/ADV06446-scaled.jpg"
+        image="/assets/site/ADV06446-scaled.jpg"
         icon={<Shield className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={9}
@@ -304,7 +304,7 @@ export function BentoGrid() {
         title="Camp Map"
         subtitle="Explore our grounds"
         href="/camp-map"
-        image="/images/2022-Camp-Map-JPG-scaled.jpg"
+        image="/assets/site/2022-Camp-Map-JPG-scaled.jpg"
         icon={<MapPin className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={10}

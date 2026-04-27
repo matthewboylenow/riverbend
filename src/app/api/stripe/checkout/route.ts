@@ -1,42 +1,92 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { db } from "@/lib/db";
+import { orders, orderItems } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+
+interface ItemPayload {
+  productId?: string;
+  variantId?: string;
+  productName: string;
+  variantName?: string;
+  price: number; // cents
+  quantity: number;
+}
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error("STRIPE_SECRET_KEY not configured");
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2026-01-28.clover",
   });
 }
 
 export async function POST(request: Request) {
   try {
-    const stripe = getStripe();
-    const { items, customerInfo, shippingInfo, shippingCost } =
-      await request.json();
-
-    if (!items?.length) {
-      return NextResponse.json({ error: "No items" }, { status: 400 });
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: "Stripe is not configured. Use Account Billing or contact the camp office." },
+        { status: 503 }
+      );
     }
 
-    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
-      items.map(
-        (item: {
-          productName: string;
-          variantName?: string;
-          price: number;
-          quantity: number;
-        }) => ({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `${item.productName}${
-                item.variantName ? ` - ${item.variantName}` : ""
-              }`,
-            },
-            unit_amount: item.price, // already in cents from client
-          },
-          quantity: item.quantity,
-        })
-      );
+    const stripe = getStripe();
+    const body = await request.json();
+    const items: ItemPayload[] = body.items || [];
+    const customerInfo = body.customerInfo || {};
+    const shippingInfo = body.shippingInfo || null;
+    const shippingCost: number = Number(body.shippingCost ?? 0); // cents
+
+    if (!items.length) {
+      return NextResponse.json({ error: "No items" }, { status: 400 });
+    }
+    if (!customerInfo.email) {
+      return NextResponse.json({ error: "Email required" }, { status: 400 });
+    }
+
+    const subtotalCents = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const totalCents = subtotalCents + shippingCost;
+
+    // Create a pending order so the webhook can flip it to paid
+    const [order] = await db
+      .insert(orders)
+      .values({
+        customerName: customerInfo.name || "Stripe customer",
+        customerEmail: customerInfo.email,
+        camperName: customerInfo.camperName ?? null,
+        phone: customerInfo.phone ?? null,
+        shippingAddress: shippingInfo,
+        paymentMethod: "stripe",
+        status: "pending",
+        subtotal: (subtotalCents / 100).toFixed(2),
+        shippingCost: (shippingCost / 100).toFixed(2),
+        total: (totalCents / 100).toFixed(2),
+      })
+      .returning();
+
+    await db.insert(orderItems).values(
+      items.map((it) => ({
+        orderId: order.id,
+        productId: it.productId || null,
+        variantId: it.variantId || null,
+        productName: it.productName,
+        variantName: it.variantName ?? null,
+        quantity: it.quantity,
+        unitPrice: (it.price / 100).toFixed(2),
+      }))
+    );
+
+    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => ({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: `${item.productName}${item.variantName ? ` - ${item.variantName}` : ""}`,
+        },
+        unit_amount: item.price,
+      },
+      quantity: item.quantity,
+    }));
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
@@ -44,15 +94,15 @@ export async function POST(request: Request) {
       mode: "payment",
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/shop/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
-      customer_email: customerInfo?.email,
+      customer_email: customerInfo.email,
       metadata: {
-        customerName: customerInfo?.name || "",
-        phone: customerInfo?.phone || "",
-        shippingAddress: shippingInfo ? JSON.stringify(shippingInfo) : "",
+        orderId: order.id,
+        orderNumber: String(order.orderNumber),
+        customerName: customerInfo.name || "",
+        phone: customerInfo.phone || "",
       },
     };
 
-    // Add shipping as a line item if applicable
     if (shippingCost > 0) {
       sessionParams.shipping_options = [
         {
@@ -66,12 +116,15 @@ export async function POST(request: Request) {
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
-    return NextResponse.json({ url: session.url });
+
+    await db
+      .update(orders)
+      .set({ stripeSessionId: session.id, updatedAt: new Date() })
+      .where(eq(orders.id, order.id));
+
+    return NextResponse.json({ url: session.url, orderId: order.id });
   } catch (err) {
     console.error("Stripe checkout error:", err);
-    return NextResponse.json(
-      { error: "Failed to create checkout session" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
   }
 }

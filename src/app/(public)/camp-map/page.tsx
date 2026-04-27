@@ -17,7 +17,7 @@ export default function CampMapPage() {
       <PageHeader
         title="Explore Our Campus"
         subtitle="30 acres of adventure along the Passaic River"
-        bgImage="/images/ADV07104-scaled.jpg"
+        bgImage="/assets/site/ADV07104-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Camp Map" },

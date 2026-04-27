@@ -21,7 +21,7 @@ export default function RiverbendExperiencePage() {
       <PageHeader
         title="Riverbend Experience"
         subtitle="Where campers in grades 1-8 explore, grow, and gain confidence"
-        bgImage="/images/ADV07104-scaled.jpg"
+        bgImage="/assets/site/ADV07104-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Programs", href: "/programs" },
@@ -84,7 +84,7 @@ export default function RiverbendExperiencePage() {
               <AnimateIn direction="right">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/images/ADV07400.jpg-marketing-scaled.jpg"
+                    src="/assets/site/ADV07400.jpg-marketing-scaled.jpg"
                     alt="Campers enjoying a typical day at Riverbend"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -105,7 +105,7 @@ export default function RiverbendExperiencePage() {
               <AnimateIn direction="left">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/images/ADV06620.jpg-marketing-scaled.jpg"
+                    src="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
                     alt="Counselors supervising campers at Riverbend"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -139,19 +139,19 @@ export default function RiverbendExperiencePage() {
               <LinkCard
                 title="All Programs"
                 href="/programs"
-                image="/images/ADV06620.jpg-marketing-scaled.jpg"
+                image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
                 index={0}
               />
               <LinkCard
                 title="Activities"
                 href="/activities"
-                image="/images/ADV01169.jpg"
+                image="/assets/site/ADV01169.jpg"
                 index={1}
               />
               <LinkCard
                 title="Rates & Dates"
                 href="/rates-dates-application-2026"
-                image="/images/Canoe.jpg"
+                image="/assets/site/Canoe.jpg"
                 index={2}
               />
             </div>

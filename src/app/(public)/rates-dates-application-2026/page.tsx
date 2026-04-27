@@ -58,7 +58,7 @@ export default function RatesDatePage() {
       <PageHeader
         title="Rates, Dates & Application"
         subtitle="2026 Season — June 29 through August 14"
-        bgImage="/images/Canoe.jpg"
+        bgImage="/assets/site/Canoe.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Rates, Dates & Application" },

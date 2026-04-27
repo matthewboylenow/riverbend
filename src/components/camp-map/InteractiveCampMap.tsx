@@ -34,7 +34,7 @@ export function InteractiveCampMap() {
         <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-stone/40 bg-white shadow-lg">
           <div className="relative aspect-[4/3]">
             <Image
-              src="/images/2022-Camp-Map-JPG-scaled.jpg"
+              src="/assets/site/2022-Camp-Map-JPG-scaled.jpg"
               alt="Camp Riverbend campus map showing all activity zones and facilities"
               fill
               sizes="(max-width: 1024px) 100vw, 66vw"

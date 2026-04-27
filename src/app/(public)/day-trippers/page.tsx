@@ -22,7 +22,7 @@ export default function DayTrippersPage() {
       <PageHeader
         title="Day Trippers"
         subtitle="Adventure awaits for campers in grades 7-9"
-        bgImage="/images/ADV06446-scaled.jpg"
+        bgImage="/assets/site/ADV06446-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Programs", href: "/programs" },
@@ -70,7 +70,7 @@ export default function DayTrippersPage() {
               <AnimateIn direction="right">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/images/Canoe.jpg"
+                    src="/assets/site/Canoe.jpg"
                     alt="Day Trippers on an adventure"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -103,7 +103,7 @@ export default function DayTrippersPage() {
               <AnimateIn direction="left">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/images/DSC06927-scaled.jpg"
+                    src="/assets/site/DSC06927-scaled.jpg"
                     alt="Day Trippers counselors with teen campers"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -142,19 +142,19 @@ export default function DayTrippersPage() {
               <LinkCard
                 title="All Programs"
                 href="/programs"
-                image="/images/ADV06620.jpg-marketing-scaled.jpg"
+                image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
                 index={0}
               />
               <LinkCard
                 title="Activities"
                 href="/activities"
-                image="/images/ADV01169.jpg"
+                image="/assets/site/ADV01169.jpg"
                 index={1}
               />
               <LinkCard
                 title="Rates & Dates"
                 href="/rates-dates-application-2026"
-                image="/images/Canoe.jpg"
+                image="/assets/site/Canoe.jpg"
                 index={2}
               />
             </div>

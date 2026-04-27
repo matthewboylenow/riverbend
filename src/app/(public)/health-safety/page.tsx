@@ -39,7 +39,7 @@ export default function HealthSafetyPage() {
       <PageHeader
         title="Safety & Security"
         subtitle="Your child's safety is our number one priority"
-        bgImage="/images/ADV06446-scaled.jpg"
+        bgImage="/assets/site/ADV06446-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Health & Safety" },
@@ -109,7 +109,7 @@ export default function HealthSafetyPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/images/ADV06446-scaled.jpg"
+                  src="/assets/site/ADV06446-scaled.jpg"
                   alt="Camp Riverbend health and safety"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"

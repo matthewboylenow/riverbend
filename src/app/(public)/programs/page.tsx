@@ -19,7 +19,7 @@ export default function ProgramsPage() {
       <PageHeader
         title="Our Programs"
         subtitle="Three amazing programs for campers ages 3 through 14"
-        bgImage="/images/ADV06620.jpg-marketing-scaled.jpg"
+        bgImage="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Our Programs" },
@@ -48,7 +48,7 @@ export default function ProgramsPage() {
               title="The Clubhouse"
               description="The Clubhouse is a wonderful introduction to the classic summer camp experience for campers aged 3-5 years old. Everything is kid-sized, right down to the chairs and the athletic field, so they are right at home and comfortable!"
               links={[{ label: "Explore The Clubhouse", href: "/clubhouse" }]}
-              image="/images/DSC_0553-scaled.jpg"
+              image="/assets/site/DSC_0553-scaled.jpg"
               imageAlt="Young campers in the Clubhouse program"
             />
           </AnimateIn>
@@ -69,7 +69,7 @@ export default function ProgramsPage() {
                   href: "/riverbend-experience",
                 },
               ]}
-              image="/images/ADV07104-scaled.jpg"
+              image="/assets/site/ADV07104-scaled.jpg"
               imageAlt="Campers enjoying activities in the Riverbend Experience program"
               reversed
             />
@@ -88,7 +88,7 @@ export default function ProgramsPage() {
               links={[
                 { label: "Explore Day Trippers", href: "/day-trippers" },
               ]}
-              image="/images/ADV06446-scaled.jpg"
+              image="/assets/site/ADV06446-scaled.jpg"
               imageAlt="Day Trippers on an adventure outside of camp"
             />
           </AnimateIn>
@@ -106,19 +106,19 @@ export default function ProgramsPage() {
               <LinkCard
                 title="Activities Offered"
                 href="/activities"
-                image="/images/ADV01169.jpg"
+                image="/assets/site/ADV01169.jpg"
                 index={0}
               />
               <LinkCard
                 title="Rates & Dates"
                 href="/rates-dates-application-2026"
-                image="/images/Canoe.jpg"
+                image="/assets/site/Canoe.jpg"
                 index={1}
               />
               <LinkCard
                 title="About Riverbend"
                 href="/about-riverbend"
-                image="/images/IMG_2726.jpg"
+                image="/assets/site/IMG_2726.jpg"
                 index={2}
               />
             </div>

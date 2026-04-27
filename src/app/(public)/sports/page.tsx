@@ -18,48 +18,48 @@ const sportsCards = [
   {
     name: "Basketball",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185907/DSC07326-scaled.jpg",
+      "/assets/site/DSC07326-scaled.jpg",
   },
   {
     name: "Tennis",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185908/DSC07389-scaled.jpg",
+      "/assets/site/DSC07389-scaled.jpg",
   },
   {
     name: "Baseball",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185908/DSC07606-scaled.jpg",
+      "/assets/site/DSC07606-scaled.jpg",
   },
   {
     name: "Gaga",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185909/MEC_9087-scaled.jpg",
+      "/assets/site/MEC_9087-scaled.jpg",
   },
   {
     name: "Soccer",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185910/DSC07242-scaled.jpg",
+      "/assets/site/DSC07242-scaled.jpg",
   },
   {
     name: "Field Sports",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185911/DSC07236-scaled.jpg",
+      "/assets/site/DSC07236-scaled.jpg",
   },
   {
     name: "Archery",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185912/DSC07032-scaled.jpg",
+      "/assets/site/DSC07032-scaled.jpg",
   },
   {
     name: "Yoga",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185912/DSC07402-scaled.jpg",
+      "/assets/site/DSC07402-scaled.jpg",
     description:
       "Campers learn the ancient techniques of yoga under the watchful eyes of an experienced instructor. Yoga provides opportunities for developing fitness, coordination and strength.",
   },
   {
     name: "Volleyball",
-    image: "https://cdn.campriverbend.com/2024/04/16124150/Volleyball-Riverbend.jpg",
+    image: "/assets/site/Volleyball-Riverbend.jpg",
     description:
       "Our volleyball court is the perfect spot for a great game of volleyball or newcomb.",
   },
@@ -72,7 +72,7 @@ export default function SportsPage() {
       <PageHeader
         title="Sports at Riverbend"
         subtitle="Building skills, sportsmanship, and team cooperation"
-        bgImage="https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185923/DSC07565.jpg-marketing-scaled.jpg"
+        bgImage="/assets/site/DSC07565-marketing-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Activities", href: "/activities" },
@@ -148,19 +148,19 @@ export default function SportsPage() {
             <LinkCard
               title="Activities"
               href="/activities"
-              image="/images/ADV01169.jpg"
+              image="/assets/site/ADV01169.jpg"
               index={0}
             />
             <LinkCard
               title="Our Programs"
               href="/programs"
-              image="/images/ADV06620.jpg-marketing-scaled.jpg"
+              image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
               index={1}
             />
             <LinkCard
               title="Rates & Dates"
               href="/rates-dates-application-2026"
-              image="/images/Canoe.jpg"
+              image="/assets/site/Canoe.jpg"
               index={2}
             />
           </div>

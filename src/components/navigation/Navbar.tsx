@@ -146,7 +146,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
               className="relative z-10 flex items-center gap-2"
             >
               <Image
-                src="/images/Camp-Riverbend-Logo-white-1.png"
+                src="/assets/site/Camp-Riverbend-Logo-white-1.png"
                 alt="Camp Riverbend"
                 width={180}
                 height={48}

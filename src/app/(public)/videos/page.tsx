@@ -37,7 +37,7 @@ export default function VideosPage() {
       <PageHeader
         title="Video Library"
         subtitle="Learn more about Camp Riverbend — watch our videos!"
-        bgImage="/images/ADV07400.jpg-marketing-scaled.jpg"
+        bgImage="/assets/site/ADV07400.jpg-marketing-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Videos" },

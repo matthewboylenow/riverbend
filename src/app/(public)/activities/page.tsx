@@ -19,32 +19,32 @@ const activityCards = [
   {
     name: "Adventure Course & High Ropes",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185914/ADV02128-scaled.jpg",
+      "/assets/site/ADV02128-scaled.jpg",
   },
   {
     name: "Arts & Crafts",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185917/ADV07000-scaled.jpg",
+      "/assets/site/ADV07000-scaled.jpg",
   },
   {
     name: "Nature",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185918/DSC07172-scaled.jpg",
+      "/assets/site/DSC07172-scaled.jpg",
   },
   {
     name: "Cooking",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185919/ADV01095-scaled.jpg",
+      "/assets/site/ADV01095-scaled.jpg",
   },
   {
     name: "Pedal Karts",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185914/ADV06848-scaled.jpg",
+      "/assets/site/ADV06848-scaled.jpg",
   },
   {
     name: "Spray Park",
     image:
-      "https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185915/ADV06766-scaled.jpg",
+      "/assets/site/ADV06766-scaled.jpg",
   },
 ];
 
@@ -69,7 +69,7 @@ export default function ActivitiesPage() {
       <PageHeader
         title="Activities at Riverbend"
         subtitle="Explore everything our 30-acre campus has to offer"
-        bgImage="/images/ADV01169.jpg"
+        bgImage="/assets/site/ADV01169.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Activities" },
@@ -123,7 +123,7 @@ export default function ActivitiesPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185903/DSC_0553-scaled.jpg"
+                  src="/assets/site/DSC_0553-scaled.jpg"
                   alt="Campers swimming in one of the five heated pools at Camp Riverbend"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -150,7 +150,7 @@ export default function ActivitiesPage() {
             <AnimateIn direction="left">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="https://cdn.campriverbend.com/wp-content/uploads/2020/01/15185913/ADV06281-scaled.jpg"
+                  src="/assets/site/ADV06281-scaled.jpg"
                   alt="Campers enjoying sports activities at Camp Riverbend"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -325,19 +325,19 @@ export default function ActivitiesPage() {
             <LinkCard
               title="Our Programs"
               href="/programs"
-              image="/images/ADV06620.jpg-marketing-scaled.jpg"
+              image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
               index={0}
             />
             <LinkCard
               title="Rates & Dates"
               href="/rates-dates-application-2026"
-              image="/images/Canoe.jpg"
+              image="/assets/site/Canoe.jpg"
               index={1}
             />
             <LinkCard
               title="Sports"
               href="/sports"
-              image="/images/DSC_0553-scaled.jpg"
+              image="/assets/site/DSC_0553-scaled.jpg"
               index={2}
             />
           </div>

@@ -18,7 +18,7 @@ export default function TransportationPage() {
       <PageHeader
         title="Transportation"
         subtitle="Safe, convenient bus service to and from camp"
-        bgImage="/images/DSC06927-scaled.jpg"
+        bgImage="/assets/site/DSC06927-scaled.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Transportation" },
@@ -70,7 +70,7 @@ export default function TransportationPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/images/DSC06927-scaled.jpg"
+                  src="/assets/site/DSC06927-scaled.jpg"
                   alt="Yellow school bus for Camp Riverbend transportation"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"

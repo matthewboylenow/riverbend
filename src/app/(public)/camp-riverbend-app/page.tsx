@@ -44,7 +44,7 @@ export default function CampAppPage() {
       <PageHeader
         title="Camp Riverbend App"
         subtitle="Stay connected with your camper all summer"
-        bgImage="https://cdn.campriverbend.com/wp-content/uploads/2018/07/15190056/MEC_9306.jpg"
+        bgImage="/assets/site/MEC_9306.jpg"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Camp App" },
@@ -89,7 +89,7 @@ export default function CampAppPage() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://cdn.campriverbend.com/wp-content/uploads/2019/06/15185945/apple-storeArtboard-1.png"
+                    src="/assets/site/apple-store-badge.png"
                     alt="Download on the App Store"
                     className="max-h-12 w-auto"
                   />
@@ -101,7 +101,7 @@ export default function CampAppPage() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://cdn.campriverbend.com/wp-content/uploads/2019/06/15185945/google-play-badge.png"
+                    src="/assets/site/google-play-badge.png"
                     alt="Get it on Google Play"
                     className="max-h-12 w-auto"
                   />
