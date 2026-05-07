@@ -4,14 +4,16 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Phone, ExternalLink, ShoppingBag } from "lucide-react";
-import { NAV_GROUPS, EXTERNAL_LINKS } from "@/lib/navigation";
+import { EXTERNAL_LINKS, NAV_GROUPS as FALLBACK_NAV_GROUPS, type NavGroup } from "@/lib/navigation";
 
 interface MobileNavProps {
   open: boolean;
   onClose: () => void;
+  navGroups?: NavGroup[];
 }
 
-export function MobileNav({ open, onClose }: MobileNavProps) {
+export function MobileNav({ open, onClose, navGroups }: MobileNavProps) {
+  const groups = navGroups ?? FALLBACK_NAV_GROUPS;
   // Lock body scroll when open
   useEffect(() => {
     if (open) {
@@ -80,7 +82,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
 
             {/* Nav groups */}
             <div className="px-5 pb-8">
-              {NAV_GROUPS.map((group) => (
+              {groups.map((group) => (
                 <div key={group.label} className="border-t border-sand">
                   <h3 className="text-caption text-bark pt-5 pb-2 px-2">
                     {group.label}

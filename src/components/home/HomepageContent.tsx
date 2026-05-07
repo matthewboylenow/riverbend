@@ -10,7 +10,7 @@ import { ProgramCard } from "@/components/ui/ProgramCard";
 import { CTAStrip } from "@/components/ui/CTAStrip";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BentoGrid } from "@/components/home/BentoGrid";
-import { EXTERNAL_LINKS } from "@/lib/navigation";
+import { EXTERNAL_LINKS, type NavGroup } from "@/lib/navigation";
 import { Button } from "@/components/ui/Button";
 
 const programs = [
@@ -55,11 +55,11 @@ const programs = [
   },
 ];
 
-export function HomepageContent() {
+export function HomepageContent({ navGroups }: { navGroups?: NavGroup[] } = {}) {
   return (
     <>
       {/* Nav */}
-      <Navbar />
+      <Navbar navGroups={navGroups} />
 
       <main id="main-content" className="relative z-0">
         {/* Hero */}

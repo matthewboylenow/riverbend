@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HomepageContent } from "@/components/home/HomepageContent";
+import { getNavGroups } from "@/lib/navigation-db";
 
 export const metadata: Metadata = {
   title: "Camp Riverbend | Summer Day Camp in Warren, NJ",
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
-  return <HomepageContent />;
+export default async function HomePage() {
+  const navGroups = await getNavGroups();
+  return <HomepageContent navGroups={navGroups} />;
 }

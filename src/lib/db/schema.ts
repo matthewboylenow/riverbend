@@ -158,6 +158,52 @@ export const documents = pgTable('documents', {
   uploadedBy: uuid('uploaded_by').references(() => adminUsers.id),
 });
 
+// ─── Navigation ─────────────────────────────────────────
+// Mega-menu nav, editable from /admin/navigation. Hierarchy:
+//   nav_groups (top-level menu items: Future Families, Current Families, …)
+//     ├── nav_columns (column groups within a mega menu)
+//     │     └── nav_links (individual links inside a column)
+//     └── nav_featured_cards (red Featured cards rendered alongside columns;
+//                             up to 2 per group enforced by UI)
+//
+// Reads are cached in src/lib/navigation-db.ts; seed pulled from the
+// pre-DB hardcoded NAV_GROUPS in src/lib/navigation.ts.
+export const navGroups = pgTable('nav_groups', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  label: text('label').notNull(),
+  tagline: text('tagline'),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const navColumns = pgTable('nav_columns', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  groupId: uuid('group_id').notNull().references(() => navGroups.id, { onDelete: 'cascade' }),
+  heading: text('heading'),
+  sortOrder: integer('sort_order').default(0).notNull(),
+});
+
+export const navLinks = pgTable('nav_links', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  columnId: uuid('column_id').notNull().references(() => navColumns.id, { onDelete: 'cascade' }),
+  label: text('label').notNull(),
+  href: text('href').notNull(),
+  external: boolean('external').default(false).notNull(),
+  description: text('description'),
+  sortOrder: integer('sort_order').default(0).notNull(),
+});
+
+export const navFeaturedCards = pgTable('nav_featured_cards', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  groupId: uuid('group_id').notNull().references(() => navGroups.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  href: text('href').notNull(),
+  cta: text('cta').notNull(),
+  external: boolean('external').default(false).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+});
+
 // ─── Media Library ──────────────────────────────────────
 // WordPress-style unified library. Holds both images and documents.
 // `kind` discriminates; image-specific fields (width, height, alt) are

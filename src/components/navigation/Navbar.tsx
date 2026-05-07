@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { NAV_GROUPS, EXTERNAL_LINKS } from "@/lib/navigation";
+import { EXTERNAL_LINKS, NAV_GROUPS as FALLBACK_NAV_GROUPS, type NavGroup } from "@/lib/navigation";
 import { MobileNav } from "./MobileNav";
 import { MegaMenu } from "./MegaMenu";
 import { Menu, Phone, ShoppingBag, ExternalLink } from "lucide-react";
@@ -12,9 +12,13 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface NavbarProps {
   transparent?: boolean;
+  /** Server-loaded nav from the DB. Falls back to the hardcoded constants
+   *  if a parent doesn't pass anything (legacy callers / dev fallback). */
+  navGroups?: NavGroup[];
 }
 
-export function Navbar({ transparent = false }: NavbarProps) {
+export function Navbar({ transparent = false, navGroups }: NavbarProps) {
+  const groups = navGroups ?? FALLBACK_NAV_GROUPS;
   const [scrolled, setScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -159,7 +163,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
             <div className="flex items-center gap-3">
               {/* Desktop nav items */}
               <div className="hidden lg:flex items-center gap-1">
-                {NAV_GROUPS.map((group) => (
+                {groups.map((group) => (
                   <button
                     key={group.label}
                     onMouseEnter={() => handleMouseEnter(group.label)}
@@ -237,7 +241,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                 onMouseLeave={handleMouseLeave}
               >
                 <MegaMenu
-                  group={NAV_GROUPS.find((g) => g.label === activeMenu)!}
+                  group={groups.find((g) => g.label === activeMenu)!}
                   onClose={() => setActiveMenu(null)}
                 />
               </div>
@@ -247,7 +251,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
       </header>
 
       {/* Mobile nav */}
-      <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} navGroups={groups} />
     </>
   );
 }
