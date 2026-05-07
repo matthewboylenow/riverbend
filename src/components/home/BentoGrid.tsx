@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, Play, MapPin, Calendar, Heart, Utensils, Shield, Bus } from "lucide-react";
+import type { BentoContent } from "@/lib/home-content";
 
 interface BentoCardProps {
   title: string;
@@ -203,112 +204,115 @@ function StatCard({
   );
 }
 
-export function BentoGrid() {
+export function BentoGrid({ content }: { content: BentoContent }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[180px] sm:auto-rows-[220px] lg:auto-rows-[200px] gap-3 sm:gap-4">
       {/* Row 1: Featured large card + tall card + 2 stat cards stacked */}
       <BentoCard
-        title="Our Programs"
-        subtitle="Ages 3 to 14"
-        href="/programs"
-        image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
+        title={content.card0.title}
+        subtitle={content.card0.subtitle || undefined}
+        href={content.card0.href}
+        image={content.card0.imageUrl}
         icon={<Heart className="h-4 w-4" />}
         className="col-span-2 row-span-2"
         index={0}
-        cta="View programs"
+        cta={content.card0.cta}
       />
       <BentoCard
-        title="Activities"
-        subtitle="50+ to explore"
-        href="/activities"
-        image="/assets/site/ADV01169.jpg"
+        title={content.card1.title}
+        subtitle={content.card1.subtitle || undefined}
+        href={content.card1.href}
+        image={content.card1.imageUrl}
         className="col-span-1 row-span-2"
         index={1}
-        cta="See all activities"
+        cta={content.card1.cta}
       />
       <CountdownCard
-        targetDate={new Date("2026-06-29T09:00:00")}
-        label="First Day of Camp"
-        href="/rates-dates-application-2026"
+        targetDate={new Date(content.countdown.targetIso)}
+        label={content.countdown.label}
+        href={content.countdown.href}
         index={2}
         className="col-span-1 row-span-1"
       />
       <StatCard
-        number="64"
-        label="Years of tradition"
-        href="/about-riverbend"
+        number={content.stat.number}
+        label={content.stat.label}
+        href={content.stat.href}
         index={3}
         className="col-span-1 row-span-1"
       />
 
       {/* Row 2: 4 standard cards */}
       <BentoCard
-        title="Rates & Dates 2026"
-        subtitle="Apply now"
-        href="/rates-dates-application-2026"
-        image="/assets/site/Canoe.jpg"
+        title={content.card4.title}
+        subtitle={content.card4.subtitle || undefined}
+        href={content.card4.href}
+        image={content.card4.imageUrl}
         icon={<Calendar className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={4}
-        cta="Apply now"
+        cta={content.card4.cta}
       />
       <BentoCard
-        title="Legacy & Tradition"
-        subtitle="Since 1962"
-        href="/about-riverbend"
-        image="/assets/site/ADV07104-scaled.jpg"
+        title={content.card5.title}
+        subtitle={content.card5.subtitle || undefined}
+        href={content.card5.href}
+        image={content.card5.imageUrl}
         className="col-span-1 row-span-1"
         index={5}
-        cta="Our story"
+        cta={content.card5.cta}
       />
       <BentoCard
-        title="Video Library"
-        subtitle="See camp in action"
-        href="/videos"
-        image="/assets/site/ADV07400.jpg-marketing-scaled.jpg"
+        title={content.card6.title}
+        subtitle={content.card6.subtitle || undefined}
+        href={content.card6.href}
+        image={content.card6.imageUrl}
         icon={<Play className="h-4 w-4" />}
         className="col-span-2 row-span-1"
         index={6}
-        cta="Watch videos"
+        cta={content.card6.cta}
       />
 
       {/* Row 3: Practical links — varied sizes */}
       <BentoCard
-        title="Transportation"
-        href="/transportation"
-        image="/assets/site/DSC06927-scaled.jpg"
+        title={content.card7.title}
+        subtitle={content.card7.subtitle || undefined}
+        href={content.card7.href}
+        image={content.card7.imageUrl}
         icon={<Bus className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={7}
-        cta="Routes & info"
+        cta={content.card7.cta}
       />
       <BentoCard
-        title="Lunch & Snacks"
-        href="/lunch"
-        image="/assets/site/IMG_370.jpg"
+        title={content.card8.title}
+        subtitle={content.card8.subtitle || undefined}
+        href={content.card8.href}
+        image={content.card8.imageUrl}
         icon={<Utensils className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={8}
-        cta="See the menu"
+        cta={content.card8.cta}
       />
       <BentoCard
-        title="Health & Safety"
-        href="/health-safety"
-        image="/assets/site/ADV06446-scaled.jpg"
+        title={content.card9.title}
+        subtitle={content.card9.subtitle || undefined}
+        href={content.card9.href}
+        image={content.card9.imageUrl}
         icon={<Shield className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={9}
-        cta="Our protocols"
+        cta={content.card9.cta}
       />
       <BentoCard
-        title="Camp Map"
-        subtitle="Explore our grounds"
-        href="/camp-map"
-        image="/assets/site/2022-Camp-Map-JPG-scaled.jpg"
+        title={content.card10.title}
+        subtitle={content.card10.subtitle || undefined}
+        href={content.card10.href}
+        image={content.card10.imageUrl}
         icon={<MapPin className="h-4 w-4" />}
         className="col-span-1 row-span-1"
         index={10}
-        cta="View the map"
+        cta={content.card10.cta}
       />
     </div>
   );

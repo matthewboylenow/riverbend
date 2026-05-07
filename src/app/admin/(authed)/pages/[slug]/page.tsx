@@ -18,6 +18,7 @@ import { RIVERBEND_EXPERIENCE_SCHEMA } from "@/lib/page-schemas/riverbend-experi
 import { TESTIMONIALS_SCHEMA } from "@/lib/page-schemas/testimonials";
 import { FAQ_SCHEMA } from "@/lib/page-schemas/faq";
 import { ACTIVITIES_SCHEMA } from "@/lib/page-schemas/activities";
+import { HOME_SCHEMA } from "@/lib/page-schemas/home";
 import type { PageSchema } from "@/lib/page-schemas/types";
 
 const SCHEMAS: Record<string, PageSchema> = {
@@ -39,6 +40,7 @@ const SCHEMAS: Record<string, PageSchema> = {
   [TESTIMONIALS_SCHEMA.slug]: TESTIMONIALS_SCHEMA,
   [FAQ_SCHEMA.slug]: FAQ_SCHEMA,
   [ACTIVITIES_SCHEMA.slug]: ACTIVITIES_SCHEMA,
+  [HOME_SCHEMA.slug]: HOME_SCHEMA,
 };
 
 export default async function PageEditor({

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { HomepageContent } from "@/components/home/HomepageContent";
 import { getNavGroups } from "@/lib/navigation-db";
+import { loadHomeContent } from "@/lib/home-content";
+import { loadContentMode } from "@/lib/preview-mode";
 
 export const metadata: Metadata = {
   title: "Camp Riverbend | Summer Day Camp in Warren, NJ",
@@ -21,7 +23,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function HomePage() {
-  const navGroups = await getNavGroups();
-  return <HomepageContent navGroups={navGroups} />;
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const [navGroups, content] = await Promise.all([
+    getNavGroups(),
+    loadHomeContent(mode),
+  ]);
+  return <HomepageContent navGroups={navGroups} content={content} />;
 }

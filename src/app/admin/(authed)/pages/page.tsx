@@ -16,6 +16,12 @@ interface PageEntry {
 // Pages enabled for editing. Others come online as we wire them in Phase 2.
 const PAGES: PageEntry[] = [
   {
+    slug: "home",
+    label: "Homepage",
+    status: "ready",
+    description: "Hero, announcement, bento grid (11 cards + countdown + stat), philosophy, programs",
+  },
+  {
     slug: "rates-dates-application-2026",
     label: "Rates, Dates & Application",
     status: "ready",

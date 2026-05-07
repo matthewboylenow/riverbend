@@ -12,50 +12,16 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BentoGrid } from "@/components/home/BentoGrid";
 import { EXTERNAL_LINKS, type NavGroup } from "@/lib/navigation";
 import { Button } from "@/components/ui/Button";
+import { sanitizeHtml } from "@/lib/sanitize";
+import type { HomeContent } from "@/lib/home-content";
 
-const programs = [
-  {
-    badge: "Pre-K3 to Kindergarten",
-    title: "The Clubhouse",
-    description:
-      "The Clubhouse is a wonderful introduction to the summer camp experience for campers aged three, four and five years old. They are introduced to arts and crafts, sports, cooking, nature, swimming and other fun activities geared to their age and ability that encourage growth, confidence and learning. Clubhouse campers also have the option of coming three, four or five days a week.",
-    links: [
-      { label: "Learn About The Clubhouse", href: "/clubhouse" },
-      { label: "A Day in the Life", href: "/clubhouse#video" },
-    ],
-    image: "/assets/site/DSC_0553-scaled.jpg",
-    imageAlt: "Young campers enjoying activities at The Clubhouse",
-    reversed: false,
-  },
-  {
-    badge: "Grades 1 to 8",
-    title: "Riverbend Experience",
-    description:
-      "Campers entering 1st through 8th grades explore, grow and gain confidence! During the day, each group rotates through seven different activities and has many new experiences. There are days packed full of fabulous activities and fun for kids; this is the place to make new friends and life-long memories!",
-    links: [
-      { label: "Learn About Riverbend Experience", href: "/riverbend-experience" },
-      { label: "A Day in the Life", href: "/riverbend-experience#video" },
-    ],
-    image: "/assets/site/DSC07006-scaled.jpg",
-    imageAlt: "Kids exploring and playing at Riverbend Experience",
-    reversed: true,
-  },
-  {
-    badge: "Grades 7 to 9",
-    title: "Day Trippers",
-    description:
-      "The Day Trippers program takes young teens out of camp and on the road for day trips and short overnight trips in our region. You\u2019ll find us down at the beach and up in the mountains. We\u2019ll be boating, cooking, climbing, seeing the sights and exploring the world!",
-    links: [
-      { label: "Learn About The Day Trippers", href: "/day-trippers" },
-      { label: "A Day in the Life", href: "/day-trippers#video" },
-    ],
-    image: "/assets/site/IMG_1650-scaled.jpg",
-    imageAlt: "Day Trippers on an outdoor adventure",
-    reversed: false,
-  },
-];
-
-export function HomepageContent({ navGroups }: { navGroups?: NavGroup[] } = {}) {
+export function HomepageContent({
+  navGroups,
+  content,
+}: {
+  navGroups?: NavGroup[];
+  content: HomeContent;
+}) {
   return (
     <>
       {/* Nav */}
@@ -63,19 +29,19 @@ export function HomepageContent({ navGroups }: { navGroups?: NavGroup[] } = {}) 
 
       <main id="main-content" className="relative z-0">
         {/* Hero */}
-        <Hero />
+        <Hero content={content.hero} />
 
         {/* Announcement bar — red bar below video */}
         <AnnouncementBar
-          message="Now accepting applications for 2026 season — Limited spaces still available"
-          href="/rates-dates-application-2026"
-          linkText="Apply Now"
+          message={content.announcement.message}
+          href={content.announcement.linkHref}
+          linkText={content.announcement.linkText}
         />
 
         {/* Section 2: Bento Grid */}
         <Section bg="cream" padding="default">
           <Container size="wide">
-            <BentoGrid />
+            <BentoGrid content={content.bento} />
           </Container>
         </Section>
 
@@ -89,21 +55,20 @@ export function HomepageContent({ navGroups }: { navGroups?: NavGroup[] } = {}) 
             <AnimateIn>
               <div className="text-center space-y-8">
                 <span className="text-caption text-white/50 tracking-widest">
-                  Our Philosophy
+                  {content.philosophy.caption}
                 </span>
-                <h2 className="font-camp text-white">
-                  &ldquo;Confidence,{" "}
-                  <span className="text-white/70 italic">not</span>{" "}
-                  Competition&rdquo;
-                </h2>
+                <div
+                  className="font-camp text-white text-4xl sm:text-5xl [&_p]:m-0 [&_em]:text-white/70 [&_em]:not-italic"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(content.philosophy.headingHtml),
+                  }}
+                />
                 <p className="text-white/70 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto">
-                  We honor each camper&apos;s talents and efforts. Camp Riverbend is a
-                  place where each child can be themself, explore the world and learn new
-                  skills in a fun and supportive environment.
+                  {content.philosophy.body}
                 </p>
                 <div className="flex justify-center gap-4 pt-4">
-                  <Button variant="primary" size="lg" href="/about-riverbend">
-                    Our Story
+                  <Button variant="primary" size="lg" href={content.philosophy.storyHref}>
+                    {content.philosophy.storyLabel}
                   </Button>
                   <Button
                     variant="white"
@@ -111,7 +76,7 @@ export function HomepageContent({ navGroups }: { navGroups?: NavGroup[] } = {}) 
                     href={EXTERNAL_LINKS.inquiryForm}
                     external
                   >
-                    Book a Tour
+                    {content.philosophy.tourLabel}
                   </Button>
                 </div>
               </div>
@@ -125,15 +90,27 @@ export function HomepageContent({ navGroups }: { navGroups?: NavGroup[] } = {}) 
             <AnimateIn>
               <div className="text-center mb-16">
                 <span className="text-caption text-camp-red tracking-widest">
-                  Ages 3 to 14
+                  {content.programsCaption}
                 </span>
-                <h2 className="font-camp mt-2">Our Programs</h2>
+                <h2 className="font-camp mt-2">{content.programsHeading}</h2>
               </div>
             </AnimateIn>
 
             <div className="space-y-20 lg:space-y-28">
-              {programs.map((program) => (
-                <ProgramCard key={program.title} {...program} />
+              {content.programs.map((program) => (
+                <ProgramCard
+                  key={program.title}
+                  badge={program.badge}
+                  title={program.title}
+                  description={htmlToPlain(program.description)}
+                  links={[
+                    { label: program.link1Label, href: program.link1Href },
+                    { label: program.link2Label, href: program.link2Href },
+                  ]}
+                  image={program.imageUrl}
+                  imageAlt={program.imageAlt}
+                  reversed={program.reversed}
+                />
               ))}
             </div>
           </Container>
@@ -147,4 +124,19 @@ export function HomepageContent({ navGroups }: { navGroups?: NavGroup[] } = {}) 
       <Footer />
     </>
   );
+}
+
+// ProgramCard expects a plain string description; admins author it as
+// richtext for formatting flexibility. Strip tags + decode common entities.
+function htmlToPlain(html: string): string {
+  return html
+    .replace(/<\/p>\s*<p[^>]*>/g, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&rsquo;/g, "’")
+    .replace(/&apos;/g, "'")
+    .replace(/&ldquo;/g, "“")
+    .replace(/&rdquo;/g, "”")
+    .trim();
 }

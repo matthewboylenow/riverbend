@@ -6,10 +6,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { ChevronDown } from "lucide-react";
 import { EXTERNAL_LINKS } from "@/lib/navigation";
+import { HOME_DEFAULTS as D } from "@/lib/page-defaults/home";
+import type { HeroContent } from "@/lib/home-content";
 
-const VIDEO_SRC = "/videos/hero-riverbend.mp4";
-
-export function Hero() {
+export function Hero({ content }: { content?: HeroContent }) {
+  const c = content ?? {
+    overline: D.hero_overline,
+    headline1: D.hero_headline_1,
+    headline2: D.hero_headline_2,
+    subtitle: D.hero_subtitle,
+    primaryCtaLabel: D.hero_primary_cta_label,
+    primaryCtaHref: D.hero_primary_cta_href,
+    secondaryCtaLabel: D.hero_secondary_cta_label,
+    fallbackImageUrl: D.hero_fallback_image_url,
+    fallbackImageAlt: D.hero_fallback_image_alt,
+    videoUrl: D.hero_video_url,
+  };
+  const VIDEO_SRC = c.videoUrl;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [videoFailed, setVideoFailed] = useState(false);
@@ -54,8 +67,8 @@ export function Hero() {
           </video>
         ) : (
           <Image
-            src="/assets/site/ADV01122.jpg"
-            alt="Campers enjoying summer at Camp Riverbend"
+            src={c.fallbackImageUrl}
+            alt={c.fallbackImageAlt}
             fill
             priority
             sizes="100vw"
@@ -78,7 +91,7 @@ export function Hero() {
           >
             <div className="h-px w-10 bg-white/50" />
             <span className="text-white/70 text-xs font-semibold tracking-[0.2em] uppercase">
-              Since 1962
+              {c.overline}
             </span>
           </motion.div>
 
@@ -89,9 +102,9 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-white font-camp leading-[1.05] tracking-tight"
           >
-            Where Tradition
+            {c.headline1}
             <br />
-            <span className="text-white/90">Meets Tomorrow</span>
+            <span className="text-white/90">{c.headline2}</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -101,8 +114,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="text-white/80 text-lg sm:text-xl leading-relaxed max-w-lg"
           >
-            A summer day camp for 3-14 year olds in Warren, New Jersey.
-            Building confidence since 1962.
+            {c.subtitle}
           </motion.p>
 
           {/* CTAs */}
@@ -112,8 +124,8 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-wrap gap-4 pt-2"
           >
-            <Button variant="primary" size="lg" href="/programs">
-              Explore Programs
+            <Button variant="primary" size="lg" href={c.primaryCtaHref}>
+              {c.primaryCtaLabel}
             </Button>
             <Button
               variant="white"
@@ -121,7 +133,7 @@ export function Hero() {
               href={EXTERNAL_LINKS.inquiryForm}
               external
             >
-              Book a Tour
+              {c.secondaryCtaLabel}
             </Button>
           </motion.div>
         </div>
