@@ -5,6 +5,10 @@ import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { TRANSPORTATION_DEFAULTS as D } from "@/lib/page-defaults/transportation";
 
 export const metadata: Metadata = {
   title: "Transportation | Camp Riverbend",
@@ -12,13 +16,63 @@ export const metadata: Metadata = {
     "Camp tuition includes either bus transportation or a place in the extended day program. Campers travel in small yellow school buses with a riding counselor.",
 };
 
-export default function TransportationPage() {
+const PAGE_SLUG = "transportation";
+
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("transportation: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    overviewHtml: r("overview", D.overview_html),
+
+    busServiceHeading: t("bus_service_heading", D.bus_service_heading),
+    busServiceHtml: r("bus_service", D.bus_service_html),
+    busServiceImage: i(
+      "bus_service_image",
+      D.bus_service_image_url,
+      D.bus_service_image_alt
+    ),
+
+    threeQuarterHeading: t("three_quarter_heading", D.three_quarter_heading),
+    threeQuarterHtml: r("three_quarter", D.three_quarter_html),
+
+    extendedDayHeading: t("extended_day_heading", D.extended_day_heading),
+    extendedDayHtml: r("extended_day", D.extended_day_html),
+  };
+}
+
+export default async function TransportationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Transportation"
-        subtitle="Safe, convenient bus service to and from camp"
-        bgImage="/assets/site/DSC06927-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Transportation" },
@@ -29,24 +83,10 @@ export default function TransportationPage() {
       <Section id="overview" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
-            <div className="space-y-6 text-center">
-              <p className="text-body-lg text-bark leading-relaxed">
-                All bus service is at neighborhood or centralized bus stops,
-                with the exception of three-quarter day afternoon bus drop offs.
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Camp tuition includes either bus transportation or a place in
-                the extended day program. Campers travel in small or large
-                yellow school buses; each bus has a riding counselor to
-                supervise campers during the bus route and everyone wears a
-                seat belt.
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Bus transportation to and from Camp Riverbend is provided from
-                many communities in Essex, Hudson, Morris, Somerset and Union
-                counties. Contact us for information about specific towns.
-              </p>
-            </div>
+            <div
+              className="space-y-6 text-center prose prose-lg max-w-none mx-auto text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.overviewHtml) }}
+            />
           </AnimateIn>
         </Container>
       </Section>
@@ -58,20 +98,11 @@ export default function TransportationPage() {
             {/* Text left */}
             <AnimateIn direction="left">
               <div className="space-y-6">
-                <h2 className="font-camp">Bus Service</h2>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  Every bus driver has a Commercial Driver&apos;s License with
-                  Passenger and School Bus endorsements. To earn this license,
-                  drivers must undergo a physical exam and have significant
-                  knowledge and on-road testing for safety. Bus drivers&apos;
-                  safety records are reviewed each season.
-                </p>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  We try to arrange our bus routes so each camper&apos;s trip
-                  is as short as possible. Most bus routes begin around 8:00 am
-                  and arrive at Camp around 8:45 am. We dismiss at 4:00 pm and
-                  almost all buses have delivered their campers home by 4:45 pm.
-                </p>
+                <h2 className="font-camp">{c.busServiceHeading}</h2>
+                <div
+                  className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.busServiceHtml) }}
+                />
               </div>
             </AnimateIn>
 
@@ -79,8 +110,8 @@ export default function TransportationPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/assets/site/DSC06927-scaled.jpg"
-                  alt="Yellow school bus for Camp Riverbend transportation"
+                  src={c.busServiceImage.url || D.bus_service_image_url}
+                  alt={c.busServiceImage.alt || D.bus_service_image_alt}
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
@@ -97,16 +128,12 @@ export default function TransportationPage() {
           <AnimateIn>
             <div className="space-y-6">
               <h2 className="font-camp text-center">
-                Three-Quarter Day Transportation
+                {c.threeQuarterHeading}
               </h2>
-              <p className="text-body-lg text-bark leading-relaxed">
-                For the 3 and 4 year old three-quarter day Clubhouse program,
-                morning transportation to camp is included in tuition; Camp
-                provides bus service back to Summit, New Providence, Berkeley
-                Heights and Westfield at 2:00 pm. For campers in other towns, a
-                parent or guardian must pick up three-quarter day Clubhouse
-                campers at 2:00 pm.
-              </p>
+              <div
+                className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-0"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.threeQuarterHtml) }}
+              />
             </div>
           </AnimateIn>
         </Container>
@@ -117,20 +144,11 @@ export default function TransportationPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="space-y-6">
-              <h2 className="font-camp text-center">Extended Day Program</h2>
-              <p className="text-body-lg text-bark leading-relaxed">
-                If the timing of the bus does not work for your schedule, we
-                also offer an extended day option. You can bring your camper
-                here as early as 8:00 am and pick up as late as 6:00 pm.
-                Counselors supervise extended day campers in games, swimming,
-                crafts, sports and quiet activities.
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                There is no extra fee for the extended day program if you use it
-                instead of bus transportation. There is a small extra charge to
-                use both extended day and bus service, or bus service to two
-                different addresses.
-              </p>
+              <h2 className="font-camp text-center">{c.extendedDayHeading}</h2>
+              <div
+                className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.extendedDayHtml) }}
+              />
             </div>
           </AnimateIn>
         </Container>

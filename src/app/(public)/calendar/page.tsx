@@ -6,6 +6,12 @@ import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { VideoEmbed } from "@/components/ui/VideoEmbed";
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import {
+  CALENDAR_DEFAULTS as D,
+  type KeyDateRow,
+} from "@/lib/page-defaults/calendar";
 
 export const metadata: Metadata = {
   title: "2026 Summer Calendar | Camp Riverbend",
@@ -13,41 +19,64 @@ export const metadata: Metadata = {
     "View the summer calendar of events and important dates for Camp Riverbend's 2026 season.",
 };
 
-const keyDates = [
-  { date: "January 6", event: "$2,000 per camper tuition payment charged" },
-  { date: "April 1", event: "Final tuition payment charged" },
-  { date: "Mid-April", event: "Bus assignments distributed" },
-  { date: "May 15", event: "Camper medical forms and authorization documents due" },
-  {
-    date: "Mid-May",
-    event: "Parent Handbook distribution and Riverbend App setup",
-  },
-  {
-    date: "Early June",
-    event: "Division head orientation sessions; Lunch orders open",
-  },
-  { date: "June 18", event: "Week 1 lunch orders close" },
-  { date: "June 19", event: "Bus rider introductions sent" },
-  { date: "June 20–21", event: "Welcome Weekend at Camp" },
-  { date: "June 29", event: "Opening day of the 2026 season" },
-  { date: "July 3", event: "Camp is closed" },
-  { date: "July 4", event: "Group lists and counselor introductions go out" },
-  { date: "Mid-July", event: "Tour weekend for prospective families" },
-  {
-    date: "Early August",
-    event: "2027 applications open for enrolled families",
-  },
-  { date: "Mid-August", event: "2027 applications open for all" },
-  { date: "August 14", event: "Last day of the 2026 season" },
-];
+const PAGE_SLUG = "calendar";
 
-export default function CalendarPage() {
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("calendar: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    calendarImage: i(
+      "calendar_image",
+      D.calendar_image_url,
+      D.calendar_image_alt
+    ),
+
+    keyDatesHeading: t("key_dates_heading", D.key_dates_heading),
+    keyDates: readBlock<{ rows: KeyDateRow[] }>(blocks, "key_dates", {
+      rows: D.key_dates,
+    }).rows,
+
+    carnivalHeading: t("carnival_heading", D.carnival_heading),
+    carnivalVideoId: t("carnival_video_id", D.carnival_video_id),
+  };
+}
+
+export default async function CalendarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
+  const calendarImageUrl = c.calendarImage.url || D.calendar_image_url;
+  const calendarImageAlt = c.calendarImage.alt || D.calendar_image_alt;
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="2026 Calendar"
-        subtitle="Important dates for the upcoming season"
-        bgImage="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Calendar" },
@@ -60,8 +89,8 @@ export default function CalendarPage() {
           <AnimateIn>
             <div className="relative aspect-[3/4] max-w-2xl mx-auto overflow-hidden rounded-2xl shadow-lg">
               <Image
-                src="/assets/site/2026-program-calendar.png"
-                alt="2026 Camp Riverbend Program Calendar"
+                src={calendarImageUrl}
+                alt={calendarImageAlt}
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 672px"
@@ -69,7 +98,7 @@ export default function CalendarPage() {
             </div>
             <div className="mt-4 text-center">
               <a
-                href="/assets/site/2026-program-calendar.png"
+                href={calendarImageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-semibold text-camp-red hover:underline"
@@ -86,13 +115,13 @@ export default function CalendarPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="text-center mb-10">
-              <h2 className="font-camp">Key Dates</h2>
+              <h2 className="font-camp">{c.keyDatesHeading}</h2>
             </div>
           </AnimateIn>
           <AnimateIn delay={0.1}>
             <div className="space-y-6">
-              {keyDates.map((d) => (
-                <div key={d.date} className="flex gap-6 items-start">
+              {c.keyDates.map((d, idx) => (
+                <div key={`${d.date}-${idx}`} className="flex gap-6 items-start">
                   <div className="font-camp text-camp-red whitespace-nowrap min-w-[140px] text-right">
                     {d.date}
                   </div>
@@ -109,14 +138,19 @@ export default function CalendarPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="space-y-6 text-center">
-              <h2 className="font-camp">Carnival &amp; Special Days</h2>
+              <h2 className="font-camp">{c.carnivalHeading}</h2>
             </div>
           </AnimateIn>
-          <AnimateIn delay={0.2}>
-            <div className="mt-8">
-              <VideoEmbed vimeoId="382946042" title="Carnival & Special Days" />
-            </div>
-          </AnimateIn>
+          {c.carnivalVideoId && (
+            <AnimateIn delay={0.2}>
+              <div className="mt-8">
+                <VideoEmbed
+                  vimeoId={c.carnivalVideoId}
+                  title="Carnival & Special Days"
+                />
+              </div>
+            </AnimateIn>
+          )}
         </Container>
       </Section>
     </InnerPageLayout>

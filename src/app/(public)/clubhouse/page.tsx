@@ -7,6 +7,10 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { VideoEmbed } from "@/components/ui/VideoEmbed";
 import { LinkCard } from "@/components/ui/LinkCard";
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { CLUBHOUSE_DEFAULTS as D } from "@/lib/page-defaults/clubhouse";
 
 export const metadata: Metadata = {
   title: "The Clubhouse | Ages 3-5 | Camp Riverbend",
@@ -14,13 +18,102 @@ export const metadata: Metadata = {
     "The Clubhouse is a wonderful introduction to the classic Camp Riverbend summer camp experience for campers aged 3-5 years old.",
 };
 
-export default function ClubhousePage() {
+const PAGE_SLUG = "clubhouse";
+
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("clubhouse: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    overviewAgeLabel: t("overview_age_label", D.overview_age_label),
+    overviewHtml: r("overview", D.overview_html),
+
+    videoCaption: t("video_caption", D.video_caption),
+    videoId: t("video_id", D.video_id),
+    videoTitle: t("video_title", D.video_title),
+
+    programsThreeQuarterHeading: t(
+      "programs_three_quarter_heading",
+      D.programs_three_quarter_heading
+    ),
+    programsThreeQuarterHtml: r(
+      "programs_three_quarter",
+      D.programs_three_quarter_html
+    ),
+    programsFullDayHeading: t(
+      "programs_full_day_heading",
+      D.programs_full_day_heading
+    ),
+    programsFullDayHtml: r("programs_full_day", D.programs_full_day_html),
+
+    supervisionHeading: t("supervision_heading", D.supervision_heading),
+    supervisionHtml: r("supervision", D.supervision_html),
+    supervisionImage: i(
+      "supervision_image",
+      D.supervision_image_url,
+      D.supervision_image_alt
+    ),
+
+    schedulesHeading: t("schedules_heading", D.schedules_heading),
+    schedulesIntro: t("schedules_intro", D.schedules_intro),
+    schedulesCard1Title: t(
+      "schedules_card_1_title",
+      D.schedules_card_1_title
+    ),
+    schedulesCard1Subtitle: t(
+      "schedules_card_1_subtitle",
+      D.schedules_card_1_subtitle
+    ),
+    schedulesCard2Title: t(
+      "schedules_card_2_title",
+      D.schedules_card_2_title
+    ),
+    schedulesCard2Subtitle: t(
+      "schedules_card_2_subtitle",
+      D.schedules_card_2_subtitle
+    ),
+
+    learnMore1Title: t("learn_more_1_title", D.learn_more_card_1_title),
+    learnMore1Image: i("learn_more_1_image", D.learn_more_card_1_image),
+    learnMore2Title: t("learn_more_2_title", D.learn_more_card_2_title),
+    learnMore2Image: i("learn_more_2_image", D.learn_more_card_2_image),
+    learnMore3Title: t("learn_more_3_title", D.learn_more_card_3_title),
+    learnMore3Image: i("learn_more_3_image", D.learn_more_card_3_image),
+  };
+}
+
+export default async function ClubhousePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="The Clubhouse"
-        subtitle="A wonderful introduction to camp for ages 3-5"
-        bgImage="/assets/site/DSC_0553-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Programs", href: "/programs" },
@@ -34,30 +127,30 @@ export default function ClubhousePage() {
           <AnimateIn direction="up">
             <div className="text-center mb-4">
               <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full mb-4">
-                Ages 3-5
+                {c.overviewAgeLabel}
               </span>
             </div>
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              The Clubhouse is a wonderful introduction to the classic summer camp experience for campers ages 3-5 years old (rising pre-K and kindergarteners). All our Clubhouse campers are in co-ed groups in a designated area of the camp built just for them. Everything is kid-sized, right down to the chairs and the athletic field, so they are right at home and comfortable!
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              The Clubhouse daily schedule alternates between quiet and dynamic activities and includes a rest time after lunch. Swimming is an important part of each day, with group instruction each morning and a &ldquo;free&rdquo; swim in the afternoon for splashing around and having fun (three-quarter day campers have a &ldquo;free&rdquo; swim immediately after their morning lesson). Other fun activities for our Clubhouse Campers include: sports, crafts, cooking, canoeing and nature.
-            </p>
+            <div
+              className="prose prose-lg max-w-none text-gray-700 [&_p]:text-lg [&_p]:leading-relaxed [&_p]:mb-6 [&_p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.overviewHtml) }}
+            />
           </AnimateIn>
         </Container>
       </Section>
 
       {/* Video */}
-      <Section id="video" bg="cream" padding="sm">
-        <Container size="narrow">
-          <AnimateIn direction="up">
-            <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-500 mb-4">
-              See our swim program in action!
-            </p>
-            <VideoEmbed vimeoId="361307397" title="Clubhouse Swim Program" />
-          </AnimateIn>
-        </Container>
-      </Section>
+      {c.videoId && (
+        <Section id="video" bg="cream" padding="sm">
+          <Container size="narrow">
+            <AnimateIn direction="up">
+              <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-500 mb-4">
+                {c.videoCaption}
+              </p>
+              <VideoEmbed vimeoId={c.videoId} title={c.videoTitle} />
+            </AnimateIn>
+          </Container>
+        </Section>
+      )}
 
       {/* Programs Grid */}
       <Section id="programs" bg="white">
@@ -66,19 +159,25 @@ export default function ClubhousePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Three-Quarter Day Programs
+                  {c.programsThreeQuarterHeading}
                 </h3>
-                <p className="text-gray-700 leading-relaxed">
-                  Our youngest campers attend camp 9:00 am &ndash; 2:00 pm and experience all the fun of Camp Riverbend! Campers must be toilet trained.
-                </p>
+                <div
+                  className="prose max-w-none text-gray-700 [&_p]:leading-relaxed [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(c.programsThreeQuarterHtml),
+                  }}
+                />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Full-Day Program
+                  {c.programsFullDayHeading}
                 </h3>
-                <p className="text-gray-700 leading-relaxed">
-                  Children entering their last year of preschool or Kindergarten and ready for a full day at camp attend our regular full-day program.
-                </p>
+                <div
+                  className="prose max-w-none text-gray-700 [&_p]:leading-relaxed [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(c.programsFullDayHtml),
+                  }}
+                />
               </div>
             </div>
           </AnimateIn>
@@ -92,19 +191,19 @@ export default function ClubhousePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Supervision
+                  {c.supervisionHeading}
                 </h2>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  Three counselors supervise about 16 boys and girls in each Clubhouse group. Smaller groups have two counselors.
-                </p>
-                <p className="text-gray-700 leading-relaxed">
-                  The head group counselors are educators with experience in early childhood education. The assistant group counselors are college and older high school students who really enjoy being with young children. We nurture our Clubhouse campers with lots of individual attention and age-appropriate fun and exploration.
-                </p>
+                <div
+                  className="prose max-w-none text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(c.supervisionHtml),
+                  }}
+                />
               </div>
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                 <Image
-                  src="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
-                  alt="Clubhouse counselors with young campers"
+                  src={c.supervisionImage.url || D.supervision_image_url}
+                  alt={c.supervisionImage.alt || D.supervision_image_alt}
                   fill
                   className="object-cover"
                 />
@@ -119,10 +218,10 @@ export default function ClubhousePage() {
         <Container size="narrow">
           <AnimateIn direction="up">
             <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
-              Sample Schedules
+              {c.schedulesHeading}
             </h2>
             <p className="text-center text-gray-700 mb-8">
-              See how a typical day is structured for our youngest campers.
+              {c.schedulesIntro}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
               <a
@@ -132,8 +231,12 @@ export default function ClubhousePage() {
                 className="flex items-center justify-between gap-3 px-5 py-4 bg-white border border-stone/30 rounded-xl hover:border-camp-red hover:shadow-sm transition-all"
               >
                 <div>
-                  <div className="font-semibold text-charcoal">Three-Quarter Day</div>
-                  <div className="text-sm text-bark">3-year-olds · 9:00 am – 2:00 pm</div>
+                  <div className="font-semibold text-charcoal">
+                    {c.schedulesCard1Title}
+                  </div>
+                  <div className="text-sm text-bark">
+                    {c.schedulesCard1Subtitle}
+                  </div>
                 </div>
                 <span className="text-camp-red font-semibold text-sm">PDF →</span>
               </a>
@@ -144,8 +247,12 @@ export default function ClubhousePage() {
                 className="flex items-center justify-between gap-3 px-5 py-4 bg-white border border-stone/30 rounded-xl hover:border-camp-red hover:shadow-sm transition-all"
               >
                 <div>
-                  <div className="font-semibold text-charcoal">Full Day</div>
-                  <div className="text-sm text-bark">4–5 year-olds · Pre-K and K</div>
+                  <div className="font-semibold text-charcoal">
+                    {c.schedulesCard2Title}
+                  </div>
+                  <div className="text-sm text-bark">
+                    {c.schedulesCard2Subtitle}
+                  </div>
                 </div>
                 <span className="text-camp-red font-semibold text-sm">PDF →</span>
               </a>
@@ -163,21 +270,21 @@ export default function ClubhousePage() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <LinkCard
-                title="All Programs"
+                title={c.learnMore1Title}
                 href="/programs"
-                image="/assets/site/ADV07104-scaled.jpg"
+                image={c.learnMore1Image.url || D.learn_more_card_1_image}
                 index={0}
               />
               <LinkCard
-                title="Activities"
+                title={c.learnMore2Title}
                 href="/activities"
-                image="/assets/site/ADV01169.jpg"
+                image={c.learnMore2Image.url || D.learn_more_card_2_image}
                 index={1}
               />
               <LinkCard
-                title="Rates & Dates"
+                title={c.learnMore3Title}
                 href="/rates-dates-application-2026"
-                image="/assets/site/Canoe.jpg"
+                image={c.learnMore3Image.url || D.learn_more_card_3_image}
                 index={2}
               />
             </div>

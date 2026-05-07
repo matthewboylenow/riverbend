@@ -1,0 +1,116 @@
+import type { PageSchema } from "./types";
+import { LUNCH_DEFAULTS } from "@/lib/page-defaults/lunch";
+
+export const LUNCH_SCHEMA: PageSchema = {
+  slug: "lunch",
+  label: "Lunch & Snacks",
+  publicHref: "/lunch",
+  sections: [
+    {
+      label: "Page Header",
+      blocks: [
+        {
+          key: "hero_title",
+          type: "text",
+          label: "Title",
+          defaultContent: { value: LUNCH_DEFAULTS.hero_title },
+        },
+        {
+          key: "hero_subtitle",
+          type: "text",
+          label: "Subtitle",
+          defaultContent: { value: LUNCH_DEFAULTS.hero_subtitle },
+        },
+        {
+          key: "hero_bg",
+          type: "image",
+          label: "Background image",
+          aspectClass: "aspect-[16/6]",
+          defaultContent: {
+            url: LUNCH_DEFAULTS.hero_bg_url,
+            alt: LUNCH_DEFAULTS.hero_bg_alt,
+          },
+        },
+      ],
+    },
+    {
+      label: "Daily Lunch section",
+      blocks: [
+        {
+          key: "overview_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: LUNCH_DEFAULTS.overview_heading },
+        },
+        {
+          key: "overview",
+          type: "richtext",
+          label: "Body",
+          defaultContent: { html: LUNCH_DEFAULTS.overview_html },
+        },
+        {
+          key: "overview_image",
+          type: "image",
+          label: "Photo",
+          aspectClass: "aspect-[4/3]",
+          defaultContent: {
+            url: LUNCH_DEFAULTS.overview_image_url,
+            alt: LUNCH_DEFAULTS.overview_image_alt,
+          },
+        },
+      ],
+    },
+    {
+      label: "Snack Shack section",
+      blocks: [
+        {
+          key: "snack_shack_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: LUNCH_DEFAULTS.snack_shack_heading },
+        },
+        {
+          key: "snack_shack",
+          type: "richtext",
+          label: "Body",
+          defaultContent: { html: LUNCH_DEFAULTS.snack_shack_html },
+        },
+      ],
+    },
+    {
+      label: "Allergy Aware Kitchen callout",
+      blocks: [
+        {
+          key: "allergy_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: LUNCH_DEFAULTS.allergy_heading },
+        },
+        {
+          key: "allergy",
+          type: "richtext",
+          label: "Body",
+          defaultContent: { html: LUNCH_DEFAULTS.allergy_html },
+        },
+      ],
+    },
+    {
+      label: "Video section",
+      blocks: [
+        {
+          key: "video_id",
+          type: "text",
+          label: "Vimeo ID",
+          help: "The number from the Vimeo URL (e.g. 382946475). Leave empty to hide the video.",
+          defaultContent: { value: LUNCH_DEFAULTS.video_id },
+        },
+        {
+          key: "video_title",
+          type: "text",
+          label: "Video title (for accessibility)",
+          defaultContent: { value: LUNCH_DEFAULTS.video_title },
+        },
+      ],
+    },
+  ],
+};

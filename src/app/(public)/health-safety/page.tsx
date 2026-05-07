@@ -7,6 +7,13 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { VideoEmbed } from "@/components/ui/VideoEmbed";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  HEALTH_SAFETY_DEFAULTS as D,
+  type SafetyPoint,
+} from "@/lib/page-defaults/health-safety";
 
 export const metadata: Metadata = {
   title: "Health & Safety | Camp Riverbend",
@@ -14,32 +21,62 @@ export const metadata: Metadata = {
     "Camper safety is our number one priority. Camp Riverbend exceeds all standards of the New Jersey Youth Camp Safety Act.",
 };
 
-const safetyPoints = [
-  {
-    heading: "ACA Accredited",
-    body: "Accredited by the American Camp Association since our very first season.",
-  },
-  {
-    heading: "Annual Inspections",
-    body: "Rigorous annual inspections by local and state officials covering every aspect of camp operations.",
-  },
-  {
-    heading: "1:5 Ratio",
-    body: "One dedicated counselor for every five campers, ensuring personal attention and supervision.",
-  },
-  {
-    heading: "Secret Password",
-    body: "No camper is ever released without the family's confidential password for added security.",
-  },
-];
+const PAGE_SLUG = "health-safety";
 
-export default function HealthSafetyPage() {
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("health-safety: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    overviewHtml: r("overview", D.overview_html),
+    safetyVideoId: t("safety_video_id", D.safety_video_id),
+
+    nurseHeading: t("nurse_heading", D.nurse_heading),
+    nurseHtml: r("nurse", D.nurse_html),
+    nurseImage: i("nurse_image", D.nurse_image_url, D.nurse_image_alt),
+
+    safetyPointsHeading: t("safety_points_heading", D.safety_points_heading),
+    safetyPoints: readBlock<{ rows: SafetyPoint[] }>(blocks, "safety_points", {
+      rows: D.safety_points,
+    }).rows,
+
+    ctaText: t("cta_text", D.cta_text),
+    ctaButtonLabel: t("cta_button_label", D.cta_button_label),
+  };
+}
+
+export default async function HealthSafetyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Safety & Security"
-        subtitle="Your child's safety is our number one priority"
-        bgImage="/assets/site/ADV06446-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Health & Safety" },
@@ -50,71 +87,47 @@ export default function HealthSafetyPage() {
       <Section id="overview" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
-            <div className="space-y-6 text-center">
-              <p className="text-body-lg text-bark leading-relaxed">
-                Camper safety is our number one priority, and we are committed
-                to keeping Camp Riverbend as safe and secure as possible!
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                We exceed all standards of the New Jersey Youth Camp Safety Act,
-                and through the American Camp Association we keep current with
-                the newest developments in camp safety and operations. We
-                undergo rigorous annual inspections by local and state officials
-                who evaluate every aspect of Camp Riverbend including
-                sanitation, transportation, food safety, staff qualifications,
-                fire prevention and medical record keeping.
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Parent visits are not allowed during the camp season. Security
-                staff at the entrance check all arriving adults.
-              </p>
-            </div>
-          </AnimateIn>
-        </Container>
-      </Section>
-
-      {/* Section 2: Video */}
-      <Section id="safety-video" bg="cream" padding="default">
-        <Container>
-          <AnimateIn>
-            <VideoEmbed
-              vimeoId="380563616"
-              title="Safety & Health at Camp Riverbend"
+            <div
+              className="prose prose-lg max-w-none mx-auto text-center text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.overviewHtml) }}
             />
           </AnimateIn>
         </Container>
       </Section>
 
+      {/* Section 2: Video */}
+      {c.safetyVideoId && (
+        <Section id="safety-video" bg="cream" padding="default">
+          <Container>
+            <AnimateIn>
+              <VideoEmbed
+                vimeoId={c.safetyVideoId}
+                title={D.safety_video_title}
+              />
+            </AnimateIn>
+          </Container>
+        </Section>
+      )}
+
       {/* Section 3: Our Camp Nurse */}
       <Section id="camp-nurse" bg="white" padding="default">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Text left */}
             <AnimateIn direction="left">
               <div className="space-y-6">
-                <h2 className="font-camp">Our Camp Nurse</h2>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  Our on-site camp nurse treats minor injuries that occur during
-                  the day, such as bug bites and scrapes.
-                </p>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  A camper who feels sick or is injured will first go to the
-                  Nurse&rsquo;s office to be evaluated. In case of serious
-                  illness or injury, the nurse will contact the child&rsquo;s
-                  parents to pick the child up. Otherwise, the nurse will treat
-                  the child with over-the-counter, or prescription medications
-                  that have been authorized by the parents. Our camp doctor is
-                  on call.
-                </p>
+                <h2 className="font-camp">{c.nurseHeading}</h2>
+                <div
+                  className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.nurseHtml) }}
+                />
               </div>
             </AnimateIn>
 
-            {/* Image right */}
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/assets/site/ADV06446-scaled.jpg"
-                  alt="Camp Riverbend health and safety"
+                  src={c.nurseImage.url || D.nurse_image_url}
+                  alt={c.nurseImage.alt || D.nurse_image_alt}
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
@@ -130,12 +143,12 @@ export default function HealthSafetyPage() {
         <Container>
           <AnimateIn>
             <div className="text-center mb-10">
-              <h2 className="font-camp">Our Safety Commitments</h2>
+              <h2 className="font-camp">{c.safetyPointsHeading}</h2>
             </div>
           </AnimateIn>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {safetyPoints.map((point, i) => (
-              <AnimateIn key={point.heading} delay={i * 0.1}>
+            {c.safetyPoints.map((point, i) => (
+              <AnimateIn key={`${point.heading}-${i}`} delay={i * 0.1}>
                 <div className="bg-white rounded-2xl p-6 shadow-sm h-full">
                   <h3 className="font-camp text-lg mb-3">{point.heading}</h3>
                   <p className="text-bark leading-relaxed">{point.body}</p>
@@ -151,11 +164,9 @@ export default function HealthSafetyPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="text-center space-y-6">
-              <p className="text-body-lg text-bark leading-relaxed">
-                Have questions about our safety policies?
-              </p>
+              <p className="text-body-lg text-bark leading-relaxed">{c.ctaText}</p>
               <Button variant="primary" href="/faq">
-                Visit Our FAQ
+                {c.ctaButtonLabel}
               </Button>
             </div>
           </AnimateIn>

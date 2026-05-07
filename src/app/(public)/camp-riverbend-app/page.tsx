@@ -4,6 +4,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  CAMP_RIVERBEND_APP_DEFAULTS as D,
+  type FeatureRow,
+} from "@/lib/page-defaults/camp-riverbend-app";
 
 export const metadata: Metadata = {
   title: "Camp Riverbend App | Camp Riverbend",
@@ -11,40 +18,61 @@ export const metadata: Metadata = {
     "Stay connected with Camp Riverbend via our mobile app. See photos, get notifications, and connect to your parent portal.",
 };
 
-const features = [
-  {
-    title: "Photo & Video Access",
-    description:
-      "See and download photos and videos from camp for FREE throughout the summer.",
-  },
-  {
-    title: "Push Notifications",
-    description:
-      "Get important notifications and texts directly from camp staff.",
-  },
-  {
-    title: "Parent Portal",
-    description:
-      "Connect directly to your CampMinder Parent Portal from the app.",
-  },
-  {
-    title: "Camp Calendar",
-    description:
-      "View important dates on the camp calendar and link directly to your own.",
-  },
-  {
-    title: "Contact Staff",
-    description: "Easily reach camp staff with questions at any time.",
-  },
-];
+const PAGE_SLUG = "camp-riverbend-app";
 
-export default function CampAppPage() {
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("camp-riverbend-app: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    overviewHtml: r("overview", D.overview_html),
+
+    downloadHeading: t("download_heading", D.download_heading),
+    downloadHtml: r("download", D.download_html),
+    appStoreUrl: t("app_store_url", D.app_store_url),
+    appStoreBadge: i("app_store_badge", D.app_store_badge_url, "Download on the App Store"),
+    googlePlayUrl: t("google_play_url", D.google_play_url),
+    googlePlayBadge: i("google_play_badge", D.google_play_badge_url, "Get it on Google Play"),
+
+    featuresHeading: t("features_heading", D.features_heading),
+    features: readBlock<{ rows: FeatureRow[] }>(blocks, "features", {
+      rows: D.features,
+    }).rows,
+  };
+}
+
+export default async function CampAppPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Camp Riverbend App"
-        subtitle="Stay connected with your camper all summer"
-        bgImage="/assets/site/MEC_9306.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Camp App" },
@@ -55,16 +83,10 @@ export default function CampAppPage() {
       <Section id="overview" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
-            <div className="space-y-6 text-center">
-              <p className="text-body-lg text-bark leading-relaxed">
-                Enrolled families can now stay connected with Camp Riverbend via
-                our app! See and download photos and videos from camp for FREE,
-                get important notifications and texts from camp, connect to your
-                CampMinder Parent Portal, view important dates on the camp
-                calendar &amp; link directly to yours, and easily contact camp
-                staff.
-              </p>
-            </div>
+            <div
+              className="prose prose-lg max-w-none mx-auto text-center text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.overviewHtml) }}
+            />
           </AnimateIn>
         </Container>
       </Section>
@@ -74,51 +96,32 @@ export default function CampAppPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="space-y-6 text-center">
-              <h2 className="font-camp">How to Get It</h2>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Search on the App Store or Google Play for{" "}
-                <strong>&ldquo;Camp Riverbend NJ&rdquo;</strong> to download.
-                You will need an access code to install the app; this code is
-                listed in our Parent Handbook.
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Prefer your computer? A desktop version of the photo viewer is
-                available at{" "}
-                <a
-                  href="https://photoviewer.my1218app.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-camp-red font-semibold hover:underline"
-                >
-                  photoviewer.my1218app.com
-                </a>
-                .
-              </p>
+              <h2 className="font-camp">{c.downloadHeading}</h2>
+              <div
+                className="prose prose-lg max-w-none mx-auto text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0 [&_a]:text-camp-red [&_a]:font-semibold [&_a:hover]:underline"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.downloadHtml) }}
+              />
               <div className="flex flex-wrap gap-4 justify-center items-center pt-4">
-                <a
-                  href="https://apps.apple.com/app/camp-riverbend-nj"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/assets/site/apple-store-badge.png"
-                    alt="Download on the App Store"
-                    className="max-h-12 w-auto"
-                  />
-                </a>
-                <a
-                  href="https://play.google.com/store/search?q=camp+riverbend+nj"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/assets/site/google-play-badge.png"
-                    alt="Get it on Google Play"
-                    className="max-h-12 w-auto"
-                  />
-                </a>
+                {c.appStoreUrl && (
+                  <a href={c.appStoreUrl} target="_blank" rel="noopener noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={c.appStoreBadge.url || D.app_store_badge_url}
+                      alt={c.appStoreBadge.alt || "Download on the App Store"}
+                      className="max-h-12 w-auto"
+                    />
+                  </a>
+                )}
+                {c.googlePlayUrl && (
+                  <a href={c.googlePlayUrl} target="_blank" rel="noopener noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={c.googlePlayBadge.url || D.google_play_badge_url}
+                      alt={c.googlePlayBadge.alt || "Get it on Google Play"}
+                      className="max-h-12 w-auto"
+                    />
+                  </a>
+                )}
               </div>
             </div>
           </AnimateIn>
@@ -130,17 +133,15 @@ export default function CampAppPage() {
         <Container>
           <AnimateIn>
             <div className="text-center mb-10">
-              <h2 className="font-camp">App Features</h2>
+              <h2 className="font-camp">{c.featuresHeading}</h2>
             </div>
           </AnimateIn>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <AnimateIn key={feature.title} delay={index * 0.1}>
+            {c.features.map((feature, index) => (
+              <AnimateIn key={`${feature.title}-${index}`} delay={index * 0.1}>
                 <div className="bg-white rounded-2xl p-6 shadow-sm">
                   <h3 className="font-camp text-lg mb-3">{feature.title}</h3>
-                  <p className="text-bark leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <p className="text-bark leading-relaxed">{feature.description}</p>
                 </div>
               </AnimateIn>
             ))}

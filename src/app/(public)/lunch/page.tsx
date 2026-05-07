@@ -6,6 +6,10 @@ import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { VideoEmbed } from "@/components/ui/VideoEmbed";
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { LUNCH_DEFAULTS as D } from "@/lib/page-defaults/lunch";
 
 export const metadata: Metadata = {
   title: "Lunch & Snacks | Camp Riverbend",
@@ -13,13 +17,64 @@ export const metadata: Metadata = {
     "Camp Riverbend's allergy-aware kitchen provides lunch daily with the perfect combination of kid favorites and healthy choices.",
 };
 
-export default function LunchPage() {
+const PAGE_SLUG = "lunch";
+
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("lunch: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    overviewHeading: t("overview_heading", D.overview_heading),
+    overviewHtml: r("overview", D.overview_html),
+    overviewImage: i(
+      "overview_image",
+      D.overview_image_url,
+      D.overview_image_alt
+    ),
+
+    snackShackHeading: t("snack_shack_heading", D.snack_shack_heading),
+    snackShackHtml: r("snack_shack", D.snack_shack_html),
+
+    allergyHeading: t("allergy_heading", D.allergy_heading),
+    allergyHtml: r("allergy", D.allergy_html),
+
+    videoId: t("video_id", D.video_id),
+    videoTitle: t("video_title", D.video_title),
+  };
+}
+
+export default async function LunchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Lunch & Snacks"
-        subtitle="Kid favorites and healthy choices, every day"
-        bgImage="/assets/site/IMG_370.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Lunch" },
@@ -33,12 +88,11 @@ export default function LunchPage() {
             {/* Text left */}
             <AnimateIn direction="left">
               <div className="space-y-6">
-                <h2 className="font-camp">Daily Lunch</h2>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  Lunch is provided daily and is the perfect combination of kid
-                  favorites and healthy choices, created by our very own Camp
-                  Riverbend Dietician.
-                </p>
+                <h2 className="font-camp">{c.overviewHeading}</h2>
+                <div
+                  className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.overviewHtml) }}
+                />
               </div>
             </AnimateIn>
 
@@ -46,8 +100,8 @@ export default function LunchPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/assets/site/IMG_370.jpg"
-                  alt="Lunch at Camp Riverbend"
+                  src={c.overviewImage.url || D.overview_image_url}
+                  alt={c.overviewImage.alt || D.overview_image_alt}
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
@@ -63,21 +117,11 @@ export default function LunchPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="space-y-6">
-              <h2 className="font-camp">The Snack Shack</h2>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Our Snack Shack provides campers with mid-morning or
-                mid-afternoon snacks, such as goldfish crackers, pretzels,
-                popcorn, fresh fruit and fresh veggies!
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                All campers have an ice cream or ice pop treat as they wrap up
-                their day.
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                As always at Riverbend, all snack items offered are tree nut
-                and peanut free. Gluten-free items are also available. Snacks
-                are included in camp tuition.
-              </p>
+              <h2 className="font-camp">{c.snackShackHeading}</h2>
+              <div
+                className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.snackShackHtml) }}
+              />
             </div>
           </AnimateIn>
         </Container>
@@ -88,26 +132,26 @@ export default function LunchPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="bg-white border-l-4 border-camp-red p-6 rounded-xl shadow-sm">
-              <h2 className="font-camp text-2xl mb-4">Allergy Aware Kitchen</h2>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Our kitchen is &ldquo;allergy aware.&rdquo; We do not serve any
-                tree nut or peanut products and can accommodate a variety of
-                food allergies, such as: gluten, dairy, sesame and egg
-                allergies.
-              </p>
+              <h2 className="font-camp text-2xl mb-4">{c.allergyHeading}</h2>
+              <div
+                className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.allergyHtml) }}
+              />
             </div>
           </AnimateIn>
         </Container>
       </Section>
 
       {/* Section 4: Video */}
-      <Section id="lunch-video" bg="white" padding="default">
-        <Container>
-          <AnimateIn>
-            <VideoEmbed vimeoId="382946475" title="Lunch & Snacks" />
-          </AnimateIn>
-        </Container>
-      </Section>
+      {c.videoId && (
+        <Section id="lunch-video" bg="white" padding="default">
+          <Container>
+            <AnimateIn>
+              <VideoEmbed vimeoId={c.videoId} title={c.videoTitle} />
+            </AnimateIn>
+          </Container>
+        </Section>
+      )}
     </InnerPageLayout>
   );
 }
