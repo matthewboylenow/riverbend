@@ -69,4 +69,5 @@ export const RATES_DEFAULTS = {
     { label: "January 6", detail: "$1,500 per camper payment" },
     { label: "April 1", detail: "Final tuition payment due" },
   ] as PaymentRow[],
+  payment_extras_html: "",
 };

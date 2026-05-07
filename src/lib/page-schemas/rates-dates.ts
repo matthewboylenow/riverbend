@@ -106,5 +106,16 @@ export const RATES_DATES_SCHEMA: PageSchema = {
         },
       ],
     },
+    {
+      label: "Bottom of page",
+      help: "Free-form rich text shown below the payment schedule. Add headings, paragraphs, links, lists.",
+      blocks: [
+        {
+          key: "payment_extras",
+          type: "richtext",
+          defaultContent: { html: RATES_DEFAULTS.payment_extras_html },
+        },
+      ],
+    },
   ],
 };
