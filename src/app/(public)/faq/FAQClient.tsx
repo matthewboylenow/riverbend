@@ -10,219 +10,29 @@ import { Button } from "@/components/ui/Button";
 import { EXTERNAL_LINKS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
-interface FAQItem {
+export interface FAQItem {
   id: string;
   question: string;
   answer: string;
 }
 
-interface FAQCategory {
+export interface FAQCategory {
   title: string;
   items: FAQItem[];
 }
 
-const faqCategories: FAQCategory[] = [
-  {
-    title: "Registration",
-    items: [
-      {
-        id: "reg-1",
-        question: "How do I apply for a space for my child for camp?",
-        answer:
-          "Complete our online application form and provide a $500 deposit. Payment can be made by cash, EFT/echeck, Master Card, Visa or American Express. There is a 2.9% convenience fee applied to credit card payments.",
-      },
-      {
-        id: "reg-2",
-        question: "Can Camp Riverbend provide references?",
-        answer:
-          "Yes! We are happy to connect prospective families with current camp families in your area who have children of similar ages.",
-      },
-    ],
-  },
-  {
-    title: "Transportation",
-    items: [
-      {
-        id: "trans-1",
-        question: "What type of bus will my child ride to camp?",
-        answer: "We use both 24 and 54 passenger yellow school buses.",
-      },
-      {
-        id: "trans-2",
-        question: "Who drives the camp bus?",
-        answer:
-          "All drivers are required to have a Commercial Driver's License (CDL) with a special certification to drive passengers. Requirements include: minimum 21 years old, an excellent driving record for the past three years, fingerprinting by State Police, a physical exam and a written and comprehensive road test to ensure safety awareness! Our insurance company checks the driving record of every bus driver every year. Each bus also has a riding counselor for additional supervision.",
-      },
-      {
-        id: "trans-3",
-        question: "How long is the bus ride to camp?",
-        answer:
-          "We try to arrange our bus routes so each camper's trip is as short as possible. Most bus routes begin around 8:00 am and arrive at Camp around 8:45 am. We dismiss at 4:00 pm and almost all buses have delivered their campers home by 4:45 pm, depending on town and route position.",
-      },
-      {
-        id: "trans-4",
-        question: "Will my child wear a seatbelt on the bus?",
-        answer: "Yes! All campers must wear seat belts at all times.",
-      },
-      {
-        id: "trans-5",
-        question: "What if there is a problem on the bus?",
-        answer:
-          "If there is a problem, we can communicate with buses on the road via cell phone. Bus counselors call or text to camp at the end of every afternoon route so we know that everyone is home safely.",
-      },
-      {
-        id: "trans-6",
-        question: "I work full-time and can't wait for the camp bus, do you offer extra hours?",
-        answer:
-          "Yes, we have an optional extended day program. You can bring your camper here as early as 8:00 am and pick up as late as 6:00 pm. Counselors supervise extended day campers in games, crafts, sports and quiet activities.",
-      },
-      {
-        id: "trans-7",
-        question: "What does extended day cost?",
-        answer:
-          "There is no extra fee for the extended day program if you use it instead of bus transportation. There is a small extra charge to use both extended day and bus service.",
-      },
-    ],
-  },
-  {
-    title: "Staff & Groups",
-    items: [
-      {
-        id: "staff-1",
-        question: "Who is my child's counselor?",
-        answer:
-          "We take pride in our mature, talented counselor staff. Group head counselors are teachers or college students who have trained at Riverbend. Assistant group counselors are 12th graders or college students. There is no CIT program.",
-      },
-      {
-        id: "staff-2",
-        question: "How are staff screened?",
-        answer:
-          "Prospective counselors undergo a rigorous screening process. All staff members, new and returning, are trained before Camp starts. This training teaches safety rules, techniques for working with children, and fun games and activities to share with campers.",
-      },
-      {
-        id: "staff-3",
-        question: "What is the staff to counselor ratio?",
-        answer:
-          "There is one counselor for every 5 campers throughout Camp. Groups of 16-18 have two counselors for first graders and up; Clubhouse groups have three.",
-      },
-      {
-        id: "staff-4",
-        question: "Can my child be in a group with a friend?",
-        answer:
-          "Yes, if the friend is the same sex and in the same grade as your child (Clubhouse groups and young teen groups are co-ed). Our application includes space to list preferred groupmates.",
-      },
-      {
-        id: "staff-5",
-        question: "What is the tipping policy at Camp Riverbend?",
-        answer: "Camp Riverbend has a no-tipping policy for all camp staff.",
-      },
-    ],
-  },
-  {
-    title: "Camp Activities",
-    items: [
-      {
-        id: "act-1",
-        question: "What will my child do at camp?",
-        answer:
-          "Our instructors teach a wide variety of skills in creative crafts, swimming, team & individual sports, performing arts, team building and nature. Our PIY (Pick It Yourself) program also lets groups choose their favorite activities together.",
-      },
-      {
-        id: "act-2",
-        question: "Can my child choose his/her own activities?",
-        answer:
-          "Campers entering first grade & up choose their favorite activities during club time before or after lunch Monday through Thursday. Rising 4th and 5th graders choose a cluster of three related activities in our Tracking program for Tuesday and Thursday afternoons. Rising 6th – 8th graders choose three individual activities to explore intensively in our SuperChoice program for Monday, Wednesday and Friday afternoons.",
-      },
-      {
-        id: "act-3",
-        question: "Do you have any special events at camp?",
-        answer:
-          "Each Friday is a special day, with performing artists, parades or counselor talent shows. In years past we have imported \"snow\" for sledding in July, built and raced cardboard boats, and served giant pizza-sized pancakes. Every Friday is super fun!",
-      },
-      {
-        id: "act-4",
-        question: "Tell me about swimming at camp.",
-        answer:
-          "We pride ourselves on our excellent swim instruction program. Each camper has a swim lesson every day. Children are placed in lessons based on their swimming ability. Lesson groups are small, with about 6-8 campers, taught by a swimming instructor and a group counselor assisting. The waterfront has 5 crystal-clear heated pools, designed for teaching children at all swim skill levels. Our committed team of Red Cross certified Lifeguards and Water Safety Instructors supervise the pools at all times.",
-      },
-      {
-        id: "act-5",
-        question: "What happens when it rains?",
-        answer:
-          "We have indoor locations for all campers on rainy days. We continue with our regular program inside.",
-      },
-    ],
-  },
-  {
-    title: "Food",
-    items: [
-      {
-        id: "food-1",
-        question: "Who provides lunch for my child?",
-        answer:
-          "Camp Riverbend provides daily lunch for all campers – kid favorites and healthy choices approved by our Camp Riverbend Dietician, with options every day. All campers also receive an ice cream or ice pop treat as they wrap up their day.",
-      },
-      {
-        id: "food-2",
-        question: "How do you handle food allergies?",
-        answer:
-          "Our kitchen is \"allergy aware.\" We do not serve any tree nut or peanut products and can accommodate a variety of food allergies, such as: gluten, dairy, sesame and egg allergies.",
-      },
-      {
-        id: "food-3",
-        question: "Are snacks provided?",
-        answer:
-          "Yes! Campers can stop by the Snack Shack mid-morning or mid-afternoon for small packaged snacks, such as goldfish crackers, pretzels, popcorn, fresh fruit and fresh veggies! All snack items are tree nut and peanut-free, with gluten-free options available. Snacks are included in camp tuition.",
-      },
-      {
-        id: "food-4",
-        question: "What about other food from home?",
-        answer:
-          "We allow campers to bring food from home for lunch, however we do not permit sharing with other campers, and nothing with tree nuts or peanuts is allowed. For birthdays, we request that you send in only non-edible party favors for the group.",
-      },
-    ],
-  },
-  {
-    title: "Visiting, Safety & Security",
-    items: [
-      {
-        id: "safety-1",
-        question: "What happens if my child feels sick at camp?",
-        answer:
-          "A camper who feels sick will go to the nurse, who evaluates his or her condition. In case of serious injury or illness, the nurse will contact the child's parents to pick the child up.",
-      },
-      {
-        id: "safety-2",
-        question: "What does the camp nurse do?",
-        answer:
-          "Our Camp nurse treats minor injuries that occur during the day, such as bug bites and scrapes, and administers any prescription and over-the-counter medication that has been authorized by a camper's parents.",
-      },
-      {
-        id: "safety-3",
-        question: "What is your security policy for camp?",
-        answer:
-          "When applying, parents must select a secret password. No camper will be released to any adult without the password. Our security staff also check all visitors at the front of camp.",
-      },
-      {
-        id: "safety-4",
-        question: "Can I visit my child during the summer?",
-        answer: "No parent visits are allowed during the camp day.",
-      },
-      {
-        id: "safety-5",
-        question: "How important is camp safety?",
-        answer:
-          "Camper safety is our number one priority! Camp Riverbend undergoes annual inspections by local and state officials covering sanitation, transportation, food safety and fire prevention. We are accredited by the American Camp Association and certified by the New Jersey Department of Health.",
-      },
-      {
-        id: "safety-6",
-        question: "Who owns Camp Riverbend?",
-        answer:
-          "The Breene Family has owned and operated Camp Riverbend since 1962. The current owners are Roger Breene, Jill Breene Cheng, Paul Breene and Robin Breene Hetrick. The four of them, along with Roger's spouse, Debbie Breene, and Paul's spouse, Miriam Peretsman, supervise every aspect of the daily operation of Camp.",
-      },
-    ],
-  },
-];
+export interface FAQClientProps {
+  heroTitle: string;
+  heroSubtitle: string;
+  heroBgUrl: string;
+  categories: FAQCategory[];
+  ctaHeading: string;
+  ctaPhoneLabel: string;
+  ctaPhoneHref: string;
+  ctaAfterPhone: string;
+  ctaInquiryLabel: string;
+  ctaApplyLabel: string;
+}
 
 function ChevronIcon({ className }: { className?: string }) {
   return (
@@ -242,7 +52,18 @@ function ChevronIcon({ className }: { className?: string }) {
   );
 }
 
-export default function FAQClient() {
+export default function FAQClient({
+  heroTitle,
+  heroSubtitle,
+  heroBgUrl,
+  categories,
+  ctaHeading,
+  ctaPhoneLabel,
+  ctaPhoneHref,
+  ctaAfterPhone,
+  ctaInquiryLabel,
+  ctaApplyLabel,
+}: FAQClientProps) {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
   function toggleItem(id: string) {
@@ -260,9 +81,9 @@ export default function FAQClient() {
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Frequently Asked Questions"
-        subtitle="Everything you need to know about Camp Riverbend"
-        bgImage="/assets/site/IMG_2726.jpg"
+        title={heroTitle}
+        subtitle={heroSubtitle}
+        bgImage={heroBgUrl}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "FAQ" },
@@ -272,7 +93,7 @@ export default function FAQClient() {
       <Section id="faq" bg="cream" padding="default">
         <Container size="narrow">
           <div className="space-y-12">
-            {faqCategories.map((category, catIndex) => (
+            {categories.map((category, catIndex) => (
               <AnimateIn key={category.title} delay={catIndex * 0.05}>
                 <div>
                   <h2 className="font-camp text-charcoal mb-4">{category.title}</h2>
@@ -315,20 +136,20 @@ export default function FAQClient() {
         <Container size="narrow">
           <AnimateIn>
             <div className="text-center space-y-4">
-              <h2 className="font-camp text-charcoal">Still have questions?</h2>
+              <h2 className="font-camp text-charcoal">{ctaHeading}</h2>
               <p className="text-bark text-body leading-relaxed">
                 Give us a call at{" "}
-                <a href="tel:9085802267" className="text-camp-red font-semibold hover:underline">
-                  (908) 580-CAMP
-                </a>{" "}
-                or request more information and we&apos;ll be happy to help.
+                <a href={ctaPhoneHref} className="text-camp-red font-semibold hover:underline">
+                  {ctaPhoneLabel}
+                </a>
+                {ctaAfterPhone}
               </p>
               <div className="flex flex-wrap justify-center gap-4 pt-2">
                 <Button variant="primary" href={EXTERNAL_LINKS.inquiryForm} external>
-                  Request Information
+                  {ctaInquiryLabel}
                 </Button>
                 <Button variant="secondary" href={EXTERNAL_LINKS.camperApp} external>
-                  Apply Now
+                  {ctaApplyLabel}
                 </Button>
               </div>
             </div>

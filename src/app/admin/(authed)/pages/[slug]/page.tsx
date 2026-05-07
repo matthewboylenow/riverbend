@@ -15,6 +15,9 @@ import { BREENE_FAMILY_SCHEMA } from "@/lib/page-schemas/breene-family";
 import { DAY_TRIPPERS_SCHEMA } from "@/lib/page-schemas/day-trippers";
 import { SPORTS_SCHEMA } from "@/lib/page-schemas/sports";
 import { RIVERBEND_EXPERIENCE_SCHEMA } from "@/lib/page-schemas/riverbend-experience";
+import { TESTIMONIALS_SCHEMA } from "@/lib/page-schemas/testimonials";
+import { FAQ_SCHEMA } from "@/lib/page-schemas/faq";
+import { ACTIVITIES_SCHEMA } from "@/lib/page-schemas/activities";
 import type { PageSchema } from "@/lib/page-schemas/types";
 
 const SCHEMAS: Record<string, PageSchema> = {
@@ -33,6 +36,9 @@ const SCHEMAS: Record<string, PageSchema> = {
   [DAY_TRIPPERS_SCHEMA.slug]: DAY_TRIPPERS_SCHEMA,
   [SPORTS_SCHEMA.slug]: SPORTS_SCHEMA,
   [RIVERBEND_EXPERIENCE_SCHEMA.slug]: RIVERBEND_EXPERIENCE_SCHEMA,
+  [TESTIMONIALS_SCHEMA.slug]: TESTIMONIALS_SCHEMA,
+  [FAQ_SCHEMA.slug]: FAQ_SCHEMA,
+  [ACTIVITIES_SCHEMA.slug]: ACTIVITIES_SCHEMA,
 };
 
 export default async function PageEditor({
