@@ -10,7 +10,17 @@
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Plus, Trash2, ExternalLink, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Plus,
+  Trash2,
+  ExternalLink,
+  AlertCircle,
+  Eye,
+  Upload as PublishIcon,
+  RotateCcw,
+} from "lucide-react";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { RevisionsButton } from "@/components/admin/RevisionsButton";
 import { MediaPicker } from "@/components/admin/MediaPicker";
@@ -21,13 +31,23 @@ import type {
 } from "@/lib/page-schemas/types";
 import { flattenBlocks } from "@/lib/page-schemas/types";
 
-type BlocksMap = Record<string, { type: string; content: Record<string, unknown> } | undefined>;
+type BlocksMap = Record<
+  string,
+  | {
+      type: string;
+      content: Record<string, unknown>;
+      isDraft?: boolean;
+      hasDraft?: boolean;
+    }
+  | undefined
+>;
 
 export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
   const [state, setState] = useState<Record<string, unknown>>(() => initialState(schema));
+  const [draftedKeys, setDraftedKeys] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [busy, setBusy] = useState<"saving" | "publishing" | "discarding" | null>(null);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [usingDefaults, setUsingDefaults] = useState(false);
 
@@ -44,12 +64,18 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
         );
         setUsingDefaults(true);
         setState(initialState(schema));
+        setDraftedKeys(new Set());
         setLoading(false);
         return;
       }
       const data = await res.json();
       const blocks: BlocksMap = data.blocks || {};
       setState(hydrateState(schema, blocks));
+      const drafted = new Set<string>();
+      for (const b of flattenBlocks(schema)) {
+        if (blocks[b.key]?.hasDraft) drafted.add(b.key);
+      }
+      setDraftedKeys(drafted);
       setUsingDefaults(
         flattenBlocks(schema).every((b) => blocks[b.key] == null)
       );
@@ -66,21 +92,85 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema.slug]);
 
-  async function saveAll() {
-    setSaving(true);
+  async function saveDraft() {
+    setBusy("saving");
     setError(null);
+    setStatusMsg(null);
     try {
       await Promise.all(
         flattenBlocks(schema).map((b) =>
           saveBlock(schema.slug, b.key, b.type, state[b.key] as object)
         )
       );
-      setSavedAt(new Date());
+      setStatusMsg(`Draft saved at ${new Date().toLocaleTimeString()}`);
       setUsingDefaults(false);
+      // Reload to refresh the drafted-keys set so the badges line up.
+      await load();
     } catch (e) {
       setError((e as Error).message);
     } finally {
-      setSaving(false);
+      setBusy(null);
+    }
+  }
+
+  async function publish() {
+    if (
+      !confirm(
+        "Publish all draft changes to the live site? This will replace the current published version (which is saved to revisions and can be rolled back per-block)."
+      )
+    )
+      return;
+    setBusy("publishing");
+    setError(null);
+    setStatusMsg(null);
+    try {
+      // First flush any local edits to draft, so publish covers them.
+      await Promise.all(
+        flattenBlocks(schema).map((b) =>
+          saveBlock(schema.slug, b.key, b.type, state[b.key] as object)
+        )
+      );
+      const res = await fetch(`/api/pages/${schema.slug}/publish`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Publish failed");
+      }
+      const data = await res.json();
+      setStatusMsg(`Published ${data.promoted} block${data.promoted === 1 ? "" : "s"}.`);
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function discard() {
+    if (
+      !confirm(
+        "Discard all unpublished draft changes on this page? The live site is unaffected."
+      )
+    )
+      return;
+    setBusy("discarding");
+    setError(null);
+    setStatusMsg(null);
+    try {
+      const res = await fetch(`/api/pages/${schema.slug}/discard-draft`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Discard failed");
+      }
+      setStatusMsg("Drafts discarded.");
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -88,14 +178,14 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
 
   return (
     <div className="max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-6 flex-wrap">
         <Link
           href="/admin/pages"
           className="flex items-center justify-center h-9 w-9 rounded-lg bg-sand text-bark hover:text-charcoal"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <div className="flex-1">
+        <div className="flex-1 min-w-[200px]">
           <h1 className="text-2xl font-bold text-charcoal">{schema.label}</h1>
           <p className="text-sm text-bark mt-0.5">
             <a
@@ -109,19 +199,42 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
             </a>
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {savedAt && (
-            <span className="text-xs text-green-700">
-              Saved {savedAt.toLocaleTimeString()}
-            </span>
-          )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {statusMsg && <span className="text-xs text-green-700">{statusMsg}</span>}
+          <a
+            href={`${schema.publicHref}?preview=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm border border-stone/30 hover:bg-cream"
+            title="Open the public page with draft content visible"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            View Draft
+          </a>
           <button
-            onClick={saveAll}
-            disabled={saving}
+            onClick={discard}
+            disabled={busy !== null || draftedKeys.size === 0}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm border border-stone/30 hover:bg-cream disabled:opacity-40"
+            title="Discard all unpublished changes on this page"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            {busy === "discarding" ? "Discarding…" : "Discard Draft"}
+          </button>
+          <button
+            onClick={saveDraft}
+            disabled={busy !== null}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm border border-camp-red/40 text-camp-red hover:bg-camp-red/5 disabled:opacity-40"
+          >
+            <Save className="h-3.5 w-3.5" />
+            {busy === "saving" ? "Saving…" : "Save Draft"}
+          </button>
+          <button
+            onClick={publish}
+            disabled={busy !== null}
             className="inline-flex items-center gap-2 bg-camp-red text-white font-semibold px-5 py-2 rounded-full hover:bg-camp-red-dark disabled:opacity-50"
           >
-            <Save className="h-4 w-4" />
-            {saving ? "Saving…" : "Save All Changes"}
+            <PublishIcon className="h-4 w-4" />
+            {busy === "publishing" ? "Publishing…" : "Publish"}
           </button>
         </div>
       </div>
@@ -135,22 +248,51 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
           <div>
             <strong>This page hasn&apos;t been saved through the editor yet.</strong> The
-            fields below show the current live site copy. Click <em>Save All Changes</em>{" "}
-            to lock these values into the editor — after that, every edit you make will
-            persist and roll-back.
+            fields below show the current live site copy. Click <em>Save Draft</em> then{" "}
+            <em>Publish</em> to lock these values in.
+          </div>
+        </div>
+      )}
+
+      {draftedKeys.size > 0 && (
+        <div className="mb-4 flex items-start gap-3 text-sm bg-blue-50 border border-blue-200 text-blue-900 px-4 py-3 rounded-lg">
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>
+              {draftedKeys.size} block{draftedKeys.size === 1 ? "" : "s"} have unpublished
+              draft changes.
+            </strong>{" "}
+            <a
+              href={`${schema.publicHref}?preview=1`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              Preview them on the public page
+            </a>{" "}
+            before clicking Publish.
           </div>
         </div>
       )}
 
       <div className="space-y-8">
-        {schema.sections.map((section, si) => (
+        {schema.sections.map((section, si) => {
+          const sectionHasDraft = section.blocks.some((b) => draftedKeys.has(b.key));
+          return (
           <section
             key={si}
-            className="bg-white rounded-2xl border border-stone/30 p-5"
+            className={`bg-white rounded-2xl border p-5 ${
+              sectionHasDraft ? "border-blue-300/60 ring-1 ring-blue-100" : "border-stone/30"
+            }`}
           >
             <div className="flex items-center justify-between mb-4">
-              <div>
+              <div className="flex items-center gap-2">
                 <h2 className="font-semibold text-charcoal">{section.label}</h2>
+                {sectionHasDraft && (
+                  <span className="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-800 uppercase tracking-wider">
+                    Draft
+                  </span>
+                )}
                 {section.help && (
                   <p className="text-xs text-bark mt-0.5">{section.help}</p>
                 )}
@@ -178,16 +320,25 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
               ))}
             </div>
           </section>
-        ))}
+          );
+        })}
 
-        <div className="flex justify-end pt-2 border-t border-stone/30">
+        <div className="flex flex-wrap gap-2 justify-end pt-2 border-t border-stone/30">
           <button
-            onClick={saveAll}
-            disabled={saving}
-            className="inline-flex items-center gap-2 bg-camp-red text-white font-semibold px-6 py-2.5 rounded-full hover:bg-camp-red-dark disabled:opacity-50"
+            onClick={saveDraft}
+            disabled={busy !== null}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold border border-camp-red/40 text-camp-red hover:bg-camp-red/5 disabled:opacity-40"
           >
             <Save className="h-4 w-4" />
-            {saving ? "Saving…" : "Save All Changes"}
+            {busy === "saving" ? "Saving…" : "Save Draft"}
+          </button>
+          <button
+            onClick={publish}
+            disabled={busy !== null}
+            className="inline-flex items-center gap-2 bg-camp-red text-white font-semibold px-6 py-2.5 rounded-full hover:bg-camp-red-dark disabled:opacity-50"
+          >
+            <PublishIcon className="h-4 w-4" />
+            {busy === "publishing" ? "Publishing…" : "Publish"}
           </button>
         </div>
       </div>

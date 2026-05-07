@@ -7,6 +7,7 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { Button } from "@/components/ui/Button";
 import { EXTERNAL_LINKS } from "@/lib/navigation";
 import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
 import { sanitizeHtml } from "@/lib/sanitize";
 import {
   RATES_DEFAULTS as DEFAULTS,
@@ -28,10 +29,10 @@ export const revalidate = 60;
 
 const PAGE_SLUG = "rates-dates-application-2026";
 
-async function loadContent() {
+async function loadContent(mode: "published" | "draft") {
   let blocks = {};
   try {
-    blocks = await getPageContent(PAGE_SLUG);
+    blocks = await getPageContent(PAGE_SLUG, mode);
   } catch (err) {
     console.error("rates-dates: page content load failed, using defaults:", err);
   }
@@ -48,8 +49,13 @@ async function loadContent() {
   };
 }
 
-export default async function RatesDatePage() {
-  const c = await loadContent();
+export default async function RatesDatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
 
   return (
     <InnerPageLayout>

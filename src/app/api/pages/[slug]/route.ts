@@ -16,6 +16,9 @@ export async function GET(
   }
 
   const { slug } = await params;
-  const blocks = await getPageContent(slug);
+  // 'draft' mode: return drafts when present, otherwise published. Each
+  // envelope's hasDraft flag tells the editor which fields have unpublished
+  // changes.
+  const blocks = await getPageContent(slug, "draft");
   return NextResponse.json({ pageSlug: slug, blocks });
 }

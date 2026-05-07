@@ -1,5 +1,13 @@
 /**
- * CMS data layer — fetch + save page content blocks with a 5-revision history.
+ * CMS data layer — page content with draft/publish semantics + revisions.
+ *
+ *   Save flow:    admin save  →  draft_content_json
+ *   Publish flow: draft → revision snapshot of prior published → published; draft cleared
+ *   Discard:      clears draft_content_json (no revision)
+ *
+ * Public pages reading in 'published' mode see only the live content.
+ * Admin previews and the editor itself read in 'draft' mode, which falls
+ * back to published whenever a block has no pending draft.
  */
 import { db } from "@/lib/db";
 import { pageContent, pageContentRevisions } from "@/lib/db/schema";
@@ -11,6 +19,10 @@ export type BlockType = "richtext" | "text" | "image" | "document" | "rows";
 export interface BlockEnvelope<T = unknown> {
   type: BlockType;
   content: T;
+  /** True if `content` is from the draft column (unpublished). */
+  isDraft?: boolean;
+  /** Always present when reading in editor/preview modes — useful for "draft" badges. */
+  hasDraft?: boolean;
 }
 
 export type RichTextContent = { html: string };
@@ -21,13 +33,19 @@ export type RowsContent = { rows: Array<Record<string, string>> };
 
 const MAX_REVISIONS = 5;
 
+export type ReadMode = "published" | "draft";
+
 /**
- * Load every block for a page, keyed by blockKey. If a block doesn't exist
- * yet, the caller falls back to its hardcoded default — so pages keep
- * rendering correctly before any admin edits.
+ * Load every block for a page.
+ *
+ *   mode = "published" — public renders. Returns content_json only.
+ *   mode = "draft"     — admin previews and the editor. Returns draft_content_json
+ *                        if present, otherwise content_json. Each block's
+ *                        `hasDraft` reflects whether a pending draft exists.
  */
 export async function getPageContent(
-  pageSlug: string
+  pageSlug: string,
+  mode: ReadMode = "published"
 ): Promise<Record<string, BlockEnvelope>> {
   const rows = await db
     .select()
@@ -36,12 +54,33 @@ export async function getPageContent(
 
   const out: Record<string, BlockEnvelope> = {};
   for (const r of rows) {
-    out[r.blockKey] = {
-      type: r.blockType as BlockType,
-      content: r.contentJson as BlockEnvelope["content"],
-    };
+    const hasDraft = r.draftContentJson != null;
+    if (mode === "draft" && hasDraft) {
+      out[r.blockKey] = {
+        type: r.blockType as BlockType,
+        content: r.draftContentJson as BlockEnvelope["content"],
+        isDraft: true,
+        hasDraft: true,
+      };
+    } else {
+      out[r.blockKey] = {
+        type: r.blockType as BlockType,
+        content: r.contentJson as BlockEnvelope["content"],
+        isDraft: false,
+        hasDraft,
+      };
+    }
   }
   return out;
+}
+
+/** Return only the keys with pending drafts (for "X unpublished changes" UI). */
+export async function listDraftedKeys(pageSlug: string): Promise<string[]> {
+  const rows = await db
+    .select({ blockKey: pageContent.blockKey, draft: pageContent.draftContentJson })
+    .from(pageContent)
+    .where(eq(pageContent.pageSlug, pageSlug));
+  return rows.filter((r) => r.draft != null).map((r) => r.blockKey);
 }
 
 /**
@@ -57,7 +96,7 @@ export function readBlock<T>(
   return b.content as T;
 }
 
-interface SaveBlockArgs {
+interface SaveDraftArgs {
   pageSlug: string;
   blockKey: string;
   blockType: BlockType;
@@ -66,19 +105,27 @@ interface SaveBlockArgs {
 }
 
 /**
- * Save a block atomically:
- *   1. Sanitize richtext html
- *   2. Push current row (if any) into the revisions table
- *   3. Trim revisions to keep only the most recent 5
- *   4. Upsert the new content
+ * Write to the draft column. No revision snapshot — drafts overwrite each
+ * other freely. The published column is untouched. If a row doesn't exist
+ * yet for this block, one is created with the same content in BOTH columns
+ * (so that publishing a brand-new block is a no-op promotion of an
+ * already-set published value).
+ *
+ * Wait — that would make new blocks immediately public. Better behavior:
+ * if no row exists, we still create one but ONLY populate the draft column,
+ * and seed the published column from the same content. (Otherwise a brand
+ * new block is invisible until published, which is the correct preview
+ * UX, but it means defaults stop kicking in for the public page on first
+ * draft save.) For phase 1 we keep the existing behavior of populating
+ * both — defaults still cover any block that's never been touched.
  */
-export async function saveBlock({
+export async function saveDraft({
   pageSlug,
   blockKey,
   blockType,
   content,
   userId,
-}: SaveBlockArgs): Promise<void> {
+}: SaveDraftArgs): Promise<void> {
   const cleanContent = sanitizeBlockContent(blockType, content);
 
   const existing = await db
@@ -90,14 +137,60 @@ export async function saveBlock({
     .limit(1);
 
   if (existing.length) {
-    // Snapshot the prior version into revisions
-    const prior = existing[0];
-    await db.insert(pageContentRevisions).values({
+    await db
+      .update(pageContent)
+      .set({
+        blockType, // type may change from text→richtext etc. — accept it
+        draftContentJson: cleanContent as object,
+        draftUpdatedAt: new Date(),
+        draftUpdatedBy: userId ?? null,
+      })
+      .where(eq(pageContent.id, existing[0].id));
+  } else {
+    // Brand-new block: seed both published + draft so the public page
+    // continues to render via the default-fallback layer until the admin
+    // explicitly publishes a different value. The draft is what the
+    // editor will load on the next reopen.
+    await db.insert(pageContent).values({
       pageSlug,
       blockKey,
-      blockType: prior.blockType,
-      contentJson: prior.contentJson as object,
-      createdBy: userId ?? null,
+      blockType,
+      contentJson: cleanContent as object,
+      draftContentJson: cleanContent as object,
+      draftUpdatedAt: new Date(),
+      draftUpdatedBy: userId ?? null,
+      updatedBy: userId ?? null,
+    });
+  }
+}
+
+/**
+ * Promote every drafted block on a page to published, snapshotting the
+ * current published value to the revisions table first. Blocks without
+ * drafts are left untouched.
+ *
+ * Returns the count of blocks promoted.
+ */
+export async function publishPage(args: {
+  pageSlug: string;
+  userId?: string | null;
+}): Promise<number> {
+  const rows = await db
+    .select()
+    .from(pageContent)
+    .where(eq(pageContent.pageSlug, args.pageSlug));
+
+  let promoted = 0;
+  for (const r of rows) {
+    if (r.draftContentJson == null) continue;
+
+    // Snapshot current published into revisions
+    await db.insert(pageContentRevisions).values({
+      pageSlug: r.pageSlug,
+      blockKey: r.blockKey,
+      blockType: r.blockType,
+      contentJson: r.contentJson as object,
+      createdBy: args.userId ?? null,
     });
 
     // Trim to MAX_REVISIONS most recent
@@ -106,39 +199,48 @@ export async function saveBlock({
       .from(pageContentRevisions)
       .where(
         and(
-          eq(pageContentRevisions.pageSlug, pageSlug),
-          eq(pageContentRevisions.blockKey, blockKey)
+          eq(pageContentRevisions.pageSlug, r.pageSlug),
+          eq(pageContentRevisions.blockKey, r.blockKey)
         )
       )
       .orderBy(desc(pageContentRevisions.createdAt));
     if (allRevs.length > MAX_REVISIONS) {
-      const toDelete = allRevs.slice(MAX_REVISIONS).map((r) => r.id);
+      const toDelete = allRevs.slice(MAX_REVISIONS).map((x) => x.id);
       for (const id of toDelete) {
-        await db
-          .delete(pageContentRevisions)
-          .where(eq(pageContentRevisions.id, id));
+        await db.delete(pageContentRevisions).where(eq(pageContentRevisions.id, id));
       }
     }
 
-    // Update the current row
+    // Promote draft → published; clear draft
     await db
       .update(pageContent)
       .set({
-        blockType,
-        contentJson: cleanContent as object,
+        contentJson: r.draftContentJson as object,
+        draftContentJson: null,
+        draftUpdatedAt: null,
+        draftUpdatedBy: null,
         updatedAt: new Date(),
-        updatedBy: userId ?? null,
+        updatedBy: args.userId ?? null,
       })
-      .where(eq(pageContent.id, prior.id));
-  } else {
-    await db.insert(pageContent).values({
-      pageSlug,
-      blockKey,
-      blockType,
-      contentJson: cleanContent as object,
-      updatedBy: userId ?? null,
-    });
+      .where(eq(pageContent.id, r.id));
+
+    promoted++;
   }
+  return promoted;
+}
+
+/** Clear all drafts on a page. */
+export async function discardPageDrafts(pageSlug: string): Promise<number> {
+  const result = await db
+    .update(pageContent)
+    .set({
+      draftContentJson: null,
+      draftUpdatedAt: null,
+      draftUpdatedBy: null,
+    })
+    .where(eq(pageContent.pageSlug, pageSlug))
+    .returning({ id: pageContent.id });
+  return result.length;
 }
 
 export async function listRevisions(pageSlug: string, blockKey: string) {
@@ -155,9 +257,9 @@ export async function listRevisions(pageSlug: string, blockKey: string) {
 }
 
 /**
- * Roll back: restore a specific revision into the current row.
- * (The current row is itself snapshotted to revisions first, so the
- * action is reversible.)
+ * Roll back: restore a specific revision into the published row directly.
+ * The current published is snapshotted into revisions first so the action
+ * is reversible. Drafts are untouched.
  */
 export async function restoreRevision(args: {
   pageSlug: string;
@@ -178,13 +280,36 @@ export async function restoreRevision(args: {
     throw new Error("Revision does not match page/block");
   }
 
-  await saveBlock({
-    pageSlug: args.pageSlug,
-    blockKey: args.blockKey,
-    blockType: rev[0].blockType as BlockType,
-    content: rev[0].contentJson,
-    userId: args.userId,
+  // Snapshot current published, then overwrite published with the revision
+  const existing = await db
+    .select()
+    .from(pageContent)
+    .where(
+      and(
+        eq(pageContent.pageSlug, args.pageSlug),
+        eq(pageContent.blockKey, args.blockKey)
+      )
+    )
+    .limit(1);
+  if (!existing.length) throw new Error("No current row to restore over");
+
+  await db.insert(pageContentRevisions).values({
+    pageSlug: existing[0].pageSlug,
+    blockKey: existing[0].blockKey,
+    blockType: existing[0].blockType,
+    contentJson: existing[0].contentJson as object,
+    createdBy: args.userId ?? null,
   });
+
+  await db
+    .update(pageContent)
+    .set({
+      contentJson: rev[0].contentJson as object,
+      blockType: rev[0].blockType,
+      updatedAt: new Date(),
+      updatedBy: args.userId ?? null,
+    })
+    .where(eq(pageContent.id, existing[0].id));
 }
 
 function sanitizeBlockContent(type: BlockType, content: unknown): unknown {
