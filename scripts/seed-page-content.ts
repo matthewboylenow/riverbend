@@ -29,11 +29,9 @@ const blocks: Array<{ blockKey: string; blockType: string; contentJson: object }
   { blockKey: "intro", blockType: "richtext", contentJson: { html: RATES_DEFAULTS.intro_html } },
   { blockKey: "tuition_note", blockType: "text", contentJson: { value: RATES_DEFAULTS.tuition_note } },
   { blockKey: "tuition_rows", blockType: "rows", contentJson: { rows: RATES_DEFAULTS.tuition_rows } },
-  { blockKey: "tuition_footer", blockType: "text", contentJson: { value: RATES_DEFAULTS.tuition_footer } },
+  { blockKey: "tuition_extras", blockType: "richtext", contentJson: { html: RATES_DEFAULTS.tuition_extras_html } },
   { blockKey: "discounts", blockType: "rows", contentJson: { rows: RATES_DEFAULTS.discounts } },
   { blockKey: "payment_schedule", blockType: "rows", contentJson: { rows: RATES_DEFAULTS.payment_schedule } },
-  { blockKey: "payment_footer", blockType: "richtext", contentJson: { html: RATES_DEFAULTS.payment_footer_html } },
-  { blockKey: "whats_included", blockType: "richtext", contentJson: { html: RATES_DEFAULTS.whats_included_html } },
 ];
 
 async function main() {

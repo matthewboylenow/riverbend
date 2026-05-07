@@ -30,11 +30,9 @@ interface State {
   intro_html: string;
   tuition_note: string;
   tuition_rows: TuitionRow[];
-  tuition_footer: string;
+  tuition_extras_html: string;
   discounts: DiscountRow[];
   payment_schedule: PaymentRow[];
-  payment_footer_html: string;
-  whats_included_html: string;
 }
 
 // Defaults shared with the public page so the editor always opens populated
@@ -45,11 +43,9 @@ const DEFAULT: State = {
   intro_html: RATES_DEFAULTS.intro_html,
   tuition_note: RATES_DEFAULTS.tuition_note,
   tuition_rows: RATES_DEFAULTS.tuition_rows as TuitionRow[],
-  tuition_footer: RATES_DEFAULTS.tuition_footer,
+  tuition_extras_html: RATES_DEFAULTS.tuition_extras_html,
   discounts: RATES_DEFAULTS.discounts as DiscountRow[],
   payment_schedule: RATES_DEFAULTS.payment_schedule as PaymentRow[],
-  payment_footer_html: RATES_DEFAULTS.payment_footer_html,
-  whats_included_html: RATES_DEFAULTS.whats_included_html,
 };
 
 export default function RatesEditor() {
@@ -87,11 +83,9 @@ export default function RatesEditor() {
       "intro",
       "tuition_note",
       "tuition_rows",
-      "tuition_footer",
+      "tuition_extras",
       "discounts",
       "payment_schedule",
-      "payment_footer",
-      "whats_included",
     ].filter((k) => blocks[k] != null);
     setUsingDefaults(presentKeys.length === 0);
 
@@ -101,15 +95,11 @@ export default function RatesEditor() {
       intro_html: (blocks.intro?.content?.html as string) ?? DEFAULT.intro_html,
       tuition_note: (blocks.tuition_note?.content?.value as string) ?? DEFAULT.tuition_note,
       tuition_rows: ((blocks.tuition_rows?.content?.rows as TuitionRow[]) ?? DEFAULT.tuition_rows),
-      tuition_footer:
-        (blocks.tuition_footer?.content?.value as string) ?? DEFAULT.tuition_footer,
+      tuition_extras_html:
+        (blocks.tuition_extras?.content?.html as string) ?? DEFAULT.tuition_extras_html,
       discounts: ((blocks.discounts?.content?.rows as DiscountRow[]) ?? DEFAULT.discounts),
       payment_schedule:
         ((blocks.payment_schedule?.content?.rows as PaymentRow[]) ?? DEFAULT.payment_schedule),
-      payment_footer_html:
-        (blocks.payment_footer?.content?.html as string) ?? DEFAULT.payment_footer_html,
-      whats_included_html:
-        (blocks.whats_included?.content?.html as string) ?? DEFAULT.whats_included_html,
     });
     setLoading(false);
   }
@@ -140,11 +130,9 @@ export default function RatesEditor() {
         saveBlock("intro", "richtext", { html: state.intro_html }),
         saveBlock("tuition_note", "text", { value: state.tuition_note }),
         saveBlock("tuition_rows", "rows", { rows: state.tuition_rows }),
-        saveBlock("tuition_footer", "text", { value: state.tuition_footer }),
+        saveBlock("tuition_extras", "richtext", { html: state.tuition_extras_html }),
         saveBlock("discounts", "rows", { rows: state.discounts }),
         saveBlock("payment_schedule", "rows", { rows: state.payment_schedule }),
-        saveBlock("payment_footer", "richtext", { html: state.payment_footer_html }),
-        saveBlock("whats_included", "richtext", { html: state.whats_included_html }),
       ]);
       setSavedAt(new Date());
     } catch (err) {
@@ -263,14 +251,14 @@ export default function RatesEditor() {
             ]}
             blank={{ duration: "", inCamp: "", dayTripper: "", threeQuarter: "" }}
           />
-          <Field label="Footnote below table">
-            <textarea
-              value={state.tuition_footer}
-              onChange={(e) => setState({ ...state, tuition_footer: e.target.value })}
-              rows={2}
-              className="w-full px-4 py-2 rounded-xl border border-stone bg-white text-sm resize-y"
-            />
-          </Field>
+        </Block>
+
+        {/* Free-form rich text under the tuition table */}
+        <Block label="Below tuition table" pageSlug={PAGE_SLUG} blockKey="tuition_extras" onRestored={load}>
+          <RichTextEditor
+            value={state.tuition_extras_html}
+            onChange={(html) => setState({ ...state, tuition_extras_html: html })}
+          />
         </Block>
 
         {/* Discounts */}
@@ -296,22 +284,6 @@ export default function RatesEditor() {
               { key: "detail", label: "Detail", multiline: true },
             ]}
             blank={{ label: "", detail: "" }}
-          />
-        </Block>
-
-        {/* Payment footer */}
-        <Block label="Payment notes (below schedule)" pageSlug={PAGE_SLUG} blockKey="payment_footer" onRestored={load}>
-          <RichTextEditor
-            value={state.payment_footer_html}
-            onChange={(html) => setState({ ...state, payment_footer_html: html })}
-          />
-        </Block>
-
-        {/* What's included */}
-        <Block label="What's Included section" pageSlug={PAGE_SLUG} blockKey="whats_included" onRestored={load}>
-          <RichTextEditor
-            value={state.whats_included_html}
-            onChange={(html) => setState({ ...state, whats_included_html: html })}
           />
         </Block>
 

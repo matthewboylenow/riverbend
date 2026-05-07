@@ -41,8 +41,8 @@ export const RATES_DEFAULTS = {
     { duration: "Any 3 Weeks", inCamp: "$5,215", dayTripper: "$6,150", threeQuarter: "$3,800" },
     { duration: "Any 2 Weeks", inCamp: "$3,970", dayTripper: "$4,875", threeQuarter: "$2,710" },
   ] as TuitionRow[],
-  tuition_footer:
-    "3 and 4 Year Old Three-Quarter Day tuition rates and discounts listed above are for 5 days a week and will be pro-rated for 3 or 4 days a week.",
+  tuition_extras_html:
+    "<p>3 and 4 Year Old Three-Quarter Day tuition rates and discounts listed above are for 5 days a week and will be pro-rated for 3 or 4 days a week.</p>",
   discounts: [
     {
       heading: "Sibling Discount (2nd Child)",
@@ -69,8 +69,4 @@ export const RATES_DEFAULTS = {
     { label: "January 6", detail: "$1,500 per camper payment" },
     { label: "April 1", detail: "Final tuition payment due" },
   ] as PaymentRow[],
-  payment_footer_html:
-    "<p><strong>Note:</strong> All tuition payments made on or after January 6 are non-refundable.</p><p>Payment plans available for EFT/echeck or credit card — all payments must be completed by April 1.</p>",
-  whats_included_html:
-    "<p>Each camper&rsquo;s tuition includes either bus transportation to and from camp <em>or</em> a place in our extended day program at camp (8:00&ndash;9:00 am and 4:00&ndash;6:00 pm). There is an additional fee if your family wants to use bus transportation <em>and</em> extended day daily or hold seats for a camper on two different buses.</p><p>2.9% convenience fee for credit card payments. No charge for EFT or debit card payments.</p>",
 };

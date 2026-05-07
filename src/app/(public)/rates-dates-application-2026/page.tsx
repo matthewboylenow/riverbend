@@ -39,11 +39,9 @@ async function loadContent() {
     introHtml: readBlock<{ html: string }>(blocks, "intro", { html: DEFAULTS.intro_html }).html,
     tuitionNote: readBlock<{ value: string }>(blocks, "tuition_note", { value: DEFAULTS.tuition_note }).value,
     tuitionRows: readBlock<{ rows: TuitionRow[] }>(blocks, "tuition_rows", { rows: DEFAULTS.tuition_rows }).rows,
-    tuitionFooter: readBlock<{ value: string }>(blocks, "tuition_footer", { value: DEFAULTS.tuition_footer }).value,
+    tuitionExtrasHtml: readBlock<{ html: string }>(blocks, "tuition_extras", { html: DEFAULTS.tuition_extras_html }).html,
     discounts: readBlock<{ rows: DiscountRow[] }>(blocks, "discounts", { rows: DEFAULTS.discounts }).rows,
     paymentSchedule: readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule", { rows: DEFAULTS.payment_schedule }).rows,
-    paymentFooterHtml: readBlock<{ html: string }>(blocks, "payment_footer", { html: DEFAULTS.payment_footer_html }).html,
-    whatsIncludedHtml: readBlock<{ html: string }>(blocks, "whats_included", { html: DEFAULTS.whats_included_html }).html,
   };
 }
 
@@ -122,10 +120,11 @@ export default async function RatesDatePage() {
                 </tbody>
               </table>
             </div>
-            {c.tuitionFooter && (
-              <p className="mt-4 text-sm text-bark/80 leading-relaxed max-w-2xl mx-auto text-center">
-                {c.tuitionFooter}
-              </p>
+            {c.tuitionExtrasHtml && (
+              <div
+                className="mt-8 prose prose-sm max-w-2xl mx-auto text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:text-center [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.tuitionExtrasHtml) }}
+              />
             )}
           </AnimateIn>
         </Container>
@@ -177,30 +176,11 @@ export default async function RatesDatePage() {
                 </div>
               ))}
             </div>
-            <div
-              className="mt-6 prose prose-sm max-w-none text-bark [&_p]:text-sm [&_p]:leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_strong]:text-charcoal"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.paymentFooterHtml) }}
-            />
           </AnimateIn>
         </Container>
       </Section>
 
-      {/* Section 5: What's Included */}
-      <Section id="whats-included" bg="cream" padding="default">
-        <Container size="narrow">
-          <AnimateIn>
-            <div className="text-center mb-8">
-              <h2 className="font-camp">What&rsquo;s Included</h2>
-            </div>
-            <div
-              className="prose prose-lg max-w-none mx-auto text-center text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.whatsIncludedHtml) }}
-            />
-          </AnimateIn>
-        </Container>
-      </Section>
-
-      {/* Section 6: CTA */}
+      {/* CTA */}
       <Section id="cta" bg="dark" padding="default">
         <Container size="narrow">
           <AnimateIn>
