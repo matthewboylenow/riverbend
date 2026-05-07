@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/Button";
 import { LinkCard } from "@/components/ui/LinkCard";
 import { EXTERNAL_LINKS } from "@/lib/navigation";
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { DAY_TRIPPERS_DEFAULTS as D } from "@/lib/page-defaults/day-trippers";
 
 export const metadata: Metadata = {
   title: "Day Trippers | Grades 7-9 | Camp Riverbend",
@@ -16,13 +20,75 @@ export const metadata: Metadata = {
     "Day Trippers is an option for boys and girls currently in 6th – 8th grades. This program gives teens a safe and supportive environment for learning social skills and independence.",
 };
 
-export default function DayTrippersPage() {
+const PAGE_SLUG = "day-trippers";
+
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("day-trippers: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    overviewBadge: t("overview_badge", D.overview_badge),
+    overviewHeading: t("overview_heading", D.overview_heading),
+    overviewHtml: r("overview", D.overview_html),
+
+    programHeading: t("program_heading", D.program_heading),
+    programHtml: r("program", D.program_html),
+    programImage: i("program_image", D.program_image_url, D.program_image_alt),
+
+    videoCaption: t("video_caption", D.video_caption),
+    videoId: t("video_id", D.video_id),
+
+    supervisionHeading: t("supervision_heading", D.supervision_heading),
+    supervisionHtml: r("supervision", D.supervision_html),
+    supervisionImage: i("supervision_image", D.supervision_image_url, D.supervision_image_alt),
+    supervisionButtonLabel: t("supervision_button_label", D.supervision_button_label),
+
+    calendarHeading: t("calendar_heading", D.calendar_heading),
+    calendarSubheading: t("calendar_subheading", D.calendar_subheading),
+    calendarImage: i("calendar_image", D.calendar_image_url, D.calendar_image_alt),
+
+    learnMoreHeading: t("learn_more_heading", D.learn_more_heading),
+    learnMore1Title: t("learn_more_1_title", D.learn_more_1_title),
+    learnMore1Image: i("learn_more_1_image", D.learn_more_1_image),
+    learnMore2Title: t("learn_more_2_title", D.learn_more_2_title),
+    learnMore2Image: i("learn_more_2_image", D.learn_more_2_image),
+    learnMore3Title: t("learn_more_3_title", D.learn_more_3_title),
+    learnMore3Image: i("learn_more_3_image", D.learn_more_3_image),
+  };
+}
+
+export default async function DayTrippersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Day Trippers"
-        subtitle="Adventure awaits for campers in grades 7-9"
-        bgImage="/assets/site/ADV06446-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Programs", href: "/programs" },
@@ -36,15 +102,16 @@ export default function DayTrippersPage() {
           <AnimateIn direction="up">
             <div className="text-center mb-4">
               <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full mb-4">
-                Grades 7-9
+                {c.overviewBadge}
               </span>
             </div>
             <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">
-              Welcome to the Day Trippers!
+              {c.overviewHeading}
             </h2>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              Children currently in 6th and 7th grades can participate in our in-camp program or Day Trippers, or a combination of both (pending availability).
-            </p>
+            <div
+              className="text-lg text-gray-700 leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.overviewHtml) }}
+            />
           </AnimateIn>
         </Container>
       </Section>
@@ -56,22 +123,18 @@ export default function DayTrippersPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
               <AnimateIn direction="left">
                 <div className="space-y-6">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Day Trippers Program
-                  </h2>
-                  <p className="text-gray-700 leading-relaxed">
-                    The group takes day trips every day, traveling on a regular camp bus. For summer 2026, we&apos;re planning trips that include the Jersey shore, amusement parks, drone racing, water tubing, challenge courses, boating, river rafting, art-making, martial arts, and cooking classes.
-                  </p>
-                  <p className="text-gray-700 leading-relaxed">
-                    Four days a week the Day Trippers return back to camp in time to go home on the regular bus or into the extended day program. One night a week is a late night; parents must come to camp around 5:30 pm for pick up.
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900">{c.programHeading}</h2>
+                  <div
+                    className="text-gray-700 leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.programHtml) }}
+                  />
                 </div>
               </AnimateIn>
               <AnimateIn direction="right">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/assets/site/Canoe.jpg"
-                    alt="Day Trippers on an adventure"
+                    src={c.programImage.url || D.program_image_url}
+                    alt={c.programImage.alt || D.program_image_alt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
@@ -84,16 +147,18 @@ export default function DayTrippersPage() {
       </Section>
 
       {/* Video */}
-      <Section id="video" bg="cream" padding="sm">
-        <Container size="narrow">
-          <AnimateIn direction="up">
-            <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-500 mb-4">
-              See the Day Trippers Program in action
-            </p>
-            <VideoEmbed vimeoId="361308491" title="Day Trippers Program" />
-          </AnimateIn>
-        </Container>
-      </Section>
+      {c.videoId && (
+        <Section id="video" bg="cream" padding="sm">
+          <Container size="narrow">
+            <AnimateIn direction="up">
+              <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-500 mb-4">
+                {c.videoCaption}
+              </p>
+              <VideoEmbed vimeoId={c.videoId} title="Day Trippers Program" />
+            </AnimateIn>
+          </Container>
+        </Section>
+      )}
 
       {/* Supervision */}
       <Section id="supervision" bg="white">
@@ -103,8 +168,8 @@ export default function DayTrippersPage() {
               <AnimateIn direction="left">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/assets/site/DSC06927-scaled.jpg"
-                    alt="Day Trippers counselors with teen campers"
+                    src={c.supervisionImage.url || D.supervision_image_url}
+                    alt={c.supervisionImage.alt || D.supervision_image_alt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
@@ -113,15 +178,14 @@ export default function DayTrippersPage() {
               </AnimateIn>
               <AnimateIn direction="right">
                 <div className="space-y-6">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Supervision
-                  </h2>
-                  <p className="text-gray-700 leading-relaxed">
-                    The Day Trippers counselors are experienced, mature male and female teachers who work with and understand young teens.
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900">{c.supervisionHeading}</h2>
+                  <div
+                    className="text-gray-700 leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.supervisionHtml) }}
+                  />
                   <div>
                     <Button variant="primary" href={EXTERNAL_LINKS.camperApp} external>
-                      Apply Now
+                      {c.supervisionButtonLabel}
                     </Button>
                   </div>
                 </div>
@@ -136,20 +200,18 @@ export default function DayTrippersPage() {
         <Container size="narrow">
           <AnimateIn direction="up">
             <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
-              2026 Day Trippers Calendar
+              {c.calendarHeading}
             </h2>
-            <p className="text-center text-gray-700 mb-8">
-              See where this summer&apos;s adventures will take us.
-            </p>
+            <p className="text-center text-gray-700 mb-8">{c.calendarSubheading}</p>
             <a
-              href="/assets/site/Day-Trippers-2026.png"
+              href={c.calendarImage.url || D.calendar_image_url}
               target="_blank"
               rel="noopener noreferrer"
               className="block rounded-2xl overflow-hidden border border-stone/30 hover:shadow-md transition-shadow"
             >
               <Image
-                src="/assets/site/Day-Trippers-2026.png"
-                alt="Camp Riverbend 2026 Day Trippers calendar"
+                src={c.calendarImage.url || D.calendar_image_url}
+                alt={c.calendarImage.alt || D.calendar_image_alt}
                 width={1200}
                 height={1500}
                 className="w-full h-auto"
@@ -164,25 +226,25 @@ export default function DayTrippersPage() {
         <Container>
           <AnimateIn direction="up">
             <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">
-              Learn More
+              {c.learnMoreHeading}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <LinkCard
-                title="All Programs"
+                title={c.learnMore1Title}
                 href="/programs"
-                image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
+                image={c.learnMore1Image.url || D.learn_more_1_image}
                 index={0}
               />
               <LinkCard
-                title="Activities"
+                title={c.learnMore2Title}
                 href="/activities"
-                image="/assets/site/ADV01169.jpg"
+                image={c.learnMore2Image.url || D.learn_more_2_image}
                 index={1}
               />
               <LinkCard
-                title="Rates & Dates"
+                title={c.learnMore3Title}
                 href="/rates-dates-application-2026"
-                image="/assets/site/Canoe.jpg"
+                image={c.learnMore3Image.url || D.learn_more_3_image}
                 index={2}
               />
             </div>

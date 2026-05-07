@@ -11,6 +11,9 @@ import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
 import { staffMembers } from "@/lib/db/schema";
 import { asc, eq } from "drizzle-orm";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { BREENE_FAMILY_DEFAULTS as D } from "@/lib/page-defaults/breene-family";
 
 export const metadata: Metadata = {
   title: "Directors & Senior Staff",
@@ -18,8 +21,7 @@ export const metadata: Metadata = {
     "Meet the Breene family and senior staff who have been running Camp Riverbend since 1962.",
 };
 
-// Revalidate every 5 minutes — staff edits in admin show up promptly without a deploy
-export const revalidate = 300;
+const PAGE_SLUG = "breene-family";
 
 async function getStaff(): Promise<StaffMember[]> {
   try {
@@ -33,6 +35,33 @@ async function getStaff(): Promise<StaffMember[]> {
     console.error("Failed to load staff from DB:", err);
     return [];
   }
+}
+
+async function loadCopy(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("breene-family: page content load failed, using defaults:", err);
+  }
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+    backLinkLabel: t("back_link_label", D.back_link_label),
+    directorsHeading: t("directors_heading", D.directors_heading),
+    divisionHeadsHeading: t("division_heads_heading", D.division_heads_heading),
+    assistantHeadsHeading: t("assistant_heads_heading", D.assistant_heads_heading),
+    foundersCaption: t("founders_caption", D.founders_caption),
+    foundersHeading: t("founders_heading", D.founders_heading),
+  };
 }
 
 function StaffSection({
@@ -70,8 +99,13 @@ function StaffSection({
   );
 }
 
-export default async function BreeneFamilyPage() {
-  const staffData = await getStaff();
+export default async function BreeneFamilyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const [staffData, c] = await Promise.all([getStaff(), loadCopy(mode)]);
   const directors = staffData.filter((s) => s.section === "directors");
   const divisionHeads = staffData.filter((s) => s.section === "division_heads");
   const assistantHeads = staffData.filter((s) => s.section === "assistant_heads");
@@ -80,9 +114,9 @@ export default async function BreeneFamilyPage() {
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Directors & Senior Staff"
-        subtitle="The Breene family and senior staff have been running Camp Riverbend for over 60 years"
-        bgImage="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "About Riverbend", href: "/about-riverbend" },
@@ -97,15 +131,15 @@ export default async function BreeneFamilyPage() {
             className="inline-flex items-center gap-2 text-sm font-medium text-bark hover:text-camp-red transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to About Riverbend
+            {c.backLinkLabel}
           </Link>
         </Container>
       </Section>
 
-      <StaffSection title="Directors" staff={directors} bg="cream" columns={4} />
-      <StaffSection title="Division Heads" staff={divisionHeads} bg="white" columns={3} />
+      <StaffSection title={c.directorsHeading} staff={directors} bg="cream" columns={4} />
+      <StaffSection title={c.divisionHeadsHeading} staff={divisionHeads} bg="white" columns={3} />
       <StaffSection
-        title="Assistant Division Heads"
+        title={c.assistantHeadsHeading}
         staff={assistantHeads}
         bg="cream"
         columns={3}
@@ -117,9 +151,9 @@ export default async function BreeneFamilyPage() {
             <AnimateIn>
               <div className="text-center mb-4">
                 <span className="text-caption text-camp-red tracking-widest">
-                  In Loving Memory
+                  {c.foundersCaption}
                 </span>
-                <h2 className="font-camp mt-2">Our Founders</h2>
+                <h2 className="font-camp mt-2">{c.foundersHeading}</h2>
               </div>
             </AnimateIn>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">

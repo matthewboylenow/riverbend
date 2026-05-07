@@ -7,6 +7,10 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { VideoEmbed } from "@/components/ui/VideoEmbed";
 import { LinkCard } from "@/components/ui/LinkCard";
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { SPORTS_DEFAULTS as D, type SportCard } from "@/lib/page-defaults/sports";
 
 export const metadata: Metadata = {
   title: "Sports | Camp Riverbend",
@@ -14,83 +18,62 @@ export const metadata: Metadata = {
     "Explore the various sports activities of Camp Riverbend, a traditional summer day camp located along the gentle Passaic River in Warren Township, New Jersey.",
 };
 
-const sportsCards = [
-  {
-    name: "Basketball",
-    image: "/assets/site/DSC07326-scaled.jpg",
-    description:
-      "Our outdoor basketball court, with one full sized court and two half courts, is where our basketball specialist teaches skills and organizes games daily. The outdoor court is surrounded by beautiful shade trees to keep campers cool on hot days.",
-  },
-  {
-    name: "Tennis",
-    image: "/assets/site/DSC07389-scaled.jpg",
-    description:
-      "Tennis is tops for cardio and learning strategy on the court. Our two regulation sized courts provide room for individual and group matches.",
-  },
-  {
-    name: "Baseball / Softball",
-    image: "/assets/site/DSC07606-scaled.jpg",
-    description:
-      "We have a regulation-sized Little League field where campers learn the fundamentals and fine points of Baseball and Softball. An experienced instructor gives campers formal lessons to help develop skills, and also supervises game play.",
-  },
-  {
-    name: "Gaga",
-    image: "/assets/site/MEC_9087-scaled.jpg",
-    description:
-      "The game is played inside a 6-sided court, with walls 2 feet high. If a ball hits you below your knees you are out! But don't worry — each round lasts just three minutes and then you are back in the game.",
-  },
-  {
-    name: "Soccer",
-    image: "/assets/site/DSC07242-scaled.jpg",
-    description:
-      "At the walled soccer field, our specialist teaches various skills and supervises real game play.",
-  },
-  {
-    name: "Stix",
-    image: "/assets/site/DSC07236-scaled.jpg",
-    description:
-      "Our Stix program includes non-contact lacrosse, field hockey and pillo polo.",
-  },
-  {
-    name: "Hockey",
-    image: "/assets/site/DSC07236-scaled.jpg",
-    description:
-      "Our covered rink is a perfect location for a game of roller hockey or street hockey. The rink has a smooth paved surface and sturdy plastic walls that keep the ball on the court and the action going strong! Campers can also Rollerblade here.",
-  },
-  {
-    name: "Mini-Golf",
-    image: "/assets/site/DSC07242-scaled.jpg",
-    description:
-      "Campers love to perfect their strokes on our 9-hole miniature golf course. Each hole has a tricky detour on the way to the cup.",
-  },
-  {
-    name: "Archery",
-    image: "/assets/site/DSC07032-scaled.jpg",
-    description:
-      "Campers entering 2nd grade and up learn the ancient skill of archery from our experienced instructor. Our archery program emphasizes safety, focus, achievement and fun.",
-  },
-  {
-    name: "Yoga",
-    image: "/assets/site/DSC07402-scaled.jpg",
-    description:
-      "Campers learn the ancient techniques of yoga under the watchful eyes of an experienced instructor. Yoga provides opportunities for developing fitness, coordination and strength.",
-  },
-  {
-    name: "Volleyball",
-    image: "/assets/site/Volleyball-Riverbend.jpg",
-    description:
-      "Our volleyball court is the perfect spot for a great game of volleyball or newcomb.",
-  },
-];
+const PAGE_SLUG = "sports";
 
-export default function SportsPage() {
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("sports: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    introHtml: r("intro", D.intro_html),
+
+    sports: readBlock<{ rows: SportCard[] }>(blocks, "sports", { rows: D.sports }).rows,
+
+    videoId: t("video_id", D.video_id),
+    videoTitle: t("video_title", D.video_title),
+
+    learnMoreHeading: t("learn_more_heading", D.learn_more_heading),
+    learnMore1Title: t("learn_more_1_title", D.learn_more_1_title),
+    learnMore1Image: i("learn_more_1_image", D.learn_more_1_image),
+    learnMore2Title: t("learn_more_2_title", D.learn_more_2_title),
+    learnMore2Image: i("learn_more_2_image", D.learn_more_2_image),
+    learnMore3Title: t("learn_more_3_title", D.learn_more_3_title),
+    learnMore3Image: i("learn_more_3_image", D.learn_more_3_image),
+  };
+}
+
+export default async function SportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
-      {/* Page Header */}
       <PageHeader
-        title="Sports at Riverbend"
-        subtitle="Building skills, sportsmanship, and team cooperation"
-        bgImage="/assets/site/DSC07565-marketing-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Activities", href: "/activities" },
@@ -102,16 +85,10 @@ export default function SportsPage() {
       <Section id="intro" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
-            <div className="space-y-6 text-center">
-              <p className="text-body-lg text-bark leading-relaxed">
-                At Camp Riverbend our campers enjoy a complete sports program
-                that emphasizes learning new skills, sportsmanship and team
-                cooperation. Our sports programs help campers discover new
-                abilities and gain a sense of achievement and success in
-                whatever they try. Coaches oversee and instruct sports
-                activities in camp.
-              </p>
-            </div>
+            <div
+              className="prose prose-lg max-w-none mx-auto text-center text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.introHtml) }}
+            />
           </AnimateIn>
         </Container>
       </Section>
@@ -120,8 +97,8 @@ export default function SportsPage() {
       <Section id="sports-grid" bg="white" padding="default">
         <Container>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sportsCards.map((sport, index) => (
-              <AnimateIn key={sport.name} delay={index * 0.1}>
+            {c.sports.map((sport, index) => (
+              <AnimateIn key={`${sport.name}-${index}`} delay={index * 0.1}>
                 <div className="group">
                   <div className="relative aspect-square overflow-hidden rounded-2xl mb-4">
                     <Image
@@ -146,39 +123,41 @@ export default function SportsPage() {
       </Section>
 
       {/* Section 3: Sports Video */}
-      <Section id="sports-video" bg="cream" padding="default">
-        <Container size="narrow">
-          <AnimateIn>
-            <VideoEmbed vimeoId="382945475" title="Sports at Camp Riverbend" />
-          </AnimateIn>
-        </Container>
-      </Section>
+      {c.videoId && (
+        <Section id="sports-video" bg="cream" padding="default">
+          <Container size="narrow">
+            <AnimateIn>
+              <VideoEmbed vimeoId={c.videoId} title={c.videoTitle} />
+            </AnimateIn>
+          </Container>
+        </Section>
+      )}
 
       {/* Section 4: Learn More */}
       <Section bg="white" padding="default">
         <Container>
           <AnimateIn>
             <div className="text-center mb-10">
-              <h2 className="font-camp">Learn More</h2>
+              <h2 className="font-camp">{c.learnMoreHeading}</h2>
             </div>
           </AnimateIn>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <LinkCard
-              title="Activities"
+              title={c.learnMore1Title}
               href="/activities"
-              image="/assets/site/ADV01169.jpg"
+              image={c.learnMore1Image.url || D.learn_more_1_image}
               index={0}
             />
             <LinkCard
-              title="Our Programs"
+              title={c.learnMore2Title}
               href="/programs"
-              image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
+              image={c.learnMore2Image.url || D.learn_more_2_image}
               index={1}
             />
             <LinkCard
-              title="Rates & Dates"
+              title={c.learnMore3Title}
               href="/rates-dates-application-2026"
-              image="/assets/site/Canoe.jpg"
+              image={c.learnMore3Image.url || D.learn_more_3_image}
               index={2}
             />
           </div>

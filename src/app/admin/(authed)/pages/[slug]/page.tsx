@@ -10,6 +10,11 @@ import { CAMP_RIVERBEND_APP_SCHEMA } from "@/lib/page-schemas/camp-riverbend-app
 import { HEALTH_SAFETY_SCHEMA } from "@/lib/page-schemas/health-safety";
 import { PROGRAMS_SCHEMA } from "@/lib/page-schemas/programs";
 import { CLUBHOUSE_SCHEMA } from "@/lib/page-schemas/clubhouse";
+import { STAFF_SCHEMA } from "@/lib/page-schemas/staff";
+import { BREENE_FAMILY_SCHEMA } from "@/lib/page-schemas/breene-family";
+import { DAY_TRIPPERS_SCHEMA } from "@/lib/page-schemas/day-trippers";
+import { SPORTS_SCHEMA } from "@/lib/page-schemas/sports";
+import { RIVERBEND_EXPERIENCE_SCHEMA } from "@/lib/page-schemas/riverbend-experience";
 import type { PageSchema } from "@/lib/page-schemas/types";
 
 const SCHEMAS: Record<string, PageSchema> = {
@@ -23,6 +28,11 @@ const SCHEMAS: Record<string, PageSchema> = {
   [HEALTH_SAFETY_SCHEMA.slug]: HEALTH_SAFETY_SCHEMA,
   [PROGRAMS_SCHEMA.slug]: PROGRAMS_SCHEMA,
   [CLUBHOUSE_SCHEMA.slug]: CLUBHOUSE_SCHEMA,
+  [STAFF_SCHEMA.slug]: STAFF_SCHEMA,
+  [BREENE_FAMILY_SCHEMA.slug]: BREENE_FAMILY_SCHEMA,
+  [DAY_TRIPPERS_SCHEMA.slug]: DAY_TRIPPERS_SCHEMA,
+  [SPORTS_SCHEMA.slug]: SPORTS_SCHEMA,
+  [RIVERBEND_EXPERIENCE_SCHEMA.slug]: RIVERBEND_EXPERIENCE_SCHEMA,
 };
 
 export default async function PageEditor({

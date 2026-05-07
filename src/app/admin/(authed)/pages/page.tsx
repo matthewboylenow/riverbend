@@ -29,10 +29,10 @@ const PAGES: PageEntry[] = [
   },
   { slug: "programs", label: "Programs", status: "ready", description: "Hero, intro, three program cards, learn-more cards" },
   { slug: "clubhouse", label: "The Clubhouse", status: "ready", description: "Hero + section copy + photos + video" },
-  { slug: "riverbend-experience", label: "Riverbend Experience", status: "soon", description: "Phase 2" },
-  { slug: "day-trippers", label: "Day Trippers", status: "soon", description: "Phase 2" },
+  { slug: "riverbend-experience", label: "Riverbend Experience", status: "ready", description: "Hero + sections + sample schedules" },
+  { slug: "day-trippers", label: "Day Trippers", status: "ready", description: "Hero + program + supervision + 2026 calendar" },
   { slug: "activities", label: "Activities", status: "soon", description: "Phase 2" },
-  { slug: "sports", label: "Sports", status: "soon", description: "Phase 2" },
+  { slug: "sports", label: "Sports", status: "ready", description: "Hero + sport cards + video" },
   { slug: "videos", label: "Videos", status: "ready", description: "Hero + video list (vimeoId + title)" },
   { slug: "testimonials", label: "Testimonials", status: "soon", description: "Phase 2" },
   { slug: "faq", label: "FAQ", status: "soon", description: "Phase 2" },
@@ -40,9 +40,9 @@ const PAGES: PageEntry[] = [
   { slug: "lunch", label: "Lunch", status: "ready", description: "Hero + 3 sections + video" },
   { slug: "transportation", label: "Transportation", status: "ready", description: "Hero + section copy" },
   { slug: "health-safety", label: "Health & Safety", status: "ready", description: "Hero + safety copy + nurse + commitments + CTA" },
-  { slug: "staff", label: "Staff Info", status: "soon", description: "Phase 2" },
+  { slug: "staff", label: "Staff Info", status: "ready", description: "Hero + roles + dates + CTA (bios live in /admin/staff)" },
   { slug: "camp-riverbend-app", label: "Camp Riverbend App", status: "ready", description: "Hero + overview + download + features" },
-  { slug: "breene-family", label: "Directors & Senior Staff", status: "soon", description: "Phase 2 (bios already editable in Staff)" },
+  { slug: "breene-family", label: "Directors & Senior Staff", status: "ready", description: "Hero + section headings (bios live in /admin/staff)" },
 ];
 
 export default function AdminPagesIndex() {

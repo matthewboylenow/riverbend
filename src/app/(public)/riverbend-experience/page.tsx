@@ -6,8 +6,14 @@ import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { VideoEmbed } from "@/components/ui/VideoEmbed";
 import { LinkCard } from "@/components/ui/LinkCard";
-
 import Image from "next/image";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  RIVERBEND_EXPERIENCE_DEFAULTS as D,
+  type ScheduleLink,
+} from "@/lib/page-defaults/riverbend-experience";
 
 export const metadata: Metadata = {
   title: "Riverbend Experience | Grades 1-8 | Camp Riverbend",
@@ -15,13 +21,74 @@ export const metadata: Metadata = {
     "Campers entering 1st through 8th grades explore, grow and gain confidence! During the day, each group rotates through eight different activities and has many new experiences.",
 };
 
-export default function RiverbendExperiencePage() {
+const PAGE_SLUG = "riverbend-experience";
+
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("riverbend-experience: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    overviewBadge: t("overview_badge", D.overview_badge),
+    overviewHtml: r("overview", D.overview_html),
+
+    videoCaption: t("video_caption", D.video_caption),
+    videoId: t("video_id", D.video_id),
+    videoTitle: t("video_title", D.video_title),
+
+    typicalDayHeading: t("typical_day_heading", D.typical_day_heading),
+    typicalDayHtml: r("typical_day", D.typical_day_html),
+    typicalDayImage: i("typical_day_image", D.typical_day_image_url, D.typical_day_image_alt),
+
+    supervisionHeading: t("supervision_heading", D.supervision_heading),
+    supervisionHtml: r("supervision", D.supervision_html),
+    supervisionImage: i("supervision_image", D.supervision_image_url, D.supervision_image_alt),
+
+    schedulesHeading: t("schedules_heading", D.schedules_heading),
+    schedulesSubheading: t("schedules_subheading", D.schedules_subheading),
+    schedules: readBlock<{ rows: ScheduleLink[] }>(blocks, "schedules", { rows: D.schedules }).rows,
+
+    learnMoreHeading: t("learn_more_heading", D.learn_more_heading),
+    learnMore1Title: t("learn_more_1_title", D.learn_more_1_title),
+    learnMore1Image: i("learn_more_1_image", D.learn_more_1_image),
+    learnMore2Title: t("learn_more_2_title", D.learn_more_2_title),
+    learnMore2Image: i("learn_more_2_image", D.learn_more_2_image),
+    learnMore3Title: t("learn_more_3_title", D.learn_more_3_title),
+    learnMore3Image: i("learn_more_3_image", D.learn_more_3_image),
+  };
+}
+
+export default async function RiverbendExperiencePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       <PageHeader
-        title="Riverbend Experience"
-        subtitle="Where campers in grades 1-8 explore, grow, and gain confidence"
-        bgImage="/assets/site/ADV07104-scaled.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Programs", href: "/programs" },
@@ -35,33 +102,30 @@ export default function RiverbendExperiencePage() {
           <AnimateIn direction="up">
             <div className="text-center mb-4">
               <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full mb-4">
-                Grades 1-8
+                {c.overviewBadge}
               </span>
             </div>
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              During the day, each group rotates through eight age-appropriate activities including team sports, arts &amp; crafts, swimming, outdoor adventures like high-ropes, zipline, canoeing, and much more! Campers can explore their favorite activities at midday clubs.
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              Campers entering 4th &amp; 5th grades choose their own afternoon schedules twice a week in our tracking program. Campers entering 6th, 7th and 8th grades choose their own individualized afternoon schedules three times a week with &ldquo;SuperChoice.&rdquo;
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              Swimming is an important part of each day at Riverbend, with group instruction each morning and a &ldquo;free&rdquo; swim in the afternoon.
-            </p>
+            <div
+              className="text-lg text-gray-700 leading-relaxed [&_p]:mb-6 [&_p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.overviewHtml) }}
+            />
           </AnimateIn>
         </Container>
       </Section>
 
       {/* Video */}
-      <Section id="video" bg="cream" padding="sm">
-        <Container size="narrow">
-          <AnimateIn direction="up">
-            <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-500 mb-4">
-              See the Riverbend Experience in action
-            </p>
-            <VideoEmbed vimeoId="361309028" title="Riverbend Experience" />
-          </AnimateIn>
-        </Container>
-      </Section>
+      {c.videoId && (
+        <Section id="video" bg="cream" padding="sm">
+          <Container size="narrow">
+            <AnimateIn direction="up">
+              <p className="text-center text-sm font-semibold uppercase tracking-widest text-gray-500 mb-4">
+                {c.videoCaption}
+              </p>
+              <VideoEmbed vimeoId={c.videoId} title={c.videoTitle} />
+            </AnimateIn>
+          </Container>
+        </Section>
+      )}
 
       {/* A Typical Day */}
       <Section id="typical-day" bg="white">
@@ -70,22 +134,18 @@ export default function RiverbendExperiencePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
               <AnimateIn direction="left">
                 <div className="space-y-6">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    A Typical Day
-                  </h2>
-                  <p className="text-gray-700 leading-relaxed">
-                    Each day begins and ends with a camp-wide assembly where our Camp Directors lead everyone in traditional and new camp songs.
-                  </p>
-                  <p className="text-gray-700 leading-relaxed">
-                    Campers spend the day in all-boy or all-girl groups (8th grade group is co-ed) with others in the same grade.
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900">{c.typicalDayHeading}</h2>
+                  <div
+                    className="text-gray-700 leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.typicalDayHtml) }}
+                  />
                 </div>
               </AnimateIn>
               <AnimateIn direction="right">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/assets/site/ADV07400.jpg-marketing-scaled.jpg"
-                    alt="Campers enjoying a typical day at Riverbend"
+                    src={c.typicalDayImage.url || D.typical_day_image_url}
+                    alt={c.typicalDayImage.alt || D.typical_day_image_alt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
@@ -105,8 +165,8 @@ export default function RiverbendExperiencePage() {
               <AnimateIn direction="left">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
-                    alt="Counselors supervising campers at Riverbend"
+                    src={c.supervisionImage.url || D.supervision_image_url}
+                    alt={c.supervisionImage.alt || D.supervision_image_alt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
@@ -115,12 +175,11 @@ export default function RiverbendExperiencePage() {
               </AnimateIn>
               <AnimateIn direction="right">
                 <div className="space-y-6">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Supervision
-                  </h2>
-                  <p className="text-gray-700 leading-relaxed">
-                    Each group has two counselors leading them. Our group head counselors are teachers or older college students who have worked at Camp Riverbend before. Our group assistant counselors are college students or older high school students, many of them former Camp Riverbend campers themselves!
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900">{c.supervisionHeading}</h2>
+                  <div
+                    className="text-gray-700 leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.supervisionHtml) }}
+                  />
                 </div>
               </AnimateIn>
             </div>
@@ -133,30 +192,13 @@ export default function RiverbendExperiencePage() {
         <Container>
           <AnimateIn direction="up">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Sample Schedules</h2>
-              <p className="text-gray-700 max-w-2xl mx-auto">
-                Each grade has its own daily rotation. Click any schedule to see how a typical
-                week is structured.
-              </p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">{c.schedulesHeading}</h2>
+              <p className="text-gray-700 max-w-2xl mx-auto">{c.schedulesSubheading}</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-              {[
-                { label: "1st Grade — Boys", href: "/assets/documents/schedules/1st-grade-boys.pdf" },
-                { label: "1st Grade — Girls", href: "/assets/documents/schedules/1st-grade-girls.pdf" },
-                { label: "2nd Grade — Boys", href: "/assets/documents/schedules/2nd-grade-boys.pdf" },
-                { label: "2nd Grade — Girls", href: "/assets/documents/schedules/2nd-grade-girls.pdf" },
-                { label: "3rd Grade — Boys", href: "/assets/documents/schedules/3rd-grade-boys.pdf" },
-                { label: "3rd Grade — Girls", href: "/assets/documents/schedules/3rd-grade-girls.pdf" },
-                { label: "4th Grade — Boys", href: "/assets/documents/schedules/4th-grade-boys.pdf" },
-                { label: "4th Grade — Girls", href: "/assets/documents/schedules/4th-grade-girls.pdf" },
-                { label: "5th Grade — Boys", href: "/assets/documents/schedules/5th-grade-boys.pdf" },
-                { label: "5th Grade — Girls", href: "/assets/documents/schedules/5th-grade-girls.pdf" },
-                { label: "6th–7th — Boys", href: "/assets/documents/schedules/6th-7th-grade-boys.pdf" },
-                { label: "6th–7th — Girls", href: "/assets/documents/schedules/6th-7th-grade-girls.pdf" },
-                { label: "8th Grade (Coed)", href: "/assets/documents/schedules/8th-grade-coed.pdf" },
-              ].map((s) => (
+              {c.schedules.map((s) => (
                 <a
-                  key={s.href}
+                  key={`${s.label}-${s.href}`}
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -176,25 +218,25 @@ export default function RiverbendExperiencePage() {
         <Container>
           <AnimateIn direction="up">
             <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">
-              Learn More
+              {c.learnMoreHeading}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <LinkCard
-                title="All Programs"
+                title={c.learnMore1Title}
                 href="/programs"
-                image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
+                image={c.learnMore1Image.url || D.learn_more_1_image}
                 index={0}
               />
               <LinkCard
-                title="Activities"
+                title={c.learnMore2Title}
                 href="/activities"
-                image="/assets/site/ADV01169.jpg"
+                image={c.learnMore2Image.url || D.learn_more_2_image}
                 index={1}
               />
               <LinkCard
-                title="Rates & Dates"
+                title={c.learnMore3Title}
                 href="/rates-dates-application-2026"
-                image="/assets/site/Canoe.jpg"
+                image={c.learnMore3Image.url || D.learn_more_3_image}
                 index={2}
               />
             </div>
