@@ -15,6 +15,8 @@ import {
   type PaymentRow,
 } from "@/lib/page-defaults/rates-dates";
 
+const DEFAULT_HERO_BG = "/assets/site/Canoe.jpg";
+
 export const metadata: Metadata = {
   title: "2026 Rates, Dates & Application | Camp Riverbend",
   description:
@@ -42,6 +44,7 @@ async function loadContent() {
     tuitionExtrasHtml: readBlock<{ html: string }>(blocks, "tuition_extras", { html: DEFAULTS.tuition_extras_html }).html,
     discounts: readBlock<{ rows: DiscountRow[] }>(blocks, "discounts", { rows: DEFAULTS.discounts }).rows,
     paymentSchedule: readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule", { rows: DEFAULTS.payment_schedule }).rows,
+    heroBg: readBlock<{ url: string; alt?: string }>(blocks, "hero_bg", { url: DEFAULT_HERO_BG, alt: "" }),
   };
 }
 
@@ -53,7 +56,7 @@ export default async function RatesDatePage() {
       <PageHeader
         title={c.heroTitle}
         subtitle={c.heroSubtitle}
-        bgImage="/assets/site/Canoe.jpg"
+        bgImage={c.heroBg.url || DEFAULT_HERO_BG}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: c.heroTitle },
