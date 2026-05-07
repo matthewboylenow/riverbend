@@ -11,6 +11,7 @@ export const orderStatusEnum = pgEnum('order_status', [
   'pending', 'paid', 'shipped', 'fulfilled', 'cancelled',
   'pending_invoice', 'invoiced'
 ]);
+export const mediaKindEnum = pgEnum('media_kind', ['image', 'document']);
 
 // ─── Admin Users ────────────────────────────────────────
 export const adminUsers = pgTable('admin_users', {
@@ -122,6 +123,11 @@ export const pageContent = pgTable('page_content', {
   blockKey: text('block_key').notNull(),
   blockType: text('block_type').notNull(),
   contentJson: jsonb('content_json').notNull(),
+  // Pending changes — populated by Save Draft, cleared by Publish/Discard.
+  // Public page reads this only when a preview cookie/query is present.
+  draftContentJson: jsonb('draft_content_json'),
+  draftUpdatedAt: timestamp('draft_updated_at', { withTimezone: true }),
+  draftUpdatedBy: uuid('draft_updated_by').references(() => adminUsers.id),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   updatedBy: uuid('updated_by').references(() => adminUsers.id),
 });
@@ -147,6 +153,31 @@ export const documents = pgTable('documents', {
   blobPath: text('blob_path').notNull(), // e.g. "documents/schedules/1st-grade-boys.pdf"
   blobUrl: text('blob_url').notNull(), // absolute Blob URL (or /assets/... if rewritten)
   contentType: text('content_type'),
+  sizeBytes: integer('size_bytes'),
+  uploadedAt: timestamp('uploaded_at', { withTimezone: true }).defaultNow().notNull(),
+  uploadedBy: uuid('uploaded_by').references(() => adminUsers.id),
+});
+
+// ─── Media Library ──────────────────────────────────────
+// WordPress-style unified library. Holds both images and documents.
+// `kind` discriminates; image-specific fields (width, height, alt) are
+// nullable for documents.
+//
+// `url` is what gets embedded into pages — usually a /assets/<blobPath>
+// rewrite so the public surface is stable across uploads. `blobPath` is
+// the key inside Vercel Blob; `key` is the human-stable slug used by code
+// references like document keys.
+export const mediaAssets = pgTable('media_assets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  kind: mediaKindEnum('kind').notNull(),
+  key: text('key').unique().notNull(),
+  title: text('title').notNull(),
+  alt: text('alt'), // image-only; null for documents
+  blobPath: text('blob_path').notNull(),
+  url: text('url').notNull(), // /assets/<blobPath> or absolute
+  contentType: text('content_type'),
+  width: integer('width'),  // image-only
+  height: integer('height'), // image-only
   sizeBytes: integer('size_bytes'),
   uploadedAt: timestamp('uploaded_at', { withTimezone: true }).defaultNow().notNull(),
   uploadedBy: uuid('uploaded_by').references(() => adminUsers.id),
