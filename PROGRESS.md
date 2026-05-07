@@ -17,10 +17,18 @@ Single source of truth for backend completion.
 - ✅ Seeded: 1 super admin · 5 categories · 21 products + variants · 18 staff · 3 shipping tiers
 
 ## Phase 2 — Authentication
-- ✅ `src/lib/auth.ts` — NextAuth v5 credentials provider, bcrypt, JWT session
+- ✅ `src/lib/auth.ts` — NextAuth v5; Credentials provider accepts only signed login tickets
+- ✅ `src/lib/auth.config.ts` — edge-safe shared config used by middleware
+- ✅ `src/lib/auth-tokens.ts` — HMAC-signed tickets/challenges, OTP gen, sha256 helpers
+- ✅ `src/lib/auth-rate-limit.ts` — in-memory token bucket
+- ✅ `src/lib/auth-audit.ts` — `admin_auth_log` writer
 - ✅ `src/app/api/auth/[...nextauth]/route.ts`
-- ✅ `src/middleware.ts` — guards `/admin/*`, redirects unauth to `/admin/login`
-- ✅ `src/app/admin/login/page.tsx` — sign-in form
+- ✅ `src/middleware.ts` — guards `/admin/*`; whitelists login/verify/forgot/reset
+- ✅ `/admin/login` + `/admin/login/verify` — two-step login (password → 6-digit email code)
+- ✅ Trusted-device cookie (30 days) skips OTP on remembered devices
+- ✅ `/admin/forgot` + `/admin/reset` — email-based password reset (15-min, single-use, hashed)
+- ✅ Reset wipes user's trusted devices and open OTPs
+- ✅ Rate limits on password / OTP / reset endpoints
 - ✅ Logout button (server action) in admin header
 - ✅ Session-aware admin layout shows current user
 
@@ -40,10 +48,9 @@ Single source of truth for backend completion.
 
 ## Phase 5 — E-commerce
 - ✅ Cart (`useCart` + `CartProvider` already wired into root layout)
-- ✅ `/api/orders/account-billing` — inserts order + line items, sends emails (no-op without RESEND_API_KEY)
-- ✅ `/api/stripe/checkout` — creates pending DB order, line items, attaches session ID
-- ✅ `/api/stripe/webhook` — verifies signature, marks paid, sends emails
-- ✅ `src/lib/email.ts` — Resend helper, gracefully degrades to console log
+- ✅ `/api/orders/account-billing` — sole order path; inserts order + line items, emails staff who manually charge the camper's account
+- ✅ `src/lib/email.ts` — Resend helper for orders + admin auth emails (gracefully degrades to console log without `RESEND_API_KEY`)
+- 🚫 Stripe removed — no card processor; account billing only (legacy `payment_method` column kept for historical orders)
 
 ## Phase 6 — Image migration
 - ✅ `scripts/migrate-images.ts` — fetches CDN, uploads to Blob, updates DB rows
@@ -58,8 +65,7 @@ Single source of truth for backend completion.
 - ✅ Full type-check + production build passes (65 routes, 31 admin/API + 34 public)
 
 ## External credentials (not blocking — features degrade gracefully)
-- 🔒 `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` / `STRIPE_WEBHOOK_SECRET` — Stripe checkout returns 503 until set; account-billing path works without it
-- 🔒 `RESEND_API_KEY` — orders save to DB; email send is a console log until set
+- ✅ `RESEND_API_KEY` — set; domain verified
 - 🔒 `NEXT_PUBLIC_FATHOM_SITE_ID` / `NEXT_PUBLIC_FB_PIXEL_ID` — analytics not yet wired (defer until launch)
 
 ---

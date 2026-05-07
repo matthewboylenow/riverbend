@@ -17,7 +17,7 @@ Read and execute these files **in sequence**. Each file builds on the previous.
 | 06 | `06_ABOUT_PAGE.md` | Build the About/Legacy & Tradition page |
 | 07 | `07_BREENE_FAMILY.md` | Build staff page + admin CRUD backend |
 | 08 | `08_ALL_PAGES.md` | Build remaining 19 content pages |
-| 09 | `09_STORE.md` | Build store: products, cart, checkout (Stripe + account billing) |
+| 09 | `09_STORE.md` | Build store: products, cart, checkout (account billing only — no card processor) |
 | 10 | `10_ADMIN.md` | Build admin dashboard: auth, products, orders, users |
 | 11 | `11_IMAGES.md` | Migrate images from old CDN to Vercel Blob |
 | 12 | `12_ANALYTICS.md` | Set up Fathom Analytics + Facebook Pixel |
@@ -37,7 +37,7 @@ Build files 08-13 to complete the full site.
 - **Domain:** campriverbend.com (client controls DNS)
 - **Custom font:** User will provide .woff2 file directly. Load via next/font/local.
 - **Order notifications:** abby@campriverbend.com via Resend
-- **Stripe:** TBD — may need account setup. Scaffold integration, plug in keys later.
+- **Payments:** Account billing only — orders email staff who manually charge the camper's account. No card processor.
 - **External services preserved:** CampInTouch (login/apps), Vimeo (video hosting), Yessirr.com (merch)
 - **Facebook Pixel ID:** 2163419317208125
 

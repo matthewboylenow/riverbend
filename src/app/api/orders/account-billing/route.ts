@@ -68,7 +68,6 @@ export async function POST(request: Request) {
       customerEmail: order.customerEmail,
       camperName: order.camperName,
       phone: order.phone,
-      paymentMethod: "account_billing",
       subtotal,
       shippingCost,
       total,

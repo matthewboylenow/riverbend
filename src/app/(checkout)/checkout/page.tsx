@@ -3,12 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, CreditCard, FileText, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { formatPriceDollars } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-
-type PaymentMethod = "stripe" | "account";
 
 interface FormData {
   name: string;
@@ -39,7 +37,6 @@ const INITIAL_FORM: FormData = {
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
-  const [method, setMethod] = useState<PaymentMethod>("stripe");
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,88 +55,46 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      if (method === "stripe") {
-        const res = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items: items.map((i) => ({
-              productId: i.productId,
-              variantId: i.variantId,
-              productName: i.productName,
-              variantName: i.variantName,
-              price: Math.round(i.price * 100), // cents
-              quantity: i.quantity,
-            })),
-            customerInfo: {
-              name: form.name,
-              email: form.email,
-              phone: form.phone,
-            },
-            shippingInfo: form.pickupAtCamp
-              ? null
-              : {
-                  line1: form.addressLine1,
-                  line2: form.addressLine2,
-                  city: form.city,
-                  state: form.state,
-                  zip: form.zip,
-                },
-            shippingCost: Math.round(shippingCost * 100),
-          }),
-        });
+      const res = await fetch("/api/orders/account-billing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: i.productId,
+            variantId: i.variantId,
+            productName: i.productName,
+            variantName: i.variantName,
+            price: i.price,
+            quantity: i.quantity,
+          })),
+          customerInfo: {
+            name: form.name,
+            email: form.email,
+            phone: form.phone,
+            camperName: form.camperName,
+          },
+          shippingInfo: form.pickupAtCamp
+            ? { pickup: true }
+            : {
+                line1: form.addressLine1,
+                line2: form.addressLine2,
+                city: form.city,
+                state: form.state,
+                zip: form.zip,
+              },
+          subtotal,
+          shippingCost,
+          total,
+        }),
+      });
 
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-          return;
-        }
-        throw new Error(data.error || "Failed to create checkout session");
-      } else {
-        // Account billing
-        const res = await fetch("/api/orders/account-billing", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items: items.map((i) => ({
-              productId: i.productId,
-              variantId: i.variantId,
-              productName: i.productName,
-              variantName: i.variantName,
-              price: i.price,
-              quantity: i.quantity,
-            })),
-            customerInfo: {
-              name: form.name,
-              email: form.email,
-              phone: form.phone,
-              camperName: form.camperName,
-            },
-            shippingInfo: form.pickupAtCamp
-              ? { pickup: true }
-              : {
-                  line1: form.addressLine1,
-                  line2: form.addressLine2,
-                  city: form.city,
-                  state: form.state,
-                  zip: form.zip,
-                },
-            subtotal,
-            shippingCost,
-            total,
-          }),
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          clearCart();
-          router.push(
-            `/shop/order-confirmation?method=account&order=${data.orderNumber || ""}`
-          );
-          return;
-        }
-        throw new Error(data.error || "Failed to place order");
+      const data = await res.json();
+      if (data.success) {
+        clearCart();
+        router.push(`/shop/order-confirmation?method=account&order=${data.orderNumber || ""}`);
+        return;
       }
+      throw new Error(data.error || "Failed to place order");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -183,59 +138,13 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Left: Form */}
             <div className="lg:col-span-3 space-y-8">
-              {/* Payment method toggle */}
-              <div>
-                <h2 className="text-lg font-bold text-charcoal mb-4">
-                  Payment Method
-                </h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setMethod("stripe")}
-                    className={`flex items-center gap-3 rounded-xl border-2 p-4 transition-colors ${
-                      method === "stripe"
-                        ? "border-camp-red bg-camp-red/5"
-                        : "border-sand hover:border-stone"
-                    }`}
-                  >
-                    <CreditCard
-                      className={`h-5 w-5 ${
-                        method === "stripe" ? "text-camp-red" : "text-bark"
-                      }`}
-                    />
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-charcoal">
-                        Pay with Card
-                      </p>
-                      <p className="text-xs text-bark">
-                        Visa, Mastercard, Amex
-                      </p>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMethod("account")}
-                    className={`flex items-center gap-3 rounded-xl border-2 p-4 transition-colors ${
-                      method === "account"
-                        ? "border-camp-red bg-camp-red/5"
-                        : "border-sand hover:border-stone"
-                    }`}
-                  >
-                    <FileText
-                      className={`h-5 w-5 ${
-                        method === "account" ? "text-camp-red" : "text-bark"
-                      }`}
-                    />
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-charcoal">
-                        Bill to Account
-                      </p>
-                      <p className="text-xs text-bark">
-                        Invoice to camp account
-                      </p>
-                    </div>
-                  </button>
-                </div>
+              {/* Billing notice */}
+              <div className="rounded-xl bg-sand/40 border border-sand p-4 text-sm text-charcoal">
+                <p className="font-semibold mb-1">Billed to your camper&apos;s account</p>
+                <p className="text-bark">
+                  We&apos;ll add this order to your camper&apos;s account on file.
+                  No card required at checkout.
+                </p>
               </div>
 
               {/* Customer info */}
@@ -269,16 +178,14 @@ export default function CheckoutPage() {
                       className="w-full rounded-lg border border-sand px-4 py-3 text-sm text-charcoal placeholder:text-stone focus:border-camp-red focus:ring-1 focus:ring-camp-red outline-none"
                     />
                   </div>
-                  {method === "account" && (
-                    <input
-                      type="text"
-                      placeholder="Camper Name *"
-                      required
-                      value={form.camperName}
-                      onChange={(e) => update("camperName", e.target.value)}
-                      className="w-full rounded-lg border border-sand px-4 py-3 text-sm text-charcoal placeholder:text-stone focus:border-camp-red focus:ring-1 focus:ring-camp-red outline-none"
-                    />
-                  )}
+                  <input
+                    type="text"
+                    placeholder="Camper Name *"
+                    required
+                    value={form.camperName}
+                    onChange={(e) => update("camperName", e.target.value)}
+                    className="w-full rounded-lg border border-sand px-4 py-3 text-sm text-charcoal placeholder:text-stone focus:border-camp-red focus:ring-1 focus:ring-camp-red outline-none"
+                  />
                 </div>
               </div>
 
@@ -288,21 +195,19 @@ export default function CheckoutPage() {
                   Shipping
                 </h2>
 
-                {method === "account" && (
-                  <label className="flex items-center gap-3 mb-4 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.pickupAtCamp}
-                      onChange={(e) =>
-                        update("pickupAtCamp", e.target.checked)
-                      }
-                      className="h-4 w-4 rounded border-sand text-camp-red focus:ring-camp-red"
-                    />
-                    <span className="text-sm text-charcoal">
-                      Pick up at camp (free)
-                    </span>
-                  </label>
-                )}
+                <label className="flex items-center gap-3 mb-4 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.pickupAtCamp}
+                    onChange={(e) =>
+                      update("pickupAtCamp", e.target.checked)
+                    }
+                    className="h-4 w-4 rounded border-sand text-camp-red focus:ring-camp-red"
+                  />
+                  <span className="text-sm text-charcoal">
+                    Pick up at camp (free)
+                  </span>
+                </label>
 
                 {!form.pickupAtCamp && (
                   <div className="space-y-4">
@@ -367,11 +272,7 @@ export default function CheckoutPage() {
                 disabled={submitting}
                 className="w-full rounded-full bg-camp-red py-4 text-base font-bold text-white hover:bg-red-700 transition-colors disabled:opacity-60"
               >
-                {submitting
-                  ? "Processing..."
-                  : method === "stripe"
-                  ? `Pay ${formatPriceDollars(total)}`
-                  : "Place Order"}
+                {submitting ? "Processing..." : "Place Order"}
               </button>
             </div>
 
