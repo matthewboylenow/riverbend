@@ -12,6 +12,7 @@ import {
   Tags,
   ShoppingCart,
   UserCog,
+  Menu as MenuIcon,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 const adminNav = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Pages", href: "/admin/pages", icon: FileText },
+  { label: "Navigation", href: "/admin/navigation", icon: MenuIcon },
   { label: "Media", href: "/admin/media", icon: ImageIcon },
   { label: "Documents", href: "/admin/documents", icon: FileType2 },
   { label: "Staff", href: "/admin/staff", icon: Users },

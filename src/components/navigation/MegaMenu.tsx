@@ -143,7 +143,13 @@ function FeaturedCard({
 }
 
 export function MegaMenu({ group, onClose }: MegaMenuProps) {
-  const hasFeatured = !!group.featured;
+  // Up to 2 featured cards. Stack them vertically in the same column,
+  // so the existing grid layout (columns + featured column) keeps working.
+  const featuredCards = [
+    ...(group.featured ? [group.featured] : []),
+    ...(group.featuredExtras ?? []),
+  ].slice(0, 2);
+  const hasFeatured = featuredCards.length > 0;
   const colCount = group.columns.length;
 
   const gridClass = hasFeatured
@@ -201,10 +207,15 @@ export function MegaMenu({ group, onClose }: MegaMenuProps) {
               </motion.div>
             ))}
 
-            {/* Featured card */}
-            {group.featured && (
-              <motion.div variants={itemVariants} className="hidden lg:block">
-                <FeaturedCard featured={group.featured} onClose={onClose} />
+            {/* Featured cards (up to 2, stacked) */}
+            {hasFeatured && (
+              <motion.div
+                variants={itemVariants}
+                className="hidden lg:flex lg:flex-col gap-3"
+              >
+                {featuredCards.map((card, i) => (
+                  <FeaturedCard key={i} featured={card} onClose={onClose} />
+                ))}
               </motion.div>
             )}
           </div>

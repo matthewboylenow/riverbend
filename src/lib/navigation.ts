@@ -10,17 +10,22 @@ export interface NavColumn {
   links: NavLink[];
 }
 
+export interface FeaturedCard {
+  title: string;
+  description: string;
+  href: string;
+  cta: string;
+  external?: boolean;
+}
+
 export interface NavGroup {
   label: string;
   tagline?: string;
   columns: NavColumn[];
-  featured?: {
-    title: string;
-    description: string;
-    href: string;
-    cta: string;
-    external?: boolean;
-  };
+  featured?: FeaturedCard;
+  /** Additional featured cards beyond the first one. Mega menu renders up
+   *  to 2 cards total (featured + featuredExtras[0]). */
+  featuredExtras?: FeaturedCard[];
 }
 
 export const NAV_GROUPS: NavGroup[] = [
