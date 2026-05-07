@@ -3,38 +3,47 @@
  * via dangerouslySetInnerHTML. Allows only the small set of tags/attrs the
  * editor toolbar exposes — anything else (script, style, iframe, inline
  * styles, custom data-* attrs) is stripped.
+ *
+ * Pure-JS (sanitize-html) so it runs in any Node runtime — no JSDOM polyfill
+ * required, which is critical for Vercel's serverless functions.
  */
-import DOMPurify from "isomorphic-dompurify";
-
-export const ALLOWED_TAGS = [
-  "p",
-  "br",
-  "strong",
-  "em",
-  "u",
-  "h2",
-  "h3",
-  "ul",
-  "ol",
-  "li",
-  "a",
-  "blockquote",
-];
-
-export const ALLOWED_ATTRS = ["href", "target", "rel"];
+import sanitizeHtmlLib from "sanitize-html";
 
 export function sanitizeHtml(dirty: string): string {
   if (!dirty) return "";
-  const clean = DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR: ALLOWED_ATTRS,
-    ALLOW_DATA_ATTR: false,
-    // Force any link to open with safe rel
-    ADD_ATTR: ["target", "rel"],
+  return sanitizeHtmlLib(dirty, {
+    allowedTags: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "u",
+      "h2",
+      "h3",
+      "ul",
+      "ol",
+      "li",
+      "a",
+      "blockquote",
+    ],
+    allowedAttributes: {
+      a: ["href", "target", "rel"],
+    },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowedSchemesByTag: {},
+    transformTags: {
+      // Force safe rel on any link with target="_blank"
+      a: (tagName, attribs) => {
+        if (attribs.target === "_blank") {
+          return {
+            tagName,
+            attribs: { ...attribs, rel: "noopener noreferrer" },
+          };
+        }
+        return { tagName, attribs };
+      },
+    },
+    // No inline styles, no data-*, no class
+    disallowedTagsMode: "discard",
   });
-  // Force-add rel="noopener noreferrer" on external-target links
-  return clean.replace(
-    /<a ([^>]*?)target="_blank"([^>]*?)>/g,
-    (_m, pre, post) => `<a ${pre}target="_blank"${post} rel="noopener noreferrer">`
-  );
 }

@@ -234,7 +234,7 @@ export function BentoGrid() {
         className="col-span-1 row-span-1"
       />
       <StatCard
-        number="62+"
+        number="64"
         label="Years of tradition"
         href="/about-riverbend"
         index={3}

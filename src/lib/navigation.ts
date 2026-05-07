@@ -59,7 +59,7 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
     featured: {
       title: "Summer 2026",
-      description: "Registration is now open! Secure your spot at Camp Riverbend.",
+      description: "Limited space still available.",
       href: "/rates-dates-application-2026",
       cta: "View Rates & Dates",
     },

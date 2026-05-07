@@ -39,6 +39,9 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         codeBlock: false,
         code: false,
         horizontalRule: false,
+        // StarterKit ships a Link extension; disable it so our explicit
+        // Link.configure below is the only one (avoids duplicate-extension warning)
+        link: false,
       }),
       Link.configure({
         openOnClick: false,
