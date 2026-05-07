@@ -21,7 +21,12 @@ const PAGES: PageEntry[] = [
     status: "ready",
     description: "Tuition table, discounts, payment schedule, intro/outro copy",
   },
-  { slug: "about-riverbend", label: "About Riverbend", status: "soon", description: "Phase 2" },
+  {
+    slug: "about-riverbend",
+    label: "About Riverbend",
+    status: "ready",
+    description: "Hero, legacy, philosophy, facilities, staff, learn-more cards",
+  },
   { slug: "programs", label: "Programs", status: "soon", description: "Phase 2" },
   { slug: "clubhouse", label: "The Clubhouse", status: "soon", description: "Phase 2" },
   { slug: "riverbend-experience", label: "Riverbend Experience", status: "soon", description: "Phase 2" },

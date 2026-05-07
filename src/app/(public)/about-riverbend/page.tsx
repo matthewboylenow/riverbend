@@ -12,6 +12,10 @@ import Image from "next/image";
 import { TreeLine } from "@/components/illustrations/TreeLine";
 import { MountainRange } from "@/components/illustrations/MountainRange";
 import { Campfire } from "@/components/illustrations/Campfire";
+import { getPageContent, readBlock } from "@/lib/page-content";
+import { loadContentMode } from "@/lib/preview-mode";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { ABOUT_DEFAULTS as D } from "@/lib/page-defaults/about-riverbend";
 
 export const metadata: Metadata = {
   title: "About Camp Riverbend | Legacy & Tradition Since 1962",
@@ -19,14 +23,80 @@ export const metadata: Metadata = {
     "Founded in 1962 by the Breene family, Camp Riverbend in Warren, NJ has hosted generations of families. ACA accredited since season one.",
 };
 
-export default function AboutPage() {
+const PAGE_SLUG = "about-riverbend";
+
+async function loadContent(mode: "published" | "draft") {
+  let blocks = {};
+  try {
+    blocks = await getPageContent(PAGE_SLUG, mode);
+  } catch (err) {
+    console.error("about-riverbend: page content load failed, using defaults:", err);
+  }
+
+  const t = (key: string, fallback: string) =>
+    readBlock<{ value: string }>(blocks, key, { value: fallback }).value;
+  const r = (key: string, fallbackHtml: string) =>
+    readBlock<{ html: string }>(blocks, key, { html: fallbackHtml }).html;
+  const i = (key: string, fallbackUrl: string, fallbackAlt = "") =>
+    readBlock<{ url: string; alt?: string }>(blocks, key, {
+      url: fallbackUrl,
+      alt: fallbackAlt,
+    });
+
+  return {
+    heroTitle: t("hero_title", D.hero_title),
+    heroSubtitle: t("hero_subtitle", D.hero_subtitle),
+    heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    legacyHeading: t("legacy_heading", D.legacy_heading),
+    legacyHtml: r("legacy", D.legacy_html),
+    legacyVideoId: t("legacy_video_id", D.legacy_video_id),
+
+    philosophyCaption: t("philosophy_caption", D.philosophy_caption),
+    philosophyHeadingHtml: r("philosophy_heading", D.philosophy_heading_html),
+    philosophyHtml: r("philosophy", D.philosophy_html),
+    philosophyImage: i(
+      "philosophy_image",
+      D.philosophy_image_url,
+      D.philosophy_image_alt
+    ),
+
+    locationCaption: t("location_caption", D.location_caption),
+    locationHeading: t("location_heading", D.location_heading),
+    locationHtml: r("location", D.location_html),
+    locationPhone: t("location_phone", D.location_phone),
+    locationPhoneHref: t("location_phone_href", D.location_phone_href),
+    locationEmail: t("location_email", D.location_email),
+    locationMap: i("location_map", D.location_map_url, D.location_map_alt),
+
+    staffPullquote: t("staff_pullquote", D.staff_pullquote),
+    staffHtml: r("staff", D.staff_html),
+    staffVideoId: t("staff_video_id", D.staff_video_id),
+
+    learnMore1Title: t("learn_more_1_title", D.learn_more_card_1_title),
+    learnMore1Image: i("learn_more_1_image", D.learn_more_card_1_image),
+    learnMore2Title: t("learn_more_2_title", D.learn_more_card_2_title),
+    learnMore2Image: i("learn_more_2_image", D.learn_more_card_2_image),
+    learnMore3Title: t("learn_more_3_title", D.learn_more_card_3_title),
+    learnMore3Image: i("learn_more_3_image", D.learn_more_card_3_image),
+  };
+}
+
+export default async function AboutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const mode = await loadContentMode(await searchParams);
+  const c = await loadContent(mode);
+
   return (
     <InnerPageLayout>
       {/* Page Header */}
       <PageHeader
-        title="Legacy & Tradition"
-        subtitle="Camp Riverbend has hosted generations of families for over 60 years in Warren Township, New Jersey"
-        bgImage="/assets/site/IMG_2726.jpg"
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "About Riverbend" },
@@ -38,35 +108,25 @@ export default function AboutPage() {
         <Container size="narrow">
           <AnimateIn>
             <div className="space-y-6 text-center">
-              <h2 className="font-camp">A Family Affair</h2>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Founded by Marianne and Harold Breene in 1962, Camp Riverbend is a family
-                affair. The four Breene children—Roger, Jill, Paul and Robin, and
-                daughters-in-law Debbie and Miriam, now run the camp, and the newest
-                generation of Breene great-grandchildren are becoming campers! Each member
-                of the family is here to provide a personal, hands-on camp experience
-                you&apos;ll never forget!
-              </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                Camp Riverbend is proud to be accredited by the American Camp Association,
-                and has been since its very first season. Camp Riverbend traditions create
-                lifelong memories for campers.
-              </p>
+              <h2 className="font-camp">{c.legacyHeading}</h2>
+              <div
+                className="prose prose-lg max-w-none mx-auto text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-6 [&_p:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.legacyHtml) }}
+              />
             </div>
           </AnimateIn>
 
           {/* Video */}
-          <AnimateIn delay={0.2}>
-            <div className="mt-12">
-              <p className="text-center text-sm font-semibold text-bark mb-4 tracking-wide uppercase">
-                Watch the video to learn more
-              </p>
-              <VideoEmbed
-                vimeoId="383347420"
-                title="Camp Riverbend Legacy"
-              />
-            </div>
-          </AnimateIn>
+          {c.legacyVideoId && (
+            <AnimateIn delay={0.2}>
+              <div className="mt-12">
+                <p className="text-center text-sm font-semibold text-bark mb-4 tracking-wide uppercase">
+                  Watch the video to learn more
+                </p>
+                <VideoEmbed vimeoId={c.legacyVideoId} title="Camp Riverbend Legacy" />
+              </div>
+            </AnimateIn>
+          )}
 
           <AnimateIn delay={0.3}>
             <div className="mt-10 text-center">
@@ -90,21 +150,17 @@ export default function AboutPage() {
             {/* Text */}
             <AnimateIn direction="left">
               <div className="space-y-6">
-                <span className="text-caption text-camp-red tracking-widest">Our Philosophy</span>
-                <h2 className="font-camp">
-                  <span className="text-camp-red">&ldquo;Confidence,</span>{" "}
-                  not Competition&rdquo;
-                </h2>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  We honor each camper&apos;s talents and efforts. Camp Riverbend is a
-                  place where each child can be themself, explore the world and learn new
-                  skills in a fun and supportive environment.
-                </p>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  We encourage every camper to participate in all activities and we
-                  applaud every achievement – from a camper&apos;s first at-bat to a
-                  grand-slam home run!
-                </p>
+                <span className="text-caption text-camp-red tracking-widest">
+                  {c.philosophyCaption}
+                </span>
+                <div
+                  className="font-camp text-3xl lg:text-4xl text-charcoal [&_p]:m-0"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.philosophyHeadingHtml) }}
+                />
+                <div
+                  className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.philosophyHtml) }}
+                />
               </div>
             </AnimateIn>
 
@@ -112,8 +168,8 @@ export default function AboutPage() {
             <AnimateIn direction="right">
               <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg">
                 <Image
-                  src="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
-                  alt="Young campers building confidence together at camp"
+                  src={c.philosophyImage.url || D.philosophy_image_url}
+                  alt={c.philosophyImage.alt || D.philosophy_image_alt}
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
@@ -131,20 +187,13 @@ export default function AboutPage() {
             <AnimateIn direction="left">
               <div className="space-y-6">
                 <span className="text-caption text-camp-red tracking-widest">
-                  Our Campus
+                  {c.locationCaption}
                 </span>
-                <h2 className="font-camp">Facilities & Location</h2>
-                <p className="text-body-lg text-bark leading-relaxed">
-                  Located in beautiful Somerset County, just 35 minutes from NYC, Camp
-                  Riverbend sits on a 30-acre site along the Passaic River. The
-                  environment is perfect for explorers of all ages, with vibrant woods,
-                  open fields, nature trails, a wetlands sanctuary, athletic facilities
-                  and the river bank.
-                </p>
-                <p className="text-body text-bark leading-relaxed">
-                  Take a look at all the activities and amenities Camp Riverbend has
-                  to offer!
-                </p>
+                <h2 className="font-camp">{c.locationHeading}</h2>
+                <div
+                  className="prose prose-lg max-w-none text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.locationHtml) }}
+                />
                 <div className="flex flex-wrap gap-3 pt-2">
                   <Button variant="primary" href={EXTERNAL_LINKS.inquiryForm} external>
                     Book a Tour
@@ -156,15 +205,15 @@ export default function AboutPage() {
                 <div className="pt-4 text-sm text-bark space-y-1">
                   <p className="font-semibold">Call or email us to book a tour</p>
                   <p>
-                    <a href="tel:9085802267" className="text-camp-red hover:underline">
-                      (908) 580-CAMP
+                    <a href={c.locationPhoneHref} className="text-camp-red hover:underline">
+                      {c.locationPhone}
                     </a>
                     {" · "}
                     <a
-                      href="mailto:info@campriverbend.com"
+                      href={`mailto:${c.locationEmail}`}
                       className="text-camp-red hover:underline"
                     >
-                      info@campriverbend.com
+                      {c.locationEmail}
                     </a>
                   </p>
                 </div>
@@ -175,8 +224,8 @@ export default function AboutPage() {
               <div className="space-y-4">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-lg bg-sand">
                   <Image
-                    src="/assets/site/2022-Camp-Map-JPG-scaled.jpg"
-                    alt="Camp Riverbend campus map"
+                    src={c.locationMap.url || D.location_map_url}
+                    alt={c.locationMap.alt || D.location_map_alt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-contain"
@@ -187,7 +236,7 @@ export default function AboutPage() {
                     Explore Interactive Map
                   </Button>
                   <a
-                    href="/assets/site/2022-Camp-Map-JPG-scaled.jpg"
+                    href={c.locationMap.url || D.location_map_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm font-semibold text-camp-red hover:underline"
@@ -212,28 +261,26 @@ export default function AboutPage() {
           <AnimateIn>
             <div className="text-center space-y-6">
               <p className="pull-quote text-center border-none pl-0">
-                &ldquo;A camp is only as good as its counselors.&rdquo;
+                {c.staffPullquote}
               </p>
-              <p className="text-body-lg text-bark leading-relaxed">
-                We take pride in our mature, talented staff of dedicated teachers and
-                enthusiastic college students and older high school students, many of
-                whom were once Riverbend campers themselves. There is no CIT program.
-              </p>
+              <div
+                className="prose prose-lg max-w-none mx-auto text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-5 [&_p:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.staffHtml) }}
+              />
             </div>
           </AnimateIn>
 
           {/* Staff video */}
-          <AnimateIn delay={0.2}>
-            <div className="mt-12">
-              <p className="text-center text-sm font-semibold text-bark mb-4 tracking-wide uppercase">
-                Watch the video to learn more
-              </p>
-              <VideoEmbed
-                vimeoId="361309800"
-                title="Camp Riverbend Staff"
-              />
-            </div>
-          </AnimateIn>
+          {c.staffVideoId && (
+            <AnimateIn delay={0.2}>
+              <div className="mt-12">
+                <p className="text-center text-sm font-semibold text-bark mb-4 tracking-wide uppercase">
+                  Watch the video to learn more
+                </p>
+                <VideoEmbed vimeoId={c.staffVideoId} title="Camp Riverbend Staff" />
+              </div>
+            </AnimateIn>
+          )}
 
           <AnimateIn delay={0.3}>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
@@ -263,21 +310,21 @@ export default function AboutPage() {
           </AnimateIn>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <LinkCard
-              title="Activities Offered"
+              title={c.learnMore1Title}
               href="/activities"
-              image="/assets/site/ADV01169.jpg"
+              image={c.learnMore1Image.url || D.learn_more_card_1_image}
               index={0}
             />
             <LinkCard
-              title="Rates & Dates"
+              title={c.learnMore2Title}
               href="/rates-dates-application-2026"
-              image="/assets/site/Canoe.jpg"
+              image={c.learnMore2Image.url || D.learn_more_card_2_image}
               index={1}
             />
             <LinkCard
-              title="Our Programs"
+              title={c.learnMore3Title}
               href="/programs"
-              image="/assets/site/ADV06620.jpg-marketing-scaled.jpg"
+              image={c.learnMore3Image.url || D.learn_more_card_3_image}
               index={2}
             />
           </div>
