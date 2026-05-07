@@ -22,7 +22,6 @@ interface OrderForEmail {
   customerEmail: string;
   camperName: string | null;
   phone: string | null;
-  paymentMethod: "stripe" | "account_billing";
   subtotal: string | number;
   shippingCost: string | number;
   total: string | number;
@@ -68,9 +67,7 @@ export async function sendOrderEmails(order: OrderForEmail): Promise<void> {
 
   const subject = `Order #${order.orderNumber} — ${order.customerName}`;
   const paymentNote =
-    order.paymentMethod === "account_billing"
-      ? "Payment method: Account billing — invoice will be sent with the camper's tuition bill."
-      : "Payment method: Credit card (paid via Stripe).";
+    "Payment method: Account billing — charge the camper's account on file.";
 
   const adminHtml = `
     <h2>New order #${order.orderNumber}</h2>
@@ -121,5 +118,92 @@ export async function sendOrderEmails(order: OrderForEmail): Promise<void> {
     ]);
   } catch (err) {
     console.error("[email] send failed:", err);
+  }
+}
+
+// ─── Admin auth emails ──────────────────────────────────────
+
+function authEmailShell(heading: string, bodyHtml: string): string {
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#2a2a2a">
+      <h2 style="font-family:Georgia,serif;color:#db3832;margin:0 0 16px">${heading}</h2>
+      ${bodyHtml}
+      <p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px">
+        Camp Riverbend admin · If you didn't expect this email, you can safely ignore it.
+      </p>
+    </div>
+  `;
+}
+
+export async function sendPasswordResetEmail(args: {
+  to: string;
+  name: string;
+  resetUrl: string;
+}): Promise<void> {
+  const client = getClient();
+  if (!client) {
+    console.log(`[email] skipped (no RESEND_API_KEY) — password reset for ${args.to}: ${args.resetUrl}`);
+    return;
+  }
+
+  const html = authEmailShell(
+    "Reset your password",
+    `
+      <p>Hi ${args.name.split(" ")[0]},</p>
+      <p>Someone (hopefully you) requested a password reset for your Camp Riverbend admin account.</p>
+      <p style="margin:24px 0">
+        <a href="${args.resetUrl}" style="background:#db3832;color:#fff;text-decoration:none;padding:12px 24px;border-radius:999px;display:inline-block;font-weight:600">
+          Reset password
+        </a>
+      </p>
+      <p style="color:#666;font-size:14px">This link expires in 15 minutes and can only be used once.</p>
+      <p style="color:#666;font-size:13px;word-break:break-all">Or copy &amp; paste: ${args.resetUrl}</p>
+    `,
+  );
+
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: args.to,
+      subject: "Reset your Camp Riverbend admin password",
+      html,
+    });
+  } catch (err) {
+    console.error("[email] password reset send failed:", err);
+  }
+}
+
+export async function sendLoginCodeEmail(args: {
+  to: string;
+  name: string;
+  code: string;
+}): Promise<void> {
+  const client = getClient();
+  if (!client) {
+    console.log(`[email] skipped (no RESEND_API_KEY) — login code for ${args.to}: ${args.code}`);
+    return;
+  }
+
+  const html = authEmailShell(
+    "Your sign-in code",
+    `
+      <p>Hi ${args.name.split(" ")[0]},</p>
+      <p>Use this code to finish signing in to the Camp Riverbend admin:</p>
+      <p style="font-family:Menlo,Consolas,monospace;font-size:32px;letter-spacing:8px;font-weight:700;color:#2a2a2a;background:#f7f5ef;border:1px solid #e6e1d3;border-radius:12px;padding:16px;text-align:center;margin:24px 0">
+        ${args.code}
+      </p>
+      <p style="color:#666;font-size:14px">This code expires in 10 minutes. If you didn't try to sign in, please reset your password immediately.</p>
+    `,
+  );
+
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: args.to,
+      subject: `Camp Riverbend sign-in code: ${args.code}`,
+      html,
+    });
+  } catch (err) {
+    console.error("[email] login code send failed:", err);
   }
 }

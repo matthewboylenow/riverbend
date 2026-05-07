@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { passwordStep } from "./actions";
 
 function LoginForm() {
   const router = useRouter();
@@ -18,18 +19,20 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    const res = await passwordStep(email, password);
     setLoading(false);
-    if (!res || res.error) {
-      setError("Invalid email or password");
+    if (res.stage === "ok") {
+      router.push(callbackUrl);
+      router.refresh();
       return;
     }
-    router.push(callbackUrl);
-    router.refresh();
+    if (res.stage === "otp_required") {
+      const url = new URL("/admin/login/verify", window.location.origin);
+      if (callbackUrl !== "/admin") url.searchParams.set("callbackUrl", callbackUrl);
+      router.push(url.pathname + url.search);
+      return;
+    }
+    setError(res.message);
   }
 
   return (
@@ -72,6 +75,11 @@ function LoginForm() {
       >
         {loading ? "Signing in…" : "Sign in"}
       </button>
+      <p className="text-center text-sm text-bark">
+        <Link href="/admin/forgot" className="hover:text-camp-red underline-offset-2 hover:underline">
+          Forgot your password?
+        </Link>
+      </p>
     </form>
   );
 }

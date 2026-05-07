@@ -249,6 +249,55 @@ export const shippingRates = pgTable('shipping_rates', {
   isActive: boolean('is_active').default(true),
 });
 
+// ─── Auth: password reset, 2FA, trusted devices, audit log ─
+// All tokens are stored as SHA-256 hashes of the raw value sent to the user.
+// Raw values exist only in transit (URL/email/cookie). DB compromise alone
+// cannot impersonate a user.
+
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => adminUsers.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// One row per OTP challenge. challengeId lives in a short-lived signed cookie
+// alongside the verification page; codeHash is bcrypt of the 6 digits.
+export const loginOtps = pgTable('login_otps', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => adminUsers.id, { onDelete: 'cascade' }),
+  challengeId: uuid('challenge_id').unique().notNull().defaultRandom(),
+  codeHash: text('code_hash').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  attempts: integer('attempts').default(0).notNull(),
+  consumedAt: timestamp('consumed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Pairs with a signed HTTP-only cookie. Presence of a non-expired row keyed
+// by tokenHash + userId lets login skip the OTP step.
+export const trustedDevices = pgTable('trusted_devices', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => adminUsers.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull(),
+  label: text('label'),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  lastUsedAt: timestamp('last_used_at', { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const adminAuthLog = pgTable('admin_auth_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => adminUsers.id, { onDelete: 'set null' }),
+  email: text('email'),
+  event: text('event').notNull(),
+  ip: text('ip'),
+  userAgent: text('user_agent'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 // ─── Relations ──────────────────────────────────────────
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {

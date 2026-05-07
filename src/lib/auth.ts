@@ -1,9 +1,10 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { adminUsers } from "@/lib/db/schema";
+import { verifyTicket } from "@/lib/auth-tokens";
+import { authConfig } from "@/lib/auth.config";
 
 declare module "next-auth" {
   interface Session {
@@ -18,32 +19,31 @@ declare module "next-auth" {
   }
 }
 
+// The Credentials provider only accepts a signed login ticket. Password and
+// OTP verification happen in our own server actions (src/app/admin/login/...).
+// This keeps the two-step flow auditable and lets us own rate limiting,
+// trusted-device handling, and the OTP step without bending NextAuth.
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/admin/login",
-  },
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        ticket: { label: "Ticket", type: "text" },
       },
       authorize: async (credentials) => {
-        const email = String(credentials?.email || "").toLowerCase().trim();
-        const password = String(credentials?.password || "");
-        if (!email || !password) return null;
+        const ticket = String(credentials?.ticket || "");
+        if (!ticket) return null;
+
+        const verified = verifyTicket(ticket);
+        if (!verified) return null;
 
         const rows = await db
           .select()
           .from(adminUsers)
-          .where(eq(adminUsers.email, email))
+          .where(eq(adminUsers.id, verified.userId))
           .limit(1);
         const user = rows[0];
         if (!user) return null;
-
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return null;
 
         return {
           id: user.id,
@@ -54,20 +54,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    jwt: ({ token, user }) => {
-      if (user) {
-        token.id = user.id as string;
-        token.role = user.role;
-      }
-      return token;
-    },
-    session: ({ session, token }) => {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = (token.role as "super_admin" | "admin") || "admin";
-      }
-      return session;
-    },
-  },
 });
