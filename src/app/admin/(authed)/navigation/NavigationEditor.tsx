@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Save,
   Plus,
@@ -10,7 +10,9 @@ import {
   Star,
   Link as LinkIcon,
   ExternalLink,
+  Eye,
 } from "lucide-react";
+import { MegaMenuPreview, type MegaMenuPreviewGroup } from "@/components/admin/MegaMenuPreview";
 
 const MAX_FEATURED = 2;
 
@@ -60,6 +62,32 @@ export default function NavigationEditor() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [previewIndex, setPreviewIndex] = useState(0);
+
+  const previewGroup: MegaMenuPreviewGroup | null = useMemo(() => {
+    const g = groups[previewIndex];
+    if (!g) return null;
+    return {
+      label: g.label,
+      tagline: g.tagline || undefined,
+      columns: g.columns.map((c) => ({
+        heading: c.heading || undefined,
+        links: c.links.map((l) => ({
+          label: l.label,
+          href: l.href,
+          external: l.external,
+          description: l.description || undefined,
+        })),
+      })),
+      featured: g.featured.map((f) => ({
+        title: f.title,
+        description: f.description,
+        href: f.href,
+        cta: f.cta,
+        external: f.external,
+      })),
+    };
+  }, [groups, previewIndex]);
 
   async function load() {
     setLoading(true);
@@ -191,6 +219,37 @@ export default function NavigationEditor() {
 
       {error && (
         <p className="mb-4 text-sm text-red-700 bg-red-50 px-4 py-2 rounded-lg">{error}</p>
+      )}
+
+      {/* Live preview of the mega menu for the selected group */}
+      {previewGroup && groups.length > 0 && (
+        <div className="mb-8 bg-cream/40 border border-stone/30 rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <Eye className="h-4 w-4 text-bark" />
+            <span className="text-sm font-semibold text-charcoal mr-2">
+              Mega menu preview
+            </span>
+            <div className="flex gap-1 flex-wrap">
+              {groups.map((g, gi) => (
+                <button
+                  key={gi}
+                  onClick={() => setPreviewIndex(gi)}
+                  className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                    gi === previewIndex
+                      ? "bg-camp-red text-white"
+                      : "bg-white border border-stone/30 text-bark hover:text-charcoal"
+                  }`}
+                >
+                  {g.label || <em>(unnamed)</em>}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-bark/60 ml-auto">
+              Reflects unsaved edits — actual hover behavior is desktop-only.
+            </span>
+          </div>
+          <MegaMenuPreview group={previewGroup} />
+        </div>
       )}
 
       <div className="space-y-6">

@@ -158,6 +158,16 @@ export const documents = pgTable('documents', {
   uploadedBy: uuid('uploaded_by').references(() => adminUsers.id),
 });
 
+// ─── Site Settings ──────────────────────────────────────
+// Small key/value table for global site config: favicon, future
+// homepage hero defaults, contact info, etc. Editable from /admin/settings.
+export const siteSettings = pgTable('site_settings', {
+  key: text('key').primaryKey(),
+  valueJson: jsonb('value_json').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedBy: uuid('updated_by').references(() => adminUsers.id),
+});
+
 // ─── Navigation ─────────────────────────────────────────
 // Mega-menu nav, editable from /admin/navigation. Hierarchy:
 //   nav_groups (top-level menu items: Future Families, Current Families, …)

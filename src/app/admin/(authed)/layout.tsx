@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   UserCog,
   Menu as MenuIcon,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ const adminNav = [
   { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { label: "Users", href: "/admin/users", icon: UserCog },
+  { label: "Settings", href: "/admin/settings", icon: SettingsIcon },
 ];
 
 export default async function AdminLayout({

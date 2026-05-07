@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import { CartProvider } from "@/hooks/useCart";
 import { CartDrawer } from "@/components/shop/CartDrawer";
+import { getFaviconUrl } from "@/lib/site-settings";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -29,28 +30,31 @@ const campFont = localFont({
   fallback: ["Georgia", "serif"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Camp Riverbend | Summer Day Camp in Warren, NJ",
-    template: "%s | Camp Riverbend",
-  },
-  description:
-    "Camp Riverbend is a family-run summer day camp in Warren, New Jersey for ages 3-14. Over 60 years of tradition. Confidence, not competition.",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://campriverbend.com"
-  ),
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    siteName: "Camp Riverbend",
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-  icons: {
-    icon: "/favicon.ico",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const faviconUrl = await getFaviconUrl();
+  return {
+    title: {
+      default: "Camp Riverbend | Summer Day Camp in Warren, NJ",
+      template: "%s | Camp Riverbend",
+    },
+    description:
+      "Camp Riverbend is a family-run summer day camp in Warren, New Jersey for ages 3-14. Over 60 years of tradition. Confidence, not competition.",
+    metadataBase: new URL(
+      process.env.NEXT_PUBLIC_SITE_URL || "https://campriverbend.com"
+    ),
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      siteName: "Camp Riverbend",
+    },
+    twitter: {
+      card: "summary_large_image",
+    },
+    icons: {
+      icon: faviconUrl || "/favicon.ico",
+    },
+  };
+}
 
 export default function RootLayout({
   children,

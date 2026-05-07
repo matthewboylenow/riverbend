@@ -40,7 +40,8 @@ const SKIP_PATTERNS = [
   /\/(camp-during-covid)\/?/, // redirected on new site
   /\/(rates-dates-application-2025-draft)\/?/, // redirected on new site
 ];
-const IMG_HOST_OK = /campriverbend\.com/i;
+const IMG_HOST_OK = /(?:^|\.)campriverbend\.com/i; // matches campriverbend.com AND cdn.campriverbend.com
+const IMG_EXT_OK = /\.(jpe?g|png|webp|gif|svg)(?:$|[?#])/i;
 // Strip WordPress size suffixes: foo-300x200.jpg → foo.jpg
 const WP_SIZE_RE = /-(\d{2,4})x(\d{2,4})(?=\.[a-zA-Z]{2,4}$)/;
 
@@ -50,6 +51,48 @@ async function fetchPageList(): Promise<string[]> {
   return [ROOT_PAGE, ...urls].filter(
     (u) => !SKIP_PATTERNS.some((re) => re.test(new URL(u).pathname))
   );
+}
+
+/**
+ * Elementor (with the Breeze cache plugin) compiles its background-image
+ * rules into external minified CSS files linked from each page. The hero
+ * URLs we care about live inside those .css blobs, not the inline HTML.
+ *
+ * This walks every <link rel="stylesheet"> on a page, fetches each CSS
+ * file once (cached), and extracts image url() references.
+ */
+const cssCache = new Map<string, string>();
+async function imageUrlsFromLinkedCss(html: string): Promise<string[]> {
+  const cssUrls = [
+    ...html.matchAll(/<link[^>]+href=["']([^"']+\.css[^"']*)["'][^>]*>/gi),
+  ]
+    .map((m) => m[1])
+    .filter(
+      (u) =>
+        IMG_HOST_OK.test(new URL(u).hostname) &&
+        // Only fetch breeze/elementor caches; skip framework defaults
+        /(breeze|elementor)/i.test(u)
+    );
+
+  const uniqueCss = [...new Set(cssUrls)];
+  const found: string[] = [];
+  for (const cssUrl of uniqueCss) {
+    let css = cssCache.get(cssUrl);
+    if (css === undefined) {
+      try {
+        const res = await fetch(cssUrl);
+        css = res.ok ? await res.text() : "";
+      } catch {
+        css = "";
+      }
+      cssCache.set(cssUrl, css);
+    }
+    const cssText = css ?? "";
+    for (const m of cssText.matchAll(/url\((["']?)(https?:\/\/[^"')]+)\1?\)/g)) {
+      found.push(m[2]);
+    }
+  }
+  return found;
 }
 
 interface FoundImage {
@@ -80,12 +123,21 @@ function extractImagesFromHtml(html: string, sourcePage: string): FoundImage[] {
     }
   }
 
-  // background-image: url(...)
+  // background-image: url(...) — direct CSS property
   for (const match of html.matchAll(/background-image\s*:\s*url\(["']?([^"')]+)/gi)) {
     found.push(toFoundImage(match[1], "", sourcePage));
   }
 
-  return found.filter((f) => IMG_HOST_OK.test(f.rawUrl));
+  // ANY url(...) reference — catches Elementor's compiled <style> blocks where
+  // hero backgrounds live as `.elementor-element-X { background-image: url(...) }`.
+  // Filtered to image extensions below so font files don't sneak in.
+  for (const match of html.matchAll(/url\(["']?(https?:\/\/[^"')]+)/gi)) {
+    found.push(toFoundImage(match[1], "", sourcePage));
+  }
+
+  return found.filter(
+    (f) => IMG_HOST_OK.test(new URL(f.rawUrl).hostname) && IMG_EXT_OK.test(f.rawUrl)
+  );
 }
 
 function toFoundImage(rawUrl: string, alt: string, sourcePage: string): FoundImage {
@@ -138,12 +190,22 @@ async function main() {
   const pages = await fetchPageList();
   console.log(`  ${pages.length} pages to scan\n`);
 
-  console.log("Scanning pages for images…");
+  console.log("Scanning pages for images (HTML + linked CSS)…");
   const byOriginalUrl = new Map<string, FoundImage>();
   for (const page of pages) {
     try {
       const html = await fetch(page).then((r) => r.text());
       const found = extractImagesFromHtml(html, page);
+      // Also walk linked CSS bundles for Elementor-compiled backgrounds
+      const cssUrls = await imageUrlsFromLinkedCss(html);
+      for (const cssUrl of cssUrls) {
+        if (
+          IMG_HOST_OK.test(new URL(cssUrl).hostname) &&
+          IMG_EXT_OK.test(cssUrl)
+        ) {
+          found.push(toFoundImage(cssUrl, "", page));
+        }
+      }
       for (const img of found) {
         // Keep the first occurrence (so alt text from a regular <img> wins
         // over an empty alt from srcset / background-image of the same file)
