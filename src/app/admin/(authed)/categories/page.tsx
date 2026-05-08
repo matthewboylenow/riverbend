@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Save, X } from "lucide-react";
+import { toast } from "sonner";
 import slugify from "slugify";
 
 interface Category {
@@ -41,19 +42,24 @@ export default function AdminCategoriesPage() {
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      alert((await res.json()).error || "Save failed");
+      toast.error((await res.json()).error || "Save failed");
       return;
     }
     setEditing(null);
     setDraft({ name: "", slug: "", sortOrder: 0 });
     await load();
+    toast.success(id ? "Category updated" : "Category created");
   }
 
   async function remove(id: string, name: string) {
     if (!confirm(`Delete category "${name}"?`)) return;
     const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
-    if (res.ok) await load();
-    else alert("Delete failed");
+    if (res.ok) {
+      await load();
+      toast.success(`"${name}" deleted`);
+    } else {
+      toast.error("Delete failed");
+    }
   }
 
   function startEdit(c: Category) {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { History, RotateCcw, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface Revision {
   id: string;
@@ -46,11 +47,12 @@ export function RevisionsButton({ pageSlug, blockKey, onRestored }: RevisionsBut
         body: JSON.stringify({ revisionId }),
       });
       if (!res.ok) {
-        alert((await res.json()).error || "Restore failed");
+        toast.error((await res.json()).error || "Restore failed");
         return;
       }
       setOpen(false);
       onRestored();
+      toast.success("Rolled back to selected revision");
     } finally {
       setRestoring(null);
     }

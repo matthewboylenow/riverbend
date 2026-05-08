@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, Upload, ExternalLink, RefreshCw, Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 import slugify from "slugify";
 
 interface Document {
@@ -58,7 +59,9 @@ export default function AdminDocumentsPage() {
       if (draft.key) fd.append("key", draft.key);
       const res = await fetch("/api/documents", { method: "POST", body: fd });
       if (!res.ok) {
-        setError((await res.json()).error || "Upload failed");
+        const msg = (await res.json()).error || "Upload failed";
+        setError(msg);
+        toast.error(msg);
         return;
       }
       setShowNew(false);
@@ -66,6 +69,7 @@ export default function AdminDocumentsPage() {
       setFile(null);
       if (fileInput.current) fileInput.current.value = "";
       await load();
+      toast.success("Document uploaded");
     } finally {
       setUploading(false);
     }
@@ -81,8 +85,12 @@ export default function AdminDocumentsPage() {
       const fd = new FormData();
       fd.append("file", f);
       const res = await fetch(`/api/documents/${id}`, { method: "PUT", body: fd });
-      if (res.ok) await load();
-      else alert((await res.json()).error || "Replace failed");
+      if (res.ok) {
+        await load();
+        toast.success("Document replaced");
+      } else {
+        toast.error((await res.json()).error || "Replace failed");
+      }
     };
     input.click();
   }
@@ -90,8 +98,12 @@ export default function AdminDocumentsPage() {
   async function remove(id: string, title: string) {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
-    if (res.ok) await load();
-    else alert((await res.json()).error || "Delete failed");
+    if (res.ok) {
+      await load();
+      toast.success(`"${title}" deleted`);
+    } else {
+      toast.error((await res.json()).error || "Delete failed");
+    }
   }
 
   async function copyUrl(url: string) {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Upload, Save, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import slugify from "slugify";
 
@@ -104,9 +105,12 @@ export default function AdminStaffEditPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Save failed");
+        const msg = data.error || "Save failed";
+        setError(msg);
+        toast.error(msg);
         return;
       }
+      toast.success(isNew ? "Staff member added" : "Staff member updated");
       router.push("/admin/staff");
       router.refresh();
     } finally {

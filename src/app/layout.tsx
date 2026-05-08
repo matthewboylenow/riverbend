@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import { CartProvider } from "@/hooks/useCart";
 import { CartDrawer } from "@/components/shop/CartDrawer";
+import { AdminBarProvider } from "@/components/AdminBarProvider";
 import { getFaviconUrl } from "@/lib/site-settings";
 import "./globals.css";
 
@@ -69,10 +70,12 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
-        <CartProvider>
-          {children}
-          <CartDrawer />
-        </CartProvider>
+        <AdminBarProvider>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+          </CartProvider>
+        </AdminBarProvider>
       </body>
     </html>
   );

@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Eye,
 } from "lucide-react";
+import { toast } from "sonner";
 import { MegaMenuPreview, type MegaMenuPreviewGroup } from "@/components/admin/MegaMenuPreview";
 
 const MAX_FEATURED = 2;
@@ -164,8 +165,11 @@ export default function NavigationEditor() {
         throw new Error(data.error || "Save failed");
       }
       setSavedAt(new Date());
+      toast.success("Navigation saved");
     } catch (e) {
-      setError((e as Error).message);
+      const msg = (e as Error).message;
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -340,7 +344,7 @@ function GroupCard({
 
   function promoteToFeatured(ci: number, li: number) {
     if (group.featured.length >= MAX_FEATURED) {
-      alert(`This group already has ${MAX_FEATURED} featured cards. Remove one first.`);
+      toast.error(`This group already has ${MAX_FEATURED} featured cards. Remove one first.`);
       return;
     }
     const link = group.columns[ci].links[li];

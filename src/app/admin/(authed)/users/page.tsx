@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -36,19 +37,26 @@ export default function AdminUsersPage() {
       body: JSON.stringify(draft),
     });
     if (!res.ok) {
-      setError((await res.json()).error || "Failed");
+      const msg = (await res.json()).error || "Failed";
+      setError(msg);
+      toast.error(msg);
       return;
     }
     setDraft({ name: "", email: "", password: "", role: "admin" });
     setShowNew(false);
     await load();
+    toast.success("Admin user created");
   }
 
   async function remove(id: string, email: string) {
     if (!confirm(`Remove admin user ${email}?`)) return;
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
-    if (res.ok) await load();
-    else alert((await res.json()).error || "Delete failed");
+    if (res.ok) {
+      await load();
+      toast.success(`${email} removed`);
+    } else {
+      toast.error((await res.json()).error || "Delete failed");
+    }
   }
 
   return (

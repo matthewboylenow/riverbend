@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 interface OrderItem {
   id: string;
@@ -66,23 +67,27 @@ export default function AdminOrderDetailPage() {
 
   async function updateStatus(status: string) {
     setSaving(true);
-    await fetch(`/api/orders/${params.id}`, {
+    const res = await fetch(`/api/orders/${params.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
     await load();
     setSaving(false);
+    if (res.ok) toast.success(`Status updated to ${status.replace(/_/g, " ")}`);
+    else toast.error("Failed to update status");
   }
 
   async function saveNotes() {
     setSaving(true);
-    await fetch(`/api/orders/${params.id}`, {
+    const res = await fetch(`/api/orders/${params.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ notes }),
     });
     setSaving(false);
+    if (res.ok) toast.success("Notes saved");
+    else toast.error("Failed to save notes");
   }
 
   if (loading) return <p className="text-sm text-bark">Loading…</p>;

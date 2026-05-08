@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Save, Lock, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface Profile {
@@ -65,12 +66,15 @@ function ProfileForm({
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setMsg({ type: "err", text: data.error || "Save failed" });
+      const text = data.error || "Save failed";
+      setMsg({ type: "err", text });
+      toast.error(text);
       return;
     }
     const updated = await res.json();
     onUpdated({ ...profile, ...updated });
     setMsg({ type: "ok", text: "Saved." });
+    toast.success("Profile updated");
   }
 
   return (
@@ -154,13 +158,16 @@ function PasswordForm() {
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setMsg({ type: "err", text: data.error || "Password change failed" });
+      const text = data.error || "Password change failed";
+      setMsg({ type: "err", text });
+      toast.error(text);
       return;
     }
     setCurrent("");
     setNext("");
     setConfirm("");
     setMsg({ type: "ok", text: "Password updated. You'll stay signed in on this device." });
+    toast.success("Password updated");
   }
 
   return (

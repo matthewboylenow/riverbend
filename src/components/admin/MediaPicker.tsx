@@ -15,6 +15,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Upload, Search, X, ImagePlus, FileText, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { MediaAsset } from "@/app/admin/(authed)/media/MediaLibrary";
 
 interface Props {
@@ -265,9 +266,13 @@ function UploadPane({
       if (alt) fd.append("alt", alt);
       const res = await fetch("/api/media", { method: "POST", body: fd });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Upload failed");
-      onUploaded((await res.json()) as MediaAsset);
+      const asset = (await res.json()) as MediaAsset;
+      toast.success(`"${asset.title}" uploaded`);
+      onUploaded(asset);
     } catch (e) {
-      setErr((e as Error).message);
+      const msg = (e as Error).message;
+      setErr(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -290,7 +295,6 @@ function UploadPane({
           const f = e.dataTransfer.files?.[0];
           if (f) pick(f);
         }}
-        onClick={() => inputRef.current?.click()}
       >
         <input
           ref={inputRef}

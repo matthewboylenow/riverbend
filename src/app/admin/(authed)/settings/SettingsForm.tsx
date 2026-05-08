@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
+import { toast } from "sonner";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 
 interface Settings {
@@ -44,8 +45,11 @@ export default function SettingsForm() {
       });
       if (!res.ok) throw new Error("Save failed");
       setSavedAt(new Date());
+      toast.success("Site settings saved");
     } catch (e) {
-      setError((e as Error).message);
+      const msg = (e as Error).message;
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }

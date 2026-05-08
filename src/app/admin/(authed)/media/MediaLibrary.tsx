@@ -14,6 +14,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export interface MediaAsset {
   id: string;
@@ -170,6 +171,7 @@ export default function MediaLibrary() {
           onUploaded={(asset) => {
             setItems((prev) => [asset, ...prev]);
             setUploadOpen(false);
+            toast.success(`"${asset.title}" uploaded`);
           }}
         />
       )}
@@ -238,8 +240,11 @@ function AssetDrawer({
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Save failed");
       onChanged((await res.json()) as MediaAsset);
+      toast.success("Asset details saved");
     } catch (e) {
-      setErr((e as Error).message);
+      const msg = (e as Error).message;
+      setErr(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -254,8 +259,11 @@ function AssetDrawer({
       const res = await fetch(`/api/media/${asset.id}/replace`, { method: "POST", body: fd });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Replace failed");
       onChanged((await res.json()) as MediaAsset);
+      toast.success("File replaced");
     } catch (e) {
-      setErr((e as Error).message);
+      const msg = (e as Error).message;
+      setErr(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -269,8 +277,11 @@ function AssetDrawer({
       const res = await fetch(`/api/media/${asset.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Delete failed");
       onChanged(null);
+      toast.success(`"${asset.title}" deleted`);
     } catch (e) {
-      setErr((e as Error).message);
+      const msg = (e as Error).message;
+      setErr(msg);
+      toast.error(msg);
       setBusy(null);
     }
   }

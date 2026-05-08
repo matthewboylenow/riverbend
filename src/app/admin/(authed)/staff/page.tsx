@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Reorder, useDragControls } from "framer-motion";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -54,13 +55,15 @@ export default function AdminStaffPage() {
     debounceTimers.current[section] = setTimeout(async () => {
       setSavingSection(section);
       try {
-        await fetch("/api/staff/reorder", {
+        const res = await fetch("/api/staff/reorder", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             items: ordered.map((m, i) => ({ id: m.id, sortOrder: i })),
           }),
         });
+        if (res.ok) toast.success("Order saved");
+        else toast.error("Failed to save order");
       } finally {
         setSavingSection(null);
       }
@@ -82,8 +85,9 @@ export default function AdminStaffPage() {
     const res = await fetch(`/api/staff/${id}`, { method: "DELETE" });
     if (res.ok) {
       setStaff((prev) => prev.filter((s) => s.id !== id));
+      toast.success(`${name} deleted`);
     } else {
-      alert("Failed to delete");
+      toast.error("Failed to delete");
     }
   }
 

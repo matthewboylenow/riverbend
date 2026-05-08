@@ -21,6 +21,7 @@ import {
   Upload as PublishIcon,
   RotateCcw,
 } from "lucide-react";
+import { toast } from "sonner";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { RevisionsButton } from "@/components/admin/RevisionsButton";
 import { MediaPicker } from "@/components/admin/MediaPicker";
@@ -106,8 +107,11 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
       setUsingDefaults(false);
       // Reload to refresh the drafted-keys set so the badges line up.
       await load();
+      toast.success("Draft saved");
     } catch (e) {
-      setError((e as Error).message);
+      const msg = (e as Error).message;
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -140,8 +144,11 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
       const data = await res.json();
       setStatusMsg(`Published ${data.promoted} block${data.promoted === 1 ? "" : "s"}.`);
       await load();
+      toast.success(`Published ${data.promoted} block${data.promoted === 1 ? "" : "s"} to live site`);
     } catch (e) {
-      setError((e as Error).message);
+      const msg = (e as Error).message;
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -167,8 +174,11 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
       }
       setStatusMsg("Drafts discarded.");
       await load();
+      toast.success("Draft changes discarded");
     } catch (e) {
-      setError((e as Error).message);
+      const msg = (e as Error).message;
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Upload, Trash2, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import slugify from "slugify";
 
@@ -133,9 +134,12 @@ export default function AdminProductEditPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Save failed");
+        const msg = data.error || "Save failed";
+        setError(msg);
+        toast.error(msg);
         return;
       }
+      toast.success(isNew ? "Product created" : "Product updated");
       router.push("/admin/products");
       router.refresh();
     } finally {

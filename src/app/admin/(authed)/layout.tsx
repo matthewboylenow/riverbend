@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Toaster } from "sonner";
 import { auth, signOut } from "@/lib/auth";
 import {
   LogOut,
@@ -113,6 +114,8 @@ export default async function AdminLayout({
 
       {/* Content */}
       <main className="flex-1 min-w-0 px-6 lg:px-10 py-8">{children}</main>
+
+      <Toaster position="bottom-right" richColors closeButton />
     </div>
   );
 }
