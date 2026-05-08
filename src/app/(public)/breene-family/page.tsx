@@ -58,7 +58,6 @@ async function loadCopy(mode: "published" | "draft") {
     backLinkLabel: t("back_link_label", D.back_link_label),
     directorsHeading: t("directors_heading", D.directors_heading),
     divisionHeadsHeading: t("division_heads_heading", D.division_heads_heading),
-    assistantHeadsHeading: t("assistant_heads_heading", D.assistant_heads_heading),
     foundersCaption: t("founders_caption", D.founders_caption),
     foundersHeading: t("founders_heading", D.founders_heading),
   };
@@ -108,7 +107,6 @@ export default async function BreeneFamilyPage({
   const [staffData, c] = await Promise.all([getStaff(), loadCopy(mode)]);
   const directors = staffData.filter((s) => s.section === "directors");
   const divisionHeads = staffData.filter((s) => s.section === "division_heads");
-  const assistantHeads = staffData.filter((s) => s.section === "assistant_heads");
   const founders = staffData.filter((s) => s.section === "founders");
 
   return (
@@ -138,12 +136,6 @@ export default async function BreeneFamilyPage({
 
       <StaffSection title={c.directorsHeading} staff={directors} bg="cream" columns={4} />
       <StaffSection title={c.divisionHeadsHeading} staff={divisionHeads} bg="white" columns={3} />
-      <StaffSection
-        title={c.assistantHeadsHeading}
-        staff={assistantHeads}
-        bg="cream"
-        columns={3}
-      />
 
       {founders.length > 0 && (
         <Section bg="sand" padding="default">

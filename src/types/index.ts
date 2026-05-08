@@ -16,7 +16,7 @@ export interface StaffMember {
   title: string;
   bio: string | null;
   photoUrl: string | null;
-  section: 'directors' | 'division_heads' | 'assistant_heads' | 'founders';
+  section: 'directors' | 'division_heads' | 'founders';
   sortOrder: number;
   isActive: boolean;
 }

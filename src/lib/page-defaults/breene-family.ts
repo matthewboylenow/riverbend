@@ -16,7 +16,6 @@ export const BREENE_FAMILY_DEFAULTS = {
 
   directors_heading: "Directors",
   division_heads_heading: "Division Heads",
-  assistant_heads_heading: "Assistant Division Heads",
 
   founders_caption: "In Loving Memory",
   founders_heading: "Our Founders",

@@ -10,7 +10,6 @@ import slugify from "slugify";
 const sectionOptions = [
   { value: "directors", label: "Directors" },
   { value: "division_heads", label: "Division Heads" },
-  { value: "assistant_heads", label: "Assistant Division Heads" },
   { value: "founders", label: "Founders" },
 ];
 

@@ -21,7 +21,6 @@ export const BREENE_FAMILY_SCHEMA: PageSchema = {
       blocks: [
         { key: "directors_heading", type: "text", label: "Directors heading", defaultContent: { value: D.directors_heading } },
         { key: "division_heads_heading", type: "text", label: "Division Heads heading", defaultContent: { value: D.division_heads_heading } },
-        { key: "assistant_heads_heading", type: "text", label: "Assistant Division Heads heading", defaultContent: { value: D.assistant_heads_heading } },
       ],
     },
     {
