@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { siteSettings } from "@/lib/db/schema";
@@ -24,5 +25,8 @@ export async function PATCH(request: NextRequest) {
     if (!key || typeof value !== "object") continue;
     await setSetting(key, value, session.user.id);
   }
+  // Site settings affect every page (favicon is in the root layout's
+  // metadata), so invalidate the static cache for all routes.
+  revalidatePath("/", "layout");
   return NextResponse.json({ success: true });
 }

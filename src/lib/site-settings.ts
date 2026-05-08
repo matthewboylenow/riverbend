@@ -50,6 +50,21 @@ export async function setSetting(
 }
 
 export async function getFaviconUrl(): Promise<string | null> {
-  const v = await getSetting<FaviconSetting>(SETTINGS_KEYS.FAVICON);
-  return v?.url || null;
+  try {
+    const [row] = await db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.key, SETTINGS_KEYS.FAVICON))
+      .limit(1);
+    const url = (row?.valueJson as FaviconSetting | undefined)?.url;
+    if (!url) return null;
+    // Append updatedAt epoch as a cache-buster so browsers fetch the new
+    // icon after admin replaces it. Without this, browsers happily serve
+    // a stale favicon for days even when the underlying URL changes.
+    const version = row?.updatedAt ? new Date(row.updatedAt).getTime() : Date.now();
+    return url.includes("?") ? `${url}&v=${version}` : `${url}?v=${version}`;
+  } catch (err) {
+    console.error("site-settings: getFaviconUrl failed", err);
+    return null;
+  }
 }
