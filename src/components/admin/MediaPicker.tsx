@@ -17,6 +17,7 @@ import Image from "next/image";
 import { Upload, Search, X, ImagePlus, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { MediaAsset } from "@/app/admin/(authed)/media/MediaLibrary";
+import { uploadToBlob, buildMediaPathname } from "@/lib/client-upload";
 
 interface Props {
   kind: "image" | "document";
@@ -245,6 +246,7 @@ function UploadPane({
   const [title, setTitle] = useState("");
   const [alt, setAlt] = useState("");
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [hover, setHover] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -257,14 +259,24 @@ function UploadPane({
   async function upload() {
     if (!file) return;
     setBusy(true);
+    setProgress(0);
     setErr(null);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("kind", kind);
-      fd.append("title", title);
-      if (alt) fd.append("alt", alt);
-      const res = await fetch("/api/media", { method: "POST", body: fd });
+      const pathname = buildMediaPathname({ kind, title, filename: file.name });
+      await uploadToBlob({ file, pathname, onProgress: setProgress });
+
+      const res = await fetch("/api/media/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind,
+          title,
+          alt: alt || null,
+          blobPath: pathname,
+          contentType: file.type || null,
+          sizeBytes: file.size,
+        }),
+      });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Upload failed");
       const asset = (await res.json()) as MediaAsset;
       toast.success(`"${asset.title}" uploaded`);
@@ -275,6 +287,7 @@ function UploadPane({
       toast.error(msg);
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -344,6 +357,21 @@ function UploadPane({
         </>
       )}
 
+      {busy && progress !== null && (
+        <div>
+          <div className="flex items-center justify-between text-xs text-bark mb-1">
+            <span>Uploading…</span>
+            <span className="font-semibold tabular-nums">{progress}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-cream overflow-hidden">
+            <div
+              className="h-full bg-camp-red transition-[width] duration-150"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {err && <p className="text-sm text-red-700 bg-red-50 px-3 py-2 rounded">{err}</p>}
 
       <div className="flex justify-end">
@@ -352,7 +380,7 @@ function UploadPane({
           disabled={!file || !title || busy}
           className="bg-camp-red text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-camp-red-dark disabled:opacity-40"
         >
-          {busy ? "Uploading…" : "Upload & use"}
+          {busy ? `Uploading ${progress ?? 0}%…` : "Upload & use"}
         </button>
       </div>
     </div>

@@ -66,11 +66,24 @@ export type BlockSchema =
   | RowsBlockSchema;
 
 export interface SectionSchema {
+  /** Stable identifier for layout (reorder/hide) — never rename in code
+   *  without a DB migration. If omitted, the label slug is used as a
+   *  fallback, but explicit keys are strongly preferred. */
+  key?: string;
   /** Heading shown above this group of blocks in the editor. */
   label: string;
   /** Optional helper sentence. */
   help?: string;
   blocks: BlockSchema[];
+}
+
+/** Resolves a section's stable layout key (explicit or derived from label). */
+export function sectionKey(s: SectionSchema): string {
+  if (s.key) return s.key;
+  return s.label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export interface PageSchema {

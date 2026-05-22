@@ -7,6 +7,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
   publicHref: "/activities",
   sections: [
     {
+      key: "page-header",
       label: "Page Header",
       blocks: [
         { key: "hero_title", type: "text", label: "Title", defaultContent: { value: D.hero_title } },
@@ -15,10 +16,12 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "intro",
       label: "Intro",
       blocks: [{ key: "intro", type: "richtext", defaultContent: { html: D.intro_html } }],
     },
     {
+      key: "swimming",
       label: "Swimming section",
       blocks: [
         { key: "swimming_heading", type: "text", label: "Heading", defaultContent: { value: D.swimming_heading } },
@@ -28,6 +31,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "sports",
       label: "Sports section",
       blocks: [
         { key: "sports_heading", type: "text", label: "Heading", defaultContent: { value: D.sports_heading } },
@@ -38,6 +42,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "more-activities",
       label: "More Activities cards",
       blocks: [
         { key: "more_activities_heading", type: "text", label: "Heading", defaultContent: { value: D.more_activities_heading } },
@@ -56,6 +61,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "ninja",
       label: "Ninja Course section",
       blocks: [
         { key: "ninja_heading", type: "text", label: "Heading", defaultContent: { value: D.ninja_heading } },
@@ -71,6 +77,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "performing-arts",
       label: "Performing Arts & Camper Choice (two columns)",
       blocks: [
         { key: "performing_heading", type: "text", label: "Performing Arts heading", defaultContent: { value: D.performing_heading } },
@@ -80,6 +87,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "indoor-facilities",
       label: "Indoor Facilities section",
       blocks: [
         { key: "indoor_heading", type: "text", label: "Heading", defaultContent: { value: D.indoor_heading } },
@@ -87,6 +95,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "learn-more",
       label: "Learn More cards",
       help: "Hrefs stay fixed (/programs, /rates-dates-application-2026, /sports); titles + images editable.",
       blocks: [

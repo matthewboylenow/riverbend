@@ -1,5 +1,5 @@
 import {
-  pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, serial, pgEnum
+  pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, serial, pgEnum, uniqueIndex
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -142,6 +142,28 @@ export const pageContentRevisions = pgTable('page_content_revisions', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   createdBy: uuid('created_by').references(() => adminUsers.id),
 });
+
+// Per-page section ordering + visibility. Sections themselves are defined
+// in code schemas (src/lib/page-schemas/*.ts); this table layers
+// admin-controlled order + hidden flag on top of that fixed catalog.
+//
+// Absence of a row for a given (page_slug, section_key) means "use the
+// schema's natural order, visible by default."
+export const pageSectionLayout = pgTable(
+  'page_section_layout',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    pageSlug: text('page_slug').notNull(),
+    sectionKey: text('section_key').notNull(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    hidden: boolean('hidden').default(false).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedBy: uuid('updated_by').references(() => adminUsers.id),
+  },
+  (t) => ({
+    pageSection: uniqueIndex('page_section_layout_unique').on(t.pageSlug, t.sectionKey),
+  })
+);
 
 // ─── Documents (PDFs etc.) ──────────────────────────────
 // Logical handles for PDFs/files admins manage. The CMS references these

@@ -8,8 +8,12 @@ import { VideoEmbed } from "@/components/ui/VideoEmbed";
 import { Button } from "@/components/ui/Button";
 import { LinkCard } from "@/components/ui/LinkCard";
 import Image from "next/image";
+import { Fragment } from "react";
 import { getPageContent, readBlock } from "@/lib/page-content";
 import { loadContentMode } from "@/lib/preview-mode";
+import { loadSectionVisibility } from "@/lib/page-section-layout";
+import { ACTIVITIES_SCHEMA } from "@/lib/page-schemas/activities";
+import { sectionKey } from "@/lib/page-schemas/types";
 import { sanitizeHtml } from "@/lib/sanitize";
 import {
   ACTIVITIES_DEFAULTS as D,
@@ -98,20 +102,14 @@ export default async function ActivitiesPage({
 }) {
   const mode = await loadContentMode(await searchParams);
   const c = await loadContent(mode);
+  const layout = await loadSectionVisibility(PAGE_SLUG);
 
-  return (
-    <InnerPageLayout>
-      <PageHeader
-        title={c.heroTitle}
-        subtitle={c.heroSubtitle}
-        bgImage={c.heroBg.url || D.hero_bg_url}
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Activities" },
-        ]}
-      />
-
-      {/* Section 1: Intro */}
+  // Each editable section is rendered into a map keyed by its schema
+  // section key, so we can both reorder them via the admin layout and
+  // skip the ones the admin has hidden. The Page Header is rendered
+  // separately above this map — it always stays pinned at the top.
+  const renderedByKey: Record<string, React.ReactNode> = {
+    intro: (
       <Section id="intro" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -122,8 +120,8 @@ export default async function ActivitiesPage({
           </AnimateIn>
         </Container>
       </Section>
-
-      {/* Section 2: Swimming */}
+    ),
+    swimming: (
       <Section id="swimming" bg="white" padding="default">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -158,8 +156,8 @@ export default async function ActivitiesPage({
           )}
         </Container>
       </Section>
-
-      {/* Section 3: Sports */}
+    ),
+    sports: (
       <Section id="sports" bg="cream" padding="default">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -198,8 +196,8 @@ export default async function ActivitiesPage({
           )}
         </Container>
       </Section>
-
-      {/* Section 4: Activity Grid */}
+    ),
+    "more-activities": (
       <Section id="more-activities" bg="white" padding="default">
         <Container>
           <AnimateIn>
@@ -236,8 +234,8 @@ export default async function ActivitiesPage({
           )}
         </Container>
       </Section>
-
-      {/* Section 5: Ninja Course */}
+    ),
+    ninja: (
       <Section id="ninja-course" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -258,8 +256,8 @@ export default async function ActivitiesPage({
           </AnimateIn>
         </Container>
       </Section>
-
-      {/* Section 6: Performing Arts & Camper Choice */}
+    ),
+    "performing-arts": (
       <Section id="performing-arts" bg="white" padding="default">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
@@ -285,8 +283,8 @@ export default async function ActivitiesPage({
           </div>
         </Container>
       </Section>
-
-      {/* Section 7: Indoor Facilities */}
+    ),
+    "indoor-facilities": (
       <Section id="indoor-facilities" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -300,8 +298,8 @@ export default async function ActivitiesPage({
           </AnimateIn>
         </Container>
       </Section>
-
-      {/* Section 8: Learn More */}
+    ),
+    "learn-more": (
       <Section bg="white" padding="default">
         <Container>
           <AnimateIn>
@@ -331,6 +329,30 @@ export default async function ActivitiesPage({
           </div>
         </Container>
       </Section>
+    ),
+  };
+
+  // Reorderable keys = every editable section except the Page Header.
+  const reorderable = ACTIVITIES_SCHEMA.sections
+    .map((s, i) => ({ key: sectionKey(s), idx: i }))
+    .filter((s) => s.idx > 0)
+    .sort((a, b) => layout.orderOf(a.key, a.idx) - layout.orderOf(b.key, b.idx))
+    .filter((s) => layout.visible(s.key));
+
+  return (
+    <InnerPageLayout>
+      <PageHeader
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Activities" },
+        ]}
+      />
+      {reorderable.map((s) => (
+        <Fragment key={s.key}>{renderedByKey[s.key]}</Fragment>
+      ))}
     </InnerPageLayout>
   );
 }

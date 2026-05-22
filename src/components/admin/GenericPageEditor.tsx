@@ -8,8 +8,9 @@
  * Public pages should consume the same schema's defaults so the editor
  * + the rendered page never drift.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
+import { Reorder, useDragControls } from "framer-motion";
 import {
   ArrowLeft,
   Save,
@@ -18,6 +19,8 @@ import {
   ExternalLink,
   AlertCircle,
   Eye,
+  GripVertical,
+  EyeOff,
   Upload as PublishIcon,
   RotateCcw,
 } from "lucide-react";
@@ -29,8 +32,36 @@ import type {
   PageSchema,
   BlockSchema,
   RowsBlockSchema,
+  SectionSchema,
 } from "@/lib/page-schemas/types";
-import { flattenBlocks } from "@/lib/page-schemas/types";
+import { flattenBlocks, sectionKey } from "@/lib/page-schemas/types";
+
+interface LayoutEntry {
+  key: string;
+  hidden: boolean;
+}
+
+function defaultLayout(schema: PageSchema): LayoutEntry[] {
+  return schema.sections.map((s) => ({ key: sectionKey(s), hidden: false }));
+}
+
+function applyLayoutClient(
+  schema: PageSchema,
+  layout: LayoutEntry[]
+): Array<SectionSchema & { _key: string; _hidden: boolean; _schemaIndex: number }> {
+  const order = new Map(layout.map((e, i) => [e.key, i]));
+  const hiddenSet = new Set(layout.filter((e) => e.hidden).map((e) => e.key));
+  return schema.sections
+    .map((s, i) => ({ ...s, _key: sectionKey(s), _hidden: hiddenSet.has(sectionKey(s)), _schemaIndex: i }))
+    .sort((a, b) => {
+      // Pin the schema's first section (e.g. Page Header) at the top.
+      if (a._schemaIndex === 0) return -1;
+      if (b._schemaIndex === 0) return 1;
+      const ao = order.get(a._key) ?? a._schemaIndex + 1000;
+      const bo = order.get(b._key) ?? b._schemaIndex + 1000;
+      return ao - bo;
+    });
+}
 
 type BlocksMap = Record<
   string,
@@ -46,6 +77,7 @@ type BlocksMap = Record<
 export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
   const [state, setState] = useState<Record<string, unknown>>(() => initialState(schema));
   const [draftedKeys, setDraftedKeys] = useState<Set<string>>(new Set());
+  const [layout, setLayout] = useState<LayoutEntry[]>(() => defaultLayout(schema));
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"saving" | "publishing" | "discarding" | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
@@ -80,6 +112,38 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
       setUsingDefaults(
         flattenBlocks(schema).every((b) => blocks[b.key] == null)
       );
+
+      // Layout overrides (section order + hidden). Sections in the schema
+      // but not in DB rows fall back to schema order, visible by default.
+      try {
+        const layoutRes = await fetch(`/api/pages/${schema.slug}/layout`);
+        if (layoutRes.ok) {
+          const ld = (await layoutRes.json()) as {
+            sections: Array<{ sectionKey: string; sortOrder: number; hidden: boolean }>;
+          };
+          const byKey = new Map(ld.sections.map((r) => [r.sectionKey, r]));
+          const merged: LayoutEntry[] = schema.sections
+            .map((s, i) => {
+              const k = sectionKey(s);
+              const row = byKey.get(k);
+              return {
+                key: k,
+                hidden: row?.hidden ?? false,
+                _order: row?.sortOrder ?? i,
+                _schemaIndex: i,
+              };
+            })
+            .sort((a, b) => {
+              if (a._schemaIndex === 0) return -1;
+              if (b._schemaIndex === 0) return 1;
+              return a._order - b._order;
+            })
+            .map(({ key, hidden }) => ({ key, hidden }));
+          setLayout(merged);
+        }
+      } catch (err) {
+        console.error("layout load failed:", err);
+      }
     } catch (e) {
       setError((e as Error).message);
       setUsingDefaults(true);
@@ -184,6 +248,34 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
     }
   }
 
+  async function persistLayout(next: LayoutEntry[]) {
+    setLayout(next);
+    try {
+      const res = await fetch(`/api/pages/${schema.slug}/layout`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sections: next.map((e, i) => ({
+            sectionKey: e.key,
+            sortOrder: i,
+            hidden: e.hidden,
+          })),
+        }),
+      });
+      if (!res.ok) throw new Error("Layout save failed");
+    } catch (e) {
+      const msg = (e as Error).message;
+      toast.error(msg);
+    }
+  }
+
+  function toggleHidden(key: string) {
+    const next = layout.map((e) => (e.key === key ? { ...e, hidden: !e.hidden } : e));
+    void persistLayout(next);
+    const nowHidden = next.find((e) => e.key === key)?.hidden;
+    toast.success(nowHidden ? "Section hidden from public site" : "Section visible on public site");
+  }
+
   if (loading) return <p className="text-sm text-bark">Loading…</p>;
 
   return (
@@ -285,54 +377,63 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
         </div>
       )}
 
-      <div className="space-y-8">
-        {schema.sections.map((section, si) => {
-          const sectionHasDraft = section.blocks.some((b) => draftedKeys.has(b.key));
-          return (
-          <section
-            key={si}
-            className={`bg-white rounded-2xl border p-5 ${
-              sectionHasDraft ? "border-blue-300/60 ring-1 ring-blue-100" : "border-stone/30"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <h2 className="font-semibold text-charcoal">{section.label}</h2>
-                {sectionHasDraft && (
-                  <span className="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-800 uppercase tracking-wider">
-                    Draft
-                  </span>
-                )}
-                {section.help && (
-                  <p className="text-xs text-bark mt-0.5">{section.help}</p>
-                )}
-              </div>
-              {/* If the section has exactly one block, show its revisions button here. */}
-              {section.blocks.length === 1 && (
-                <RevisionsButton
-                  pageSlug={schema.slug}
-                  blockKey={section.blocks[0].key}
-                  onRestored={load}
-                />
-              )}
-            </div>
-            <div className="space-y-4">
-              {section.blocks.map((block) => (
-                <BlockField
-                  key={block.key}
-                  block={block}
-                  pageSlug={schema.slug}
-                  showRevisions={section.blocks.length > 1}
-                  value={state[block.key]}
-                  onChange={(v) => setState((s) => ({ ...s, [block.key]: v }))}
-                  onRestored={load}
-                />
-              ))}
-            </div>
-          </section>
-          );
-        })}
+      {(() => {
+        const ordered = applyLayoutClient(schema, layout);
+        const pinned = ordered[0];
+        const reorderable = ordered.slice(1);
+        const reorderEntries = reorderable.map((s) => ({ key: s._key, hidden: s._hidden }));
 
+        function onReorderEntries(next: Array<{ key: string; hidden: boolean }>) {
+          // Prepend the pinned first section so its position never changes.
+          const pinnedEntry = layout.find((e) => e.key === pinned._key) || {
+            key: pinned._key,
+            hidden: pinned._hidden,
+          };
+          void persistLayout([pinnedEntry, ...next]);
+        }
+
+        return (
+          <div className="space-y-8">
+            {pinned && (
+              <SectionCard
+                section={pinned}
+                pageSlug={schema.slug}
+                state={state}
+                setState={setState}
+                draftedKeys={draftedKeys}
+                onRestored={load}
+                pinned
+              />
+            )}
+
+            <Reorder.Group
+              axis="y"
+              values={reorderEntries}
+              onReorder={onReorderEntries}
+              className="space-y-8"
+            >
+              {reorderable.map((section) => {
+                const entry = reorderEntries.find((e) => e.key === section._key)!;
+                return (
+                  <ReorderableSectionCard
+                    key={section._key}
+                    entry={entry}
+                    section={section}
+                    pageSlug={schema.slug}
+                    state={state}
+                    setState={setState}
+                    draftedKeys={draftedKeys}
+                    onRestored={load}
+                    onToggleHidden={() => toggleHidden(section._key)}
+                  />
+                );
+              })}
+            </Reorder.Group>
+          </div>
+        );
+      })()}
+
+      <div className="space-y-8 mt-8">
         <div className="flex flex-wrap gap-2 justify-end pt-2 border-t border-stone/30">
           <button
             onClick={saveDraft}
@@ -353,6 +454,204 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Section card (shared by pinned + reorderable) ───────────────────────
+function SectionInner({
+  section,
+  pageSlug,
+  state,
+  setState,
+  onRestored,
+}: {
+  section: SectionSchema & { _hidden?: boolean };
+  pageSlug: string;
+  state: Record<string, unknown>;
+  setState: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+  onRestored: () => void;
+}) {
+  return (
+    <div className={`space-y-4 ${section._hidden ? "opacity-50" : ""}`}>
+      {section.blocks.map((block) => (
+        <BlockField
+          key={block.key}
+          block={block}
+          pageSlug={pageSlug}
+          showRevisions={section.blocks.length > 1}
+          value={state[block.key]}
+          onChange={(v) => setState((s) => ({ ...s, [block.key]: v }))}
+          onRestored={onRestored}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SectionHeader({
+  section,
+  pageSlug,
+  draftedKeys,
+  onRestored,
+  hidden,
+  onToggleHidden,
+  dragControls,
+  pinned,
+}: {
+  section: SectionSchema;
+  pageSlug: string;
+  draftedKeys: Set<string>;
+  onRestored: () => void;
+  hidden: boolean;
+  onToggleHidden?: () => void;
+  dragControls?: ReturnType<typeof useDragControls>;
+  pinned?: boolean;
+}) {
+  const sectionHasDraft = section.blocks.some((b) => draftedKeys.has(b.key));
+  return (
+    <div className="flex items-center justify-between mb-4 gap-2">
+      <div className="flex items-center gap-2 min-w-0">
+        {!pinned && dragControls && (
+          <button
+            type="button"
+            aria-label="Drag section to reorder"
+            onPointerDown={(e) => dragControls.start(e)}
+            className="touch-none cursor-grab active:cursor-grabbing p-1.5 text-stone hover:text-bark -ml-1"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        )}
+        <h2 className="font-semibold text-charcoal truncate">{section.label}</h2>
+        {sectionHasDraft && (
+          <span className="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-800 uppercase tracking-wider">
+            Draft
+          </span>
+        )}
+        {hidden && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-stone/40 text-bark uppercase tracking-wider">
+            <EyeOff className="h-3 w-3" />
+            Hidden
+          </span>
+        )}
+        {section.help && (
+          <p className="text-xs text-bark mt-0.5">{section.help}</p>
+        )}
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        {!pinned && onToggleHidden && (
+          <button
+            type="button"
+            onClick={onToggleHidden}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-bark hover:bg-cream"
+            title={hidden ? "Show on public site" : "Hide from public site"}
+          >
+            {hidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            {hidden ? "Show" : "Hide"}
+          </button>
+        )}
+        {section.blocks.length === 1 && (
+          <RevisionsButton
+            pageSlug={pageSlug}
+            blockKey={section.blocks[0].key}
+            onRestored={onRestored}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({
+  section,
+  pageSlug,
+  state,
+  setState,
+  draftedKeys,
+  onRestored,
+  pinned,
+}: {
+  section: SectionSchema & { _hidden?: boolean };
+  pageSlug: string;
+  state: Record<string, unknown>;
+  setState: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+  draftedKeys: Set<string>;
+  onRestored: () => void;
+  pinned?: boolean;
+}) {
+  const sectionHasDraft = section.blocks.some((b) => draftedKeys.has(b.key));
+  return (
+    <section
+      className={`bg-white rounded-2xl border p-5 ${
+        sectionHasDraft ? "border-blue-300/60 ring-1 ring-blue-100" : "border-stone/30"
+      }`}
+    >
+      <SectionHeader
+        section={section}
+        pageSlug={pageSlug}
+        draftedKeys={draftedKeys}
+        onRestored={onRestored}
+        hidden={!!section._hidden}
+        pinned={pinned}
+      />
+      <SectionInner
+        section={section}
+        pageSlug={pageSlug}
+        state={state}
+        setState={setState}
+        onRestored={onRestored}
+      />
+    </section>
+  );
+}
+
+function ReorderableSectionCard({
+  entry,
+  section,
+  pageSlug,
+  state,
+  setState,
+  draftedKeys,
+  onRestored,
+  onToggleHidden,
+}: {
+  entry: { key: string; hidden: boolean };
+  section: SectionSchema & { _hidden?: boolean; _key: string };
+  pageSlug: string;
+  state: Record<string, unknown>;
+  setState: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+  draftedKeys: Set<string>;
+  onRestored: () => void;
+  onToggleHidden: () => void;
+}) {
+  const dragControls = useDragControls();
+  const sectionHasDraft = section.blocks.some((b) => draftedKeys.has(b.key));
+  return (
+    <Reorder.Item
+      value={entry}
+      id={entry.key}
+      dragListener={false}
+      dragControls={dragControls}
+      className={`bg-white rounded-2xl border p-5 ${
+        sectionHasDraft ? "border-blue-300/60 ring-1 ring-blue-100" : "border-stone/30"
+      }`}
+    >
+      <SectionHeader
+        section={section}
+        pageSlug={pageSlug}
+        draftedKeys={draftedKeys}
+        onRestored={onRestored}
+        hidden={entry.hidden}
+        onToggleHidden={onToggleHidden}
+        dragControls={dragControls}
+      />
+      <SectionInner
+        section={{ ...section, _hidden: entry.hidden }}
+        pageSlug={pageSlug}
+        state={state}
+        setState={setState}
+        onRestored={onRestored}
+      />
+    </Reorder.Item>
   );
 }
 
@@ -502,6 +801,13 @@ function renderInput(
 }
 
 // ─── Rows editor (reused from RatesEditor — generic over any column set) ──
+// Stable id per row so framer-motion's Reorder can track them across drags.
+// Rows are stored as plain objects; we synthesize ids at editor time only.
+interface RowWithId {
+  __id: string;
+  row: Record<string, string>;
+}
+
 function RowEditor({
   rows,
   onChange,
@@ -513,79 +819,69 @@ function RowEditor({
   columns: { key: string; label: string; width?: string; multiline?: boolean }[];
   blank: Record<string, string>;
 }) {
-  function update(index: number, key: string, val: string) {
-    onChange(rows.map((r, i) => (i === index ? { ...r, [key]: val } : r)));
+  const baseId = useId();
+  const [withIds, setWithIds] = useState<RowWithId[]>(() =>
+    rows.map((r, i) => ({ __id: `${baseId}-${i}`, row: r }))
+  );
+
+  // Re-sync from incoming `rows` only when the *count* changes (add/remove
+  // from elsewhere). We don't reset on every keystroke because that would
+  // wipe the stable __id mapping during dragging.
+  useEffect(() => {
+    if (withIds.length !== rows.length) {
+      setWithIds(rows.map((r, i) => ({ __id: `${baseId}-${i}-${Date.now()}`, row: r })));
+    }
+  }, [rows, baseId, withIds.length]);
+
+  function update(id: string, key: string, val: string) {
+    const next = withIds.map((it) =>
+      it.__id === id ? { ...it, row: { ...it.row, [key]: val } } : it
+    );
+    setWithIds(next);
+    onChange(next.map((it) => it.row));
   }
-  function remove(index: number) {
-    onChange(rows.filter((_, i) => i !== index));
+  function remove(id: string) {
+    const next = withIds.filter((it) => it.__id !== id);
+    setWithIds(next);
+    onChange(next.map((it) => it.row));
   }
   function add() {
-    onChange([...rows, { ...blank }]);
+    const next = [...withIds, { __id: `${baseId}-new-${Date.now()}`, row: { ...blank } }];
+    setWithIds(next);
+    onChange(next.map((it) => it.row));
+  }
+  function reorder(next: RowWithId[]) {
+    setWithIds(next);
+    onChange(next.map((it) => it.row));
   }
 
   return (
     <div>
       <div className="border border-stone/30 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-cream/50 border-b border-stone/20">
-              {columns.map((c) => (
-                <th
-                  key={c.key}
-                  className="text-left px-3 py-2 text-xs font-semibold text-bark uppercase"
-                  style={c.width ? { width: c.width } : undefined}
-                >
-                  {c.label}
-                </th>
-              ))}
-              <th className="w-10" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={columns.length + 1}
-                  className="px-3 py-4 text-center text-bark text-sm"
-                >
-                  No rows yet. Click &ldquo;Add row&rdquo; below.
-                </td>
-              </tr>
-            )}
-            {rows.map((row, i) => (
-              <tr key={i} className="border-b border-stone/10 last:border-b-0">
-                {columns.map((c) => (
-                  <td key={c.key} className="px-2 py-1.5">
-                    {c.multiline ? (
-                      <textarea
-                        value={row[c.key] || ""}
-                        onChange={(e) => update(i, c.key, e.target.value)}
-                        rows={2}
-                        className="w-full px-2 py-1 rounded border border-stone bg-white text-sm resize-y"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={row[c.key] || ""}
-                        onChange={(e) => update(i, c.key, e.target.value)}
-                        className="w-full px-2 py-1 rounded border border-stone bg-white text-sm"
-                      />
-                    )}
-                  </td>
-                ))}
-                <td className="px-2 py-1.5">
-                  <button
-                    type="button"
-                    onClick={() => remove(i)}
-                    className="p-1.5 text-bark hover:text-red-600 hover:bg-red-50 rounded"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </td>
-              </tr>
+        <div className="bg-cream/50 border-b border-stone/20 grid items-center text-xs font-semibold text-bark uppercase tracking-wider"
+          style={{ gridTemplateColumns: `28px ${columns.map((c) => c.width || "1fr").join(" ")} 40px` }}>
+          <span />
+          {columns.map((c) => (
+            <span key={c.key} className="px-3 py-2 text-left">{c.label}</span>
+          ))}
+          <span />
+        </div>
+        {withIds.length === 0 ? (
+          <p className="px-3 py-4 text-center text-bark text-sm">No rows yet. Click &ldquo;Add row&rdquo; below.</p>
+        ) : (
+          <Reorder.Group axis="y" values={withIds} onReorder={reorder} className="divide-y divide-stone/10">
+            {withIds.map((it) => (
+              <RowItem
+                key={it.__id}
+                item={it}
+                columns={columns}
+                onUpdate={(k, v) => update(it.__id, k, v)}
+                onRemove={() => remove(it.__id)}
+                gridTemplate={`28px ${columns.map((c) => c.width || "1fr").join(" ")} 40px`}
+              />
             ))}
-          </tbody>
-        </table>
+          </Reorder.Group>
+        )}
       </div>
       <button
         type="button"
@@ -596,6 +892,69 @@ function RowEditor({
         Add row
       </button>
     </div>
+  );
+}
+
+function RowItem({
+  item,
+  columns,
+  onUpdate,
+  onRemove,
+  gridTemplate,
+}: {
+  item: RowWithId;
+  columns: { key: string; label: string; width?: string; multiline?: boolean }[];
+  onUpdate: (key: string, val: string) => void;
+  onRemove: () => void;
+  gridTemplate: string;
+}) {
+  const dragControls = useDragControls();
+  return (
+    <Reorder.Item
+      value={item}
+      id={item.__id}
+      dragListener={false}
+      dragControls={dragControls}
+      className="bg-white"
+    >
+      <div className="grid items-center" style={{ gridTemplateColumns: gridTemplate }}>
+        <button
+          type="button"
+          aria-label="Drag to reorder"
+          onPointerDown={(e) => dragControls.start(e)}
+          className="touch-none cursor-grab active:cursor-grabbing p-2 text-stone hover:text-bark"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        {columns.map((c) => (
+          <div key={c.key} className="px-2 py-1.5">
+            {c.multiline ? (
+              <textarea
+                value={item.row[c.key] || ""}
+                onChange={(e) => onUpdate(c.key, e.target.value)}
+                rows={2}
+                className="w-full px-2 py-1 rounded border border-stone bg-white text-sm resize-y"
+              />
+            ) : (
+              <input
+                type="text"
+                value={item.row[c.key] || ""}
+                onChange={(e) => onUpdate(c.key, e.target.value)}
+                className="w-full px-2 py-1 rounded border border-stone bg-white text-sm"
+              />
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-1.5 text-bark hover:text-red-600 hover:bg-red-50 rounded mr-2"
+          aria-label="Remove row"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </Reorder.Item>
   );
 }
 
