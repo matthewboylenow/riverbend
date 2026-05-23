@@ -1068,67 +1068,80 @@ function TableEditor({
     emit(columns, next);
   }
 
-  const gridTemplate = `28px ${columns.map(() => "1fr").join(" ")} 40px`;
+  // Each column gets a minimum width so adding columns stops crushing the
+  // grid flat — once total width exceeds the container, the outer wrapper
+  // scrolls horizontally instead.
+  const COL_MIN_PX = 180;
+  const gridTemplate = `28px ${columns
+    .map(() => `minmax(${COL_MIN_PX}px, 1fr)`)
+    .join(" ")} 40px`;
+  const minTableWidth = 28 + columns.length * COL_MIN_PX + 40;
 
   return (
     <div>
-      {/* Column headers — editable labels with per-column delete */}
-      <div className="border border-stone/30 rounded-xl overflow-hidden">
-        <div
-          className="bg-cream/50 border-b border-stone/20 grid items-center"
-          style={{ gridTemplateColumns: gridTemplate }}
-        >
-          <span />
-          {columns.map((c) => (
-            <div key={c.key} className="px-2 py-1.5 flex items-center gap-1">
-              <input
-                type="text"
-                value={c.label}
-                onChange={(e) => renameColumn(c.key, e.target.value)}
-                className="flex-1 min-w-0 px-2 py-1 rounded border border-stone bg-white text-xs font-semibold text-bark uppercase tracking-wider"
-                aria-label={`Column header: ${c.label}`}
-              />
-              <button
-                type="button"
-                onClick={() => removeColumn(c.key)}
-                className="p-1 text-bark hover:text-red-600 hover:bg-red-50 rounded shrink-0"
-                aria-label={`Remove column ${c.label}`}
-                disabled={columns.length <= 1}
-                title={
-                  columns.length <= 1 ? "At least one column is required" : "Remove column"
-                }
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-          <span />
-        </div>
-
-        {/* Rows */}
-        {withIds.length === 0 ? (
-          <p className="px-3 py-4 text-center text-bark text-sm">
-            No rows yet. Click &ldquo;Add row&rdquo; below.
-          </p>
-        ) : (
-          <Reorder.Group
-            axis="y"
-            values={withIds}
-            onReorder={reorderRows}
-            className="divide-y divide-stone/10"
+      {/* Column headers + rows in a horizontally-scrollable wrapper so wide
+          tables (lots of columns) stay editable instead of being crushed. */}
+      <div className="border border-stone/30 rounded-xl overflow-x-auto">
+        <div style={{ minWidth: minTableWidth }}>
+          <div
+            className="bg-cream/50 border-b border-stone/20 grid items-center"
+            style={{ gridTemplateColumns: gridTemplate }}
           >
-            {withIds.map((it) => (
-              <TableRowItem
-                key={it.__id}
-                item={it}
-                columns={columns}
-                onUpdate={(k, v) => updateCell(it.__id, k, v)}
-                onRemove={() => removeRow(it.__id)}
-                gridTemplate={gridTemplate}
-              />
+            <span />
+            {columns.map((c) => (
+              <div key={c.key} className="px-2 py-1.5 flex items-center gap-1">
+                <input
+                  type="text"
+                  value={c.label ?? ""}
+                  onChange={(e) => renameColumn(c.key, e.target.value)}
+                  placeholder="Column name"
+                  className="flex-1 min-w-0 px-2 py-1 rounded border border-stone bg-white text-xs font-semibold text-bark uppercase tracking-wider placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-stone"
+                  aria-label={`Column header: ${c.label || c.key}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeColumn(c.key)}
+                  className="p-1 text-bark hover:text-red-600 hover:bg-red-50 rounded shrink-0"
+                  aria-label={`Remove column ${c.label || c.key}`}
+                  disabled={columns.length <= 1}
+                  title={
+                    columns.length <= 1
+                      ? "At least one column is required"
+                      : "Remove column"
+                  }
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             ))}
-          </Reorder.Group>
-        )}
+            <span />
+          </div>
+
+          {/* Rows */}
+          {withIds.length === 0 ? (
+            <p className="px-3 py-4 text-center text-bark text-sm">
+              No rows yet. Click &ldquo;Add row&rdquo; below.
+            </p>
+          ) : (
+            <Reorder.Group
+              axis="y"
+              values={withIds}
+              onReorder={reorderRows}
+              className="divide-y divide-stone/10"
+            >
+              {withIds.map((it) => (
+                <TableRowItem
+                  key={it.__id}
+                  item={it}
+                  columns={columns}
+                  onUpdate={(k, v) => updateCell(it.__id, k, v)}
+                  onRemove={() => removeRow(it.__id)}
+                  gridTemplate={gridTemplate}
+                />
+              ))}
+            </Reorder.Group>
+          )}
+        </div>
       </div>
 
       <div className="mt-2 flex gap-2 flex-wrap">
