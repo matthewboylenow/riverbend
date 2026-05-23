@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { InnerPageLayout } from "@/components/navigation/InnerPageLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Section } from "@/components/ui/Section";
@@ -6,17 +7,25 @@ import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { Button } from "@/components/ui/Button";
 import { EXTERNAL_LINKS } from "@/lib/navigation";
-import { getPageContent, readBlock } from "@/lib/page-content";
+import { getPageContent, readBlock, type TableContent } from "@/lib/page-content";
 import { loadContentMode } from "@/lib/preview-mode";
+import { loadOrderedSectionKeys } from "@/lib/page-section-layout";
+import { RATES_DATES_SCHEMA } from "@/lib/page-schemas/rates-dates";
 import { sanitizeHtml } from "@/lib/sanitize";
 import {
   RATES_DEFAULTS as DEFAULTS,
-  type TuitionRow,
   type DiscountRow,
   type PaymentRow,
 } from "@/lib/page-defaults/rates-dates";
 
 const DEFAULT_HERO_BG = "/assets/site/Canoe.jpg";
+
+const DEFAULT_TUITION_COLUMNS = [
+  { key: "duration", label: "Duration" },
+  { key: "inCamp", label: "In Camp" },
+  { key: "dayTripper", label: "Day Tripper" },
+  { key: "threeQuarter", label: "Three-Quarter Day" },
+];
 
 export const metadata: Metadata = {
   title: "2026 Rates, Dates & Application | Camp Riverbend",
@@ -36,16 +45,33 @@ async function loadContent(mode: "published" | "draft") {
   } catch (err) {
     console.error("rates-dates: page content load failed, using defaults:", err);
   }
+
+  // tuition_rows is now a "table" block — content is { columns, rows }.
+  // Older saved content (from when it was a "rows" block) is missing
+  // columns; fall back to the schema's default column layout in that case.
+  const tuitionRaw = readBlock<Partial<TableContent>>(blocks, "tuition_rows", {
+    columns: DEFAULT_TUITION_COLUMNS,
+    rows: DEFAULTS.tuition_rows as unknown as Array<Record<string, string>>,
+  });
+  const tuitionColumns =
+    Array.isArray(tuitionRaw.columns) && tuitionRaw.columns.length > 0
+      ? tuitionRaw.columns
+      : DEFAULT_TUITION_COLUMNS;
+  const tuitionRows = Array.isArray(tuitionRaw.rows) ? tuitionRaw.rows : [];
+
   return {
     heroTitle: readBlock<{ value: string }>(blocks, "hero_title", { value: DEFAULTS.hero_title }).value,
     heroSubtitle: readBlock<{ value: string }>(blocks, "hero_subtitle", { value: DEFAULTS.hero_subtitle }).value,
     introHtml: readBlock<{ html: string }>(blocks, "intro", { html: DEFAULTS.intro_html }).html,
     tuitionNote: readBlock<{ value: string }>(blocks, "tuition_note", { value: DEFAULTS.tuition_note }).value,
-    tuitionRows: readBlock<{ rows: TuitionRow[] }>(blocks, "tuition_rows", { rows: DEFAULTS.tuition_rows }).rows,
+    tuitionColumns,
+    tuitionRows,
     tuitionExtrasHtml: readBlock<{ html: string }>(blocks, "tuition_extras", { html: DEFAULTS.tuition_extras_html }).html,
     discounts: readBlock<{ rows: DiscountRow[] }>(blocks, "discounts", { rows: DEFAULTS.discounts }).rows,
     paymentSchedule: readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule", { rows: DEFAULTS.payment_schedule }).rows,
     paymentExtrasHtml: readBlock<{ html: string }>(blocks, "payment_extras", { html: DEFAULTS.payment_extras_html }).html,
+    policiesHeading: readBlock<{ value: string }>(blocks, "policies_heading", { value: "Policies" }).value,
+    policiesBody: readBlock<{ html: string }>(blocks, "policies_body", { html: "" }).html,
     heroBg: readBlock<{ url: string; alt?: string }>(blocks, "hero_bg", { url: DEFAULT_HERO_BG, alt: "" }),
   };
 }
@@ -57,20 +83,14 @@ export default async function RatesDatePage({
 }) {
   const mode = await loadContentMode(await searchParams);
   const c = await loadContent(mode);
+  const orderedKeys = await loadOrderedSectionKeys(RATES_DATES_SCHEMA);
 
-  return (
-    <InnerPageLayout>
-      <PageHeader
-        title={c.heroTitle}
-        subtitle={c.heroSubtitle}
-        bgImage={c.heroBg.url || DEFAULT_HERO_BG}
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: c.heroTitle },
-        ]}
-      />
-
-      {/* Section 1: Overview */}
+  // Each editable section is rendered into a map keyed by its schema
+  // section key. The Page Header above is pinned and excluded from the
+  // ordered list. Empty optional sections (e.g. blank Policies body)
+  // simply return null so the page collapses cleanly.
+  const renderedByKey: Record<string, React.ReactNode> = {
+    intro: (
       <Section id="overview" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -88,8 +108,8 @@ export default async function RatesDatePage({
           </AnimateIn>
         </Container>
       </Section>
-
-      {/* Section 2: Tuition Rates */}
+    ),
+    tuition: (
       <Section id="tuition-rates" bg="white" padding="default">
         <Container>
           <AnimateIn>
@@ -109,38 +129,50 @@ export default async function RatesDatePage({
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b-2 border-camp-red">
-                    <th className="py-3 px-4 font-camp text-charcoal">Duration</th>
-                    <th className="py-3 px-4 font-camp text-charcoal">In Camp</th>
-                    <th className="py-3 px-4 font-camp text-charcoal">Day Tripper</th>
-                    <th className="py-3 px-4 font-camp text-charcoal">Three-Quarter Day</th>
+                    {c.tuitionColumns.map((col) => (
+                      <th key={col.key} className="py-3 px-4 font-camp text-charcoal">
+                        {col.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone/30">
                   {c.tuitionRows.map((row, i) => (
-                    <tr
-                      key={`${row.duration}-${i}`}
-                      className={i % 2 === 0 ? "bg-white" : "bg-cream/40"}
-                    >
-                      <td className="py-3 px-4 font-semibold text-charcoal">{row.duration}</td>
-                      <td className="py-3 px-4 text-bark">{row.inCamp}</td>
-                      <td className="py-3 px-4 text-bark">{row.dayTripper}</td>
-                      <td className="py-3 px-4 text-bark">{row.threeQuarter}</td>
+                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-cream/40"}>
+                      {c.tuitionColumns.map((col, ci) => (
+                        <td
+                          key={col.key}
+                          className={
+                            ci === 0
+                              ? "py-3 px-4 font-semibold text-charcoal"
+                              : "py-3 px-4 text-bark"
+                          }
+                        >
+                          {row[col.key] ?? ""}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {c.tuitionExtrasHtml && (
-              <div
-                className="mt-8 prose prose-sm max-w-2xl mx-auto text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:text-center [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.tuitionExtrasHtml) }}
-              />
-            )}
           </AnimateIn>
         </Container>
       </Section>
-
-      {/* Section 3: Discounts */}
+    ),
+    "tuition-extras": c.tuitionExtrasHtml ? (
+      <Section id="tuition-extras" bg="white" padding="sm">
+        <Container>
+          <AnimateIn>
+            <div
+              className="prose prose-sm max-w-2xl mx-auto text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:text-center [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.tuitionExtrasHtml) }}
+            />
+          </AnimateIn>
+        </Container>
+      </Section>
+    ) : null,
+    discounts: (
       <Section id="discounts" bg="cream" padding="default">
         <Container>
           <AnimateIn>
@@ -160,8 +192,8 @@ export default async function RatesDatePage({
           </div>
         </Container>
       </Section>
-
-      {/* Section 4: Payment Schedule */}
+    ),
+    "payment-schedule": (
       <Section id="payment-schedule" bg="white" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -187,19 +219,57 @@ export default async function RatesDatePage({
               ))}
             </div>
           </AnimateIn>
-
-          {c.paymentExtrasHtml && (
-            <AnimateIn delay={0.2}>
-              <div
-                className="mt-10 prose prose-lg max-w-2xl mx-auto text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:text-center [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.paymentExtrasHtml) }}
-              />
-            </AnimateIn>
-          )}
         </Container>
       </Section>
+    ),
+    "payment-extras": c.paymentExtrasHtml ? (
+      <Section id="payment-extras" bg="white" padding="sm">
+        <Container size="narrow">
+          <AnimateIn>
+            <div
+              className="prose prose-lg max-w-2xl mx-auto text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:text-center [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.paymentExtrasHtml) }}
+            />
+          </AnimateIn>
+        </Container>
+      </Section>
+    ) : null,
+    policies: c.policiesBody ? (
+      <Section id="policies" bg="cream" padding="default">
+        <Container size="narrow">
+          <AnimateIn>
+            <div className="space-y-6">
+              {c.policiesHeading && (
+                <h2 className="font-camp text-center">{c.policiesHeading}</h2>
+              )}
+              <div
+                className="prose prose-lg max-w-none text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.policiesBody) }}
+              />
+            </div>
+          </AnimateIn>
+        </Container>
+      </Section>
+    ) : null,
+  };
 
-      {/* CTA */}
+  return (
+    <InnerPageLayout>
+      <PageHeader
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || DEFAULT_HERO_BG}
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: c.heroTitle },
+        ]}
+      />
+
+      {orderedKeys.map((k) => (
+        <Fragment key={k}>{renderedByKey[k]}</Fragment>
+      ))}
+
+      {/* CTA — always pinned at the bottom */}
       <Section id="cta" bg="dark" padding="default">
         <Container size="narrow">
           <AnimateIn>

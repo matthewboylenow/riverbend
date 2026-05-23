@@ -104,3 +104,27 @@ export async function loadSectionVisibility(pageSlug: string) {
     orderOf: (key: string, fallback: number) => order.get(key) ?? fallback,
   };
 }
+
+/**
+ * Public-page helper: load the section layout for `schema` and return the
+ * ordered list of visible section keys, ready to drive the page render.
+ *
+ * The first section in the schema is treated as a pinned "page header" and
+ * is excluded from the result — render it yourself above the reorderable
+ * sections.
+ *
+ * Typical usage:
+ *
+ *   const orderedKeys = await loadOrderedSectionKeys(SCHEMA);
+ *   ...
+ *   {orderedKeys.map((k) => <Fragment key={k}>{renderedByKey[k]}</Fragment>)}
+ */
+export async function loadOrderedSectionKeys(schema: PageSchema): Promise<string[]> {
+  const layout = await loadSectionVisibility(schema.slug);
+  return schema.sections
+    .map((s, i) => ({ key: sectionKey(s), idx: i }))
+    .filter((s) => s.idx > 0)
+    .sort((a, b) => layout.orderOf(a.key, a.idx) - layout.orderOf(b.key, b.idx))
+    .filter((s) => layout.visible(s.key))
+    .map((s) => s.key);
+}

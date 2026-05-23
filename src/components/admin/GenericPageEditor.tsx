@@ -32,9 +32,11 @@ import type {
   PageSchema,
   BlockSchema,
   RowsBlockSchema,
+  TableBlockSchema,
   SectionSchema,
 } from "@/lib/page-schemas/types";
 import { flattenBlocks, sectionKey } from "@/lib/page-schemas/types";
+import type { TableColumn, TableContent } from "@/lib/page-content";
 
 interface LayoutEntry {
   key: string;
@@ -797,6 +799,22 @@ function renderInput(
         />
       );
     }
+    case "table": {
+      const tableBlock = block as TableBlockSchema;
+      const v = (value as Partial<TableContent> | undefined) ?? {};
+      const columns =
+        Array.isArray(v.columns) && v.columns.length > 0
+          ? v.columns
+          : tableBlock.defaultContent.columns;
+      const rows = Array.isArray(v.rows) ? v.rows : [];
+      return (
+        <TableEditor
+          columns={columns}
+          rows={rows}
+          onChange={(next) => onChange(next)}
+        />
+      );
+    }
   }
 }
 
@@ -943,6 +961,237 @@ function RowItem({
                 className="w-full px-2 py-1 rounded border border-stone bg-white text-sm"
               />
             )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-1.5 text-bark hover:text-red-600 hover:bg-red-50 rounded mr-2"
+          aria-label="Remove row"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </Reorder.Item>
+  );
+}
+
+// ─── Table editor (rows + admin-editable column headers) ─────────────────
+// Like RowEditor, but columns live in content (not the schema), so admins
+// can rename headers and add/remove columns. New column keys are minted as
+// `col_N` so they survive label renames.
+function nextColumnKey(existing: TableColumn[]): string {
+  const taken = new Set(existing.map((c) => c.key));
+  for (let i = existing.length + 1; ; i++) {
+    const k = `col_${i}`;
+    if (!taken.has(k)) return k;
+  }
+}
+
+interface TableRowWithId {
+  __id: string;
+  row: Record<string, string>;
+}
+
+function TableEditor({
+  columns,
+  rows,
+  onChange,
+}: {
+  columns: TableColumn[];
+  rows: Record<string, string>[];
+  onChange: (next: TableContent) => void;
+}) {
+  const baseId = useId();
+  const [withIds, setWithIds] = useState<TableRowWithId[]>(() =>
+    rows.map((r, i) => ({ __id: `${baseId}-${i}`, row: r }))
+  );
+
+  useEffect(() => {
+    if (withIds.length !== rows.length) {
+      setWithIds(rows.map((r, i) => ({ __id: `${baseId}-${i}-${Date.now()}`, row: r })));
+    }
+  }, [rows, baseId, withIds.length]);
+
+  function emit(nextCols: TableColumn[], nextRows: TableRowWithId[]) {
+    onChange({ columns: nextCols, rows: nextRows.map((it) => it.row) });
+  }
+
+  function renameColumn(key: string, label: string) {
+    const next = columns.map((c) => (c.key === key ? { ...c, label } : c));
+    emit(next, withIds);
+  }
+  function addColumn() {
+    const k = nextColumnKey(columns);
+    emit([...columns, { key: k, label: "New column" }], withIds);
+  }
+  function removeColumn(key: string) {
+    const col = columns.find((c) => c.key === key);
+    if (
+      !confirm(
+        `Delete column "${col?.label ?? key}"? Cell values for this column will be cleared.`
+      )
+    ) {
+      return;
+    }
+    const nextCols = columns.filter((c) => c.key !== key);
+    const nextRows = withIds.map((it) => {
+      const { [key]: _drop, ...rest } = it.row;
+      void _drop;
+      return { ...it, row: rest };
+    });
+    setWithIds(nextRows);
+    emit(nextCols, nextRows);
+  }
+
+  function updateCell(id: string, key: string, val: string) {
+    const next = withIds.map((it) =>
+      it.__id === id ? { ...it, row: { ...it.row, [key]: val } } : it
+    );
+    setWithIds(next);
+    emit(columns, next);
+  }
+  function removeRow(id: string) {
+    const next = withIds.filter((it) => it.__id !== id);
+    setWithIds(next);
+    emit(columns, next);
+  }
+  function addRow() {
+    const blank: Record<string, string> = {};
+    for (const c of columns) blank[c.key] = "";
+    const next = [...withIds, { __id: `${baseId}-new-${Date.now()}`, row: blank }];
+    setWithIds(next);
+    emit(columns, next);
+  }
+  function reorderRows(next: TableRowWithId[]) {
+    setWithIds(next);
+    emit(columns, next);
+  }
+
+  const gridTemplate = `28px ${columns.map(() => "1fr").join(" ")} 40px`;
+
+  return (
+    <div>
+      {/* Column headers — editable labels with per-column delete */}
+      <div className="border border-stone/30 rounded-xl overflow-hidden">
+        <div
+          className="bg-cream/50 border-b border-stone/20 grid items-center"
+          style={{ gridTemplateColumns: gridTemplate }}
+        >
+          <span />
+          {columns.map((c) => (
+            <div key={c.key} className="px-2 py-1.5 flex items-center gap-1">
+              <input
+                type="text"
+                value={c.label}
+                onChange={(e) => renameColumn(c.key, e.target.value)}
+                className="flex-1 min-w-0 px-2 py-1 rounded border border-stone bg-white text-xs font-semibold text-bark uppercase tracking-wider"
+                aria-label={`Column header: ${c.label}`}
+              />
+              <button
+                type="button"
+                onClick={() => removeColumn(c.key)}
+                className="p-1 text-bark hover:text-red-600 hover:bg-red-50 rounded shrink-0"
+                aria-label={`Remove column ${c.label}`}
+                disabled={columns.length <= 1}
+                title={
+                  columns.length <= 1 ? "At least one column is required" : "Remove column"
+                }
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+          <span />
+        </div>
+
+        {/* Rows */}
+        {withIds.length === 0 ? (
+          <p className="px-3 py-4 text-center text-bark text-sm">
+            No rows yet. Click &ldquo;Add row&rdquo; below.
+          </p>
+        ) : (
+          <Reorder.Group
+            axis="y"
+            values={withIds}
+            onReorder={reorderRows}
+            className="divide-y divide-stone/10"
+          >
+            {withIds.map((it) => (
+              <TableRowItem
+                key={it.__id}
+                item={it}
+                columns={columns}
+                onUpdate={(k, v) => updateCell(it.__id, k, v)}
+                onRemove={() => removeRow(it.__id)}
+                gridTemplate={gridTemplate}
+              />
+            ))}
+          </Reorder.Group>
+        )}
+      </div>
+
+      <div className="mt-2 flex gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={addRow}
+          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-camp-red hover:bg-camp-red/10 rounded-lg"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add row
+        </button>
+        <button
+          type="button"
+          onClick={addColumn}
+          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-camp-red hover:bg-camp-red/10 rounded-lg"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add column
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TableRowItem({
+  item,
+  columns,
+  onUpdate,
+  onRemove,
+  gridTemplate,
+}: {
+  item: TableRowWithId;
+  columns: TableColumn[];
+  onUpdate: (key: string, val: string) => void;
+  onRemove: () => void;
+  gridTemplate: string;
+}) {
+  const dragControls = useDragControls();
+  return (
+    <Reorder.Item
+      value={item}
+      id={item.__id}
+      dragListener={false}
+      dragControls={dragControls}
+      className="bg-white"
+    >
+      <div className="grid items-center" style={{ gridTemplateColumns: gridTemplate }}>
+        <button
+          type="button"
+          aria-label="Drag to reorder"
+          onPointerDown={(e) => dragControls.start(e)}
+          className="touch-none cursor-grab active:cursor-grabbing p-2 text-stone hover:text-bark"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        {columns.map((c) => (
+          <div key={c.key} className="px-2 py-1.5">
+            <input
+              type="text"
+              value={item.row[c.key] || ""}
+              onChange={(e) => onUpdate(c.key, e.target.value)}
+              className="w-full px-2 py-1 rounded border border-stone bg-white text-sm"
+            />
           </div>
         ))}
         <button

@@ -21,6 +21,7 @@ import type {
   ImageContent,
   DocumentContent,
   RowsContent,
+  TableContent,
 } from "@/lib/page-content";
 
 export interface RowColumn {
@@ -57,13 +58,20 @@ export type RowsBlockSchema = BaseBlock<"rows", RowsContent> & {
   /** Empty row template for the "Add row" button. */
   blank: Record<string, string>;
 };
+/**
+ * Like rows, but admins can rename column headers and add/remove columns
+ * at runtime. The schema's `defaultContent.columns` is the starting layout;
+ * after the first save, content_json carries its own columns array.
+ */
+export type TableBlockSchema = BaseBlock<"table", TableContent>;
 
 export type BlockSchema =
   | TextBlockSchema
   | RichTextBlockSchema
   | ImageBlockSchema
   | DocumentBlockSchema
-  | RowsBlockSchema;
+  | RowsBlockSchema
+  | TableBlockSchema;
 
 export interface SectionSchema {
   /** Stable identifier for layout (reorder/hide) — never rename in code

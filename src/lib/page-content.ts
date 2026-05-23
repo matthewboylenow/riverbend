@@ -14,7 +14,7 @@ import { pageContent, pageContentRevisions } from "@/lib/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { sanitizeHtml } from "@/lib/sanitize";
 
-export type BlockType = "richtext" | "text" | "image" | "document" | "rows";
+export type BlockType = "richtext" | "text" | "image" | "document" | "rows" | "table";
 
 export interface BlockEnvelope<T = unknown> {
   type: BlockType;
@@ -30,6 +30,11 @@ export type TextContent = { value: string };
 export type ImageContent = { url: string; alt?: string };
 export type DocumentContent = { url: string; label?: string };
 export type RowsContent = { rows: Array<Record<string, string>> };
+export type TableColumn = { key: string; label: string };
+export type TableContent = {
+  columns: TableColumn[];
+  rows: Array<Record<string, string>>;
+};
 
 const MAX_REVISIONS = 5;
 
@@ -328,6 +333,18 @@ function sanitizeBlockContent(type: BlockType, content: unknown): unknown {
     case "rows": {
       const c = (content as RowsContent) || { rows: [] };
       return { rows: Array.isArray(c.rows) ? c.rows : [] };
+    }
+    case "table": {
+      const c = (content as TableContent) || { columns: [], rows: [] };
+      return {
+        columns: Array.isArray(c.columns)
+          ? c.columns.filter(
+              (col) =>
+                col && typeof col.key === "string" && typeof col.label === "string"
+            )
+          : [],
+        rows: Array.isArray(c.rows) ? c.rows : [],
+      };
     }
     default:
       return content;

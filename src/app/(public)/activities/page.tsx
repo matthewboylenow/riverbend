@@ -11,9 +11,8 @@ import Image from "next/image";
 import { Fragment } from "react";
 import { getPageContent, readBlock } from "@/lib/page-content";
 import { loadContentMode } from "@/lib/preview-mode";
-import { loadSectionVisibility } from "@/lib/page-section-layout";
+import { loadOrderedSectionKeys } from "@/lib/page-section-layout";
 import { ACTIVITIES_SCHEMA } from "@/lib/page-schemas/activities";
-import { sectionKey } from "@/lib/page-schemas/types";
 import { sanitizeHtml } from "@/lib/sanitize";
 import {
   ACTIVITIES_DEFAULTS as D,
@@ -102,7 +101,7 @@ export default async function ActivitiesPage({
 }) {
   const mode = await loadContentMode(await searchParams);
   const c = await loadContent(mode);
-  const layout = await loadSectionVisibility(PAGE_SLUG);
+  const orderedKeys = await loadOrderedSectionKeys(ACTIVITIES_SCHEMA);
 
   // Each editable section is rendered into a map keyed by its schema
   // section key, so we can both reorder them via the admin layout and
@@ -207,22 +206,24 @@ export default async function ActivitiesPage({
           </AnimateIn>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {c.activityCards.map((activity, index) => (
-              <AnimateIn key={`${activity.name}-${index}`} delay={index * 0.1}>
-                <div className="group">
-                  <div className="relative aspect-square overflow-hidden rounded-2xl mb-4">
-                    <Image
-                      src={activity.image}
-                      alt={activity.name}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
+            {c.activityCards
+              .filter((a) => a.name && a.image)
+              .map((activity, index) => (
+                <AnimateIn key={`${activity.name}-${index}`} delay={index * 0.1}>
+                  <div className="group">
+                    <div className="relative aspect-square overflow-hidden rounded-2xl mb-4">
+                      <Image
+                        src={activity.image}
+                        alt={activity.name}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    </div>
+                    <h3 className="font-camp text-lg">{activity.name}</h3>
                   </div>
-                  <h3 className="font-camp text-lg">{activity.name}</h3>
-                </div>
-              </AnimateIn>
-            ))}
+                </AnimateIn>
+              ))}
           </div>
 
           {c.adventureVideoId && (
@@ -332,13 +333,6 @@ export default async function ActivitiesPage({
     ),
   };
 
-  // Reorderable keys = every editable section except the Page Header.
-  const reorderable = ACTIVITIES_SCHEMA.sections
-    .map((s, i) => ({ key: sectionKey(s), idx: i }))
-    .filter((s) => s.idx > 0)
-    .sort((a, b) => layout.orderOf(a.key, a.idx) - layout.orderOf(b.key, b.idx))
-    .filter((s) => layout.visible(s.key));
-
   return (
     <InnerPageLayout>
       <PageHeader
@@ -350,8 +344,8 @@ export default async function ActivitiesPage({
           { label: "Activities" },
         ]}
       />
-      {reorderable.map((s) => (
-        <Fragment key={s.key}>{renderedByKey[s.key]}</Fragment>
+      {orderedKeys.map((k) => (
+        <Fragment key={k}>{renderedByKey[k]}</Fragment>
       ))}
     </InnerPageLayout>
   );

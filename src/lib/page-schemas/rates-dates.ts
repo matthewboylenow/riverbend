@@ -7,6 +7,7 @@ export const RATES_DATES_SCHEMA: PageSchema = {
   publicHref: "/rates-dates-application-2026",
   sections: [
     {
+      key: "page-header",
       label: "Page Header",
       blocks: [
         {
@@ -31,6 +32,7 @@ export const RATES_DATES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "intro",
       label: "Intro paragraphs",
       blocks: [
         {
@@ -41,6 +43,7 @@ export const RATES_DATES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "tuition",
       label: "Tuition rates table",
       blocks: [
         {
@@ -53,19 +56,23 @@ export const RATES_DATES_SCHEMA: PageSchema = {
         },
         {
           key: "tuition_rows",
-          type: "rows",
-          columns: [
-            { key: "duration", label: "Duration" },
-            { key: "inCamp", label: "In Camp" },
-            { key: "dayTripper", label: "Day Tripper" },
-            { key: "threeQuarter", label: "Three-Quarter Day" },
-          ],
-          blank: { duration: "", inCamp: "", dayTripper: "", threeQuarter: "" },
-          defaultContent: { rows: RATES_DEFAULTS.tuition_rows as unknown as Array<Record<string, string>> },
+          type: "table",
+          label: "Tuition table",
+          help: "Edit column headers, add/remove columns, drag rows to reorder.",
+          defaultContent: {
+            columns: [
+              { key: "duration", label: "Duration" },
+              { key: "inCamp", label: "In Camp" },
+              { key: "dayTripper", label: "Day Tripper" },
+              { key: "threeQuarter", label: "Three-Quarter Day" },
+            ],
+            rows: RATES_DEFAULTS.tuition_rows as unknown as Array<Record<string, string>>,
+          },
         },
       ],
     },
     {
+      key: "tuition-extras",
       label: "Below tuition table",
       help: "Free-form area for footnotes, headings, additional copy.",
       blocks: [
@@ -77,6 +84,7 @@ export const RATES_DATES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "discounts",
       label: "Discounts",
       blocks: [
         {
@@ -92,6 +100,7 @@ export const RATES_DATES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "payment-schedule",
       label: "Payment schedule",
       blocks: [
         {
@@ -107,6 +116,7 @@ export const RATES_DATES_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "payment-extras",
       label: "Bottom of page",
       help: "Free-form rich text shown below the payment schedule. Add headings, paragraphs, links, lists.",
       blocks: [
@@ -114,6 +124,25 @@ export const RATES_DATES_SCHEMA: PageSchema = {
           key: "payment_extras",
           type: "richtext",
           defaultContent: { html: RATES_DEFAULTS.payment_extras_html },
+        },
+      ],
+    },
+    {
+      key: "policies",
+      label: "Policies",
+      help: "Free-form heading + rich text. Drag to any position on the page.",
+      blocks: [
+        {
+          key: "policies_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: "Policies" },
+        },
+        {
+          key: "policies_body",
+          type: "richtext",
+          label: "Body",
+          defaultContent: { html: "" },
         },
       ],
     },
