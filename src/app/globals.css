@@ -571,3 +571,18 @@
     display: none;
   }
 }
+
+/* Honor OS-level "Reduce motion" so vestibular-sensitive users don't get
+   the framer-motion / CSS transitions firing. Nukes durations to ~0
+   without removing the transition itself (some libraries depend on
+   transitionend events firing). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
