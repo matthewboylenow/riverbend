@@ -52,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
     },
     icons: {
-      icon: faviconUrl || "/favicon.ico",
+      icon: faviconUrl || "/riverbend-favicon.png",
     },
   };
 }

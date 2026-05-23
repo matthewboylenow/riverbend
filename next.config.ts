@@ -51,6 +51,13 @@ const nextConfig: NextConfig = {
           ? `https://${process.env.BLOB_STORE_ID}.public.blob.vercel-storage.com/:path*`
           : '/placeholder-assets/:path*',
       },
+      // Browsers that hit /favicon.ico directly (the legacy auto-request)
+      // get the same PNG that <link rel="icon"> declares. Lets us drop the
+      // old .ico file without leaving a 404 in network logs.
+      {
+        source: '/favicon.ico',
+        destination: '/riverbend-favicon.png',
+      },
     ];
   },
   async redirects() {
