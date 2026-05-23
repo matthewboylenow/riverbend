@@ -132,26 +132,27 @@ export function Footer() {
             >
               Privacy Policy
             </a>
-            <span className="text-white/20" aria-hidden>
-              |
-            </span>
-            <a
-              href="https://www.adventii.media"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-1.5 hover:text-white transition-colors"
-              aria-label="Site by Adventii Media"
-            >
-              <span>Site by</span>
-              <Image
-                src="/adventii-logo.png"
-                alt="Adventii Media"
-                width={500}
-                height={164}
-                className="h-3 w-auto opacity-50 group-hover:opacity-100 transition-opacity"
-              />
-            </a>
           </div>
+        </div>
+
+        {/* Agency credit — own line so the wordmark has room to breathe */}
+        <div className="flex justify-center pt-6 text-xs text-white/40">
+          <a
+            href="https://www.adventii.media"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 hover:text-white transition-colors"
+            aria-label="Site by Adventii Media"
+          >
+            <span className="tracking-wide">Site by</span>
+            <Image
+              src="/adventii-logo.png"
+              alt="Adventii Media"
+              width={500}
+              height={164}
+              className="h-6 w-auto opacity-60 group-hover:opacity-100 transition-opacity"
+            />
+          </a>
         </div>
       </Container>
     </footer>
