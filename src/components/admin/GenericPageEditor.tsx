@@ -1023,7 +1023,7 @@ function TableEditor({
   }
   function addColumn() {
     const k = nextColumnKey(columns);
-    emit([...columns, { key: k, label: "New column" }], withIds);
+    emit([...columns, { key: k, label: "" }], withIds);
   }
   function removeColumn(key: string) {
     const col = columns.find((c) => c.key === key);

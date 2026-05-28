@@ -53,11 +53,16 @@ async function loadContent(mode: "published" | "draft") {
     columns: DEFAULT_TUITION_COLUMNS,
     rows: DEFAULTS.tuition_rows as unknown as Array<Record<string, string>>,
   });
-  const tuitionColumns =
+  const rawColumns =
     Array.isArray(tuitionRaw.columns) && tuitionRaw.columns.length > 0
       ? tuitionRaw.columns
       : DEFAULT_TUITION_COLUMNS;
   const tuitionRows = Array.isArray(tuitionRaw.rows) ? tuitionRaw.rows : [];
+  // Hide columns with no data — handles accidental "Add column" clicks in
+  // the admin editor that left a placeholder column behind.
+  const tuitionColumns = rawColumns.filter((col) =>
+    tuitionRows.some((row) => (row[col.key] ?? "").toString().trim() !== "")
+  );
 
   return {
     heroTitle: readBlock<{ value: string }>(blocks, "hero_title", { value: DEFAULTS.hero_title }).value,

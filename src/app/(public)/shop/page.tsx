@@ -13,7 +13,7 @@ import { asc, eq } from "drizzle-orm";
 export const metadata: Metadata = {
   title: "Shop Riverbend Gear",
   description:
-    "Shop Camp Riverbend merchandise — shirts, hoodies, hats, backpacks and more. Camp Riverbend does not require campers to wear a camp uniform.",
+    "Shop Camp Riverbend merchandise — shirts, hoodies, hats, backpacks and more. Camp Riverbend does not require campers to wear a camp uniform. Each camper will receive a complimentary camper t-shirt at the beginning of the season.",
 };
 
 export const revalidate = 60;
@@ -71,7 +71,7 @@ export default async function ShopPage() {
     <InnerPageLayout showCTA={false}>
       <PageHeader
         title="Shop Riverbend Gear"
-        subtitle="Camp Riverbend does not require campers to wear a camp uniform; each camper will receive one free camper t-shirt prior to the start of camp."
+        subtitle="Camp Riverbend does not require campers to wear a camp uniform. Each camper will receive a complimentary camper t-shirt at the beginning of the season."
       />
 
       <Section>
