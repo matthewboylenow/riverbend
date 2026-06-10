@@ -23,7 +23,6 @@ export default function PrivacyPolicyPage() {
     <InnerPageLayout>
       <PageHeader
         title="Privacy Policy & Terms and Conditions"
-        subtitle="Your privacy is our priority"
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Privacy Policy" },
