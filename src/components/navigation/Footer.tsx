@@ -124,14 +124,12 @@ export function Footer() {
             <span className="text-caption text-white/30 text-[0.65rem]">
               ACA Accredited Since 1962
             </span>
-            <a
-              href="http://riverbend.campintouch.com/privacy-policy/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/privacy-policy"
               className="hover:text-white transition-colors"
             >
               Privacy Policy
-            </a>
+            </Link>
           </div>
         </div>
 
