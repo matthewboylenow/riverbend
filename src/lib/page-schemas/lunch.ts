@@ -7,6 +7,7 @@ export const LUNCH_SCHEMA: PageSchema = {
   publicHref: "/lunch",
   sections: [
     {
+      key: "page-header",
       label: "Page Header",
       blocks: [
         {
@@ -34,6 +35,7 @@ export const LUNCH_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "lunch-menu",
       label: "Lunch Menu button",
       help: "Upload the lunch menu PDF and it appears as a prominent button near the top of the page. Leave the PDF empty to hide the button.",
       blocks: [
@@ -62,6 +64,7 @@ export const LUNCH_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "overview",
       label: "Daily Lunch section",
       blocks: [
         {
@@ -89,6 +92,7 @@ export const LUNCH_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "snack-shack",
       label: "Snack Shack section",
       blocks: [
         {
@@ -106,6 +110,7 @@ export const LUNCH_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "allergy",
       label: "Allergy Aware Kitchen callout",
       blocks: [
         {
@@ -123,6 +128,7 @@ export const LUNCH_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: "video",
       label: "Video section",
       blocks: [
         {
