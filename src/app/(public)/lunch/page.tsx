@@ -5,9 +5,14 @@ import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { VideoEmbed } from "@/components/ui/VideoEmbed";
+import { Button } from "@/components/ui/Button";
+import { FileText } from "lucide-react";
 import Image from "next/image";
+import { Fragment } from "react";
 import { getPageContent, readBlock } from "@/lib/page-content";
 import { loadContentMode } from "@/lib/preview-mode";
+import { loadOrderedSectionKeys } from "@/lib/page-section-layout";
+import { LUNCH_SCHEMA } from "@/lib/page-schemas/lunch";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { LUNCH_DEFAULTS as D } from "@/lib/page-defaults/lunch";
 
@@ -36,11 +41,20 @@ async function loadContent(mode: "published" | "draft") {
       url: fallbackUrl,
       alt: fallbackAlt,
     });
+  const doc = (key: string, fallbackUrl: string, fallbackLabel: string) =>
+    readBlock<{ url: string; label?: string }>(blocks, key, {
+      url: fallbackUrl,
+      label: fallbackLabel,
+    });
 
   return {
     heroTitle: t("hero_title", D.hero_title),
     heroSubtitle: t("hero_subtitle", D.hero_subtitle),
     heroBg: i("hero_bg", D.hero_bg_url, D.hero_bg_alt),
+
+    menuHeading: t("menu_heading", D.menu_heading),
+    menuIntro: t("menu_intro", D.menu_intro),
+    menuDoc: doc("menu_doc", D.menu_url, D.menu_label),
 
     overviewHeading: t("overview_heading", D.overview_heading),
     overviewHtml: r("overview", D.overview_html),
@@ -68,20 +82,38 @@ export default async function LunchPage({
 }) {
   const mode = await loadContentMode(await searchParams);
   const c = await loadContent(mode);
+  const orderedKeys = await loadOrderedSectionKeys(LUNCH_SCHEMA);
 
-  return (
-    <InnerPageLayout>
-      <PageHeader
-        title={c.heroTitle}
-        subtitle={c.heroSubtitle}
-        bgImage={c.heroBg.url || D.hero_bg_url}
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Lunch" },
-        ]}
-      />
+  // Each editable section is rendered into a map keyed by its schema section
+  // key, so the admin's drag-to-reorder and hide toggles (saved via the page
+  // layout) take effect on the live page. The Page Header is rendered
+  // separately below and always stays pinned at the top.
+  const renderedByKey: Record<string, React.ReactNode> = {
+    // Lunch Menu PDF button — only rendered once a menu PDF is uploaded.
+    "lunch-menu": c.menuDoc.url ? (
+      <Section id="lunch-menu" bg="white" padding="default">
+        <Container size="narrow">
+          <AnimateIn>
+            <div className="bg-cream border border-camp-red/20 rounded-3xl shadow-sm px-6 py-8 sm:px-10 sm:py-10 text-center space-y-4">
+              <h2 className="font-camp">{c.menuHeading}</h2>
+              {c.menuIntro && (
+                <p className="text-body-lg leading-relaxed text-bark max-w-2xl mx-auto">
+                  {c.menuIntro}
+                </p>
+              )}
+              <div className="pt-2">
+                <Button href={c.menuDoc.url} external size="lg">
+                  <FileText className="h-5 w-5" />
+                  {c.menuDoc.label || D.menu_label}
+                </Button>
+              </div>
+            </div>
+          </AnimateIn>
+        </Container>
+      </Section>
+    ) : null,
 
-      {/* Section 1: Overview */}
+    overview: (
       <Section id="overview" bg="cream" padding="default">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -111,8 +143,9 @@ export default async function LunchPage({
           </div>
         </Container>
       </Section>
+    ),
 
-      {/* Section 2: Snack Shack */}
+    "snack-shack": (
       <Section id="snack-shack" bg="white" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -126,8 +159,9 @@ export default async function LunchPage({
           </AnimateIn>
         </Container>
       </Section>
+    ),
 
-      {/* Section 3: Allergy Info */}
+    allergy: (
       <Section id="allergy-info" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -141,17 +175,33 @@ export default async function LunchPage({
           </AnimateIn>
         </Container>
       </Section>
+    ),
 
-      {/* Section 4: Video */}
-      {c.videoId && (
-        <Section id="lunch-video" bg="white" padding="default">
-          <Container>
-            <AnimateIn>
-              <VideoEmbed vimeoId={c.videoId} title={c.videoTitle} />
-            </AnimateIn>
-          </Container>
-        </Section>
-      )}
+    video: c.videoId ? (
+      <Section id="lunch-video" bg="white" padding="default">
+        <Container>
+          <AnimateIn>
+            <VideoEmbed vimeoId={c.videoId} title={c.videoTitle} />
+          </AnimateIn>
+        </Container>
+      </Section>
+    ) : null,
+  };
+
+  return (
+    <InnerPageLayout>
+      <PageHeader
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        bgImage={c.heroBg.url || D.hero_bg_url}
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Lunch" },
+        ]}
+      />
+      {orderedKeys.map((k) => (
+        <Fragment key={k}>{renderedByKey[k]}</Fragment>
+      ))}
     </InnerPageLayout>
   );
 }
