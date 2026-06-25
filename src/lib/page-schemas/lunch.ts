@@ -34,6 +34,34 @@ export const LUNCH_SCHEMA: PageSchema = {
       ],
     },
     {
+      label: "Lunch Menu button",
+      help: "Upload the lunch menu PDF and it appears as a prominent button near the top of the page. Leave the PDF empty to hide the button.",
+      blocks: [
+        {
+          key: "menu_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: LUNCH_DEFAULTS.menu_heading },
+        },
+        {
+          key: "menu_intro",
+          type: "text",
+          label: "Intro line (optional)",
+          defaultContent: { value: LUNCH_DEFAULTS.menu_intro },
+        },
+        {
+          key: "menu_doc",
+          type: "document",
+          label: "Lunch menu PDF",
+          help: "Upload a PDF (or pick one from the media library). The button links here.",
+          defaultContent: {
+            url: LUNCH_DEFAULTS.menu_url,
+            label: LUNCH_DEFAULTS.menu_label,
+          },
+        },
+      ],
+    },
+    {
       label: "Daily Lunch section",
       blocks: [
         {

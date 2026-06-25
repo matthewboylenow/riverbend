@@ -15,6 +15,12 @@ export const LUNCH_DEFAULTS = {
   hero_bg_url: "/assets/site/IMG_370.jpg",
   hero_bg_alt: "",
 
+  menu_heading: "This Season's Lunch Menu",
+  menu_intro:
+    "Download the full lunch menu to see what's on the table all summer long.",
+  menu_url: "",
+  menu_label: "View Lunch Menu (PDF)",
+
   overview_heading: "Daily Lunch",
   overview_html:
     "<p>Lunch is provided daily and is the perfect combination of kid favorites and healthy choices, created by our very own Camp Riverbend Dietician.</p>",
