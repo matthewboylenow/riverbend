@@ -45,19 +45,6 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      // Legacy WordPress media. The campriverbend.com domain used to point at
-      // the old WordPress install, so historical assets — most notably the
-      // images hard-coded into CampMinder email templates — live at
-      // /wp-content/uploads/... URLs on this domain. Now that the domain serves
-      // this Next app those paths 404. Proxy them back to the still-running old
-      // WP origin so the exact original URLs keep resolving. The origin holds
-      // the files at these same plain paths (cdn.campriverbend.com only serves
-      // numeric-segment optimized variants, so it is not a drop-in source).
-      {
-        source: '/wp-content/uploads/:path*',
-        destination:
-          'https://wordpress-272284-846919.cloudwaysapps.com/wp-content/uploads/:path*',
-      },
       {
         source: '/assets/:path*',
         destination: process.env.BLOB_STORE_ID
