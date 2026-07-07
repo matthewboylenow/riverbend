@@ -91,13 +91,32 @@ async function loadContent(mode: "published" | "draft") {
     tuition2Columns: tuition2.columns,
     tuition2Rows: tuition2.rows,
     tuitionExtrasHtml: readBlock<{ html: string }>(blocks, "tuition_extras", { html: DEFAULTS.tuition_extras_html }).html,
-    discounts: readBlock<{ rows: DiscountRow[] }>(blocks, "discounts", { rows: DEFAULTS.discounts }).rows,
-    paymentSchedule: readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule", { rows: DEFAULTS.payment_schedule }).rows,
+    discountsHeading: readBlock<{ value: string }>(blocks, "discounts_heading", { value: DEFAULTS.discounts_heading }).value,
+    discounts: nonBlankRows(readBlock<{ rows: DiscountRow[] }>(blocks, "discounts", { rows: DEFAULTS.discounts }).rows),
+    discounts2Heading: readBlock<{ value: string }>(blocks, "discounts2_heading", { value: DEFAULTS.discounts2_heading }).value,
+    discounts2: nonBlankRows(readBlock<{ rows: DiscountRow[] }>(blocks, "discounts2", { rows: DEFAULTS.discounts2 }).rows),
+    paymentHeading: readBlock<{ value: string }>(blocks, "payment_heading", { value: DEFAULTS.payment_heading }).value,
+    paymentSchedule: nonBlankRows(readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule", { rows: DEFAULTS.payment_schedule }).rows),
+    payment2Heading: readBlock<{ value: string }>(blocks, "payment2_heading", { value: DEFAULTS.payment2_heading }).value,
+    paymentSchedule2: nonBlankRows(readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule2", { rows: DEFAULTS.payment_schedule2 }).rows),
     paymentExtrasHtml: readBlock<{ html: string }>(blocks, "payment_extras", { html: DEFAULTS.payment_extras_html }).html,
+    paymentExtras2Html: readBlock<{ html: string }>(blocks, "payment_extras2", { html: DEFAULTS.payment_extras2_html }).html,
     policiesHeading: readBlock<{ value: string }>(blocks, "policies_heading", { value: "Policies" }).value,
     policiesBody: readBlock<{ html: string }>(blocks, "policies_body", { html: "" }).html,
+    policies2Heading: readBlock<{ value: string }>(blocks, "policies2_heading", { value: DEFAULTS.policies2_heading }).value,
+    policies2Body: readBlock<{ html: string }>(blocks, "policies2_body", { html: DEFAULTS.policies2_body_html }).html,
     heroBg: readBlock<{ url: string; alt?: string }>(blocks, "hero_bg", { url: DEFAULT_HERO_BG, alt: "" }),
   };
+}
+
+// Drop rows whose every cell is blank — the admin editor's "Add row"
+// button can leave empty placeholder rows behind, and second-season
+// sections use "no rows" to mean "keep me off the public page."
+function nonBlankRows<T extends object>(rows: T[]): T[] {
+  if (!Array.isArray(rows)) return [];
+  return rows.filter((row) =>
+    Object.values(row).some((v) => (v ?? "").toString().trim() !== "")
+  );
 }
 
 function TuitionTableSection({
@@ -159,6 +178,119 @@ function TuitionTableSection({
                 ))}
               </tbody>
             </table>
+          </div>
+        </AnimateIn>
+      </Container>
+    </Section>
+  );
+}
+
+function DiscountsSection({
+  id,
+  heading,
+  rows,
+}: {
+  id: string;
+  heading: string;
+  rows: DiscountRow[];
+}) {
+  return (
+    <Section id={id} bg="cream" padding="default">
+      <Container>
+        <AnimateIn>
+          <div className="text-center mb-10">
+            <h2 className="font-camp">{heading}</h2>
+          </div>
+        </AnimateIn>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rows.map((discount, i) => (
+            <AnimateIn key={`${discount.heading}-${i}`} delay={i * 0.1}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm h-full">
+                <h3 className="font-camp text-lg mb-3 text-camp-red">{discount.heading}</h3>
+                <p className="text-bark leading-relaxed">{discount.body}</p>
+              </div>
+            </AnimateIn>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+}
+
+function PaymentScheduleSection({
+  id,
+  heading,
+  rows,
+}: {
+  id: string;
+  heading: string;
+  rows: PaymentRow[];
+}) {
+  return (
+    <Section id={id} bg="white" padding="default">
+      <Container size="narrow">
+        <AnimateIn>
+          <div className="text-center mb-10">
+            <h2 className="font-camp">{heading}</h2>
+          </div>
+        </AnimateIn>
+        <AnimateIn delay={0.1}>
+          <div className="space-y-4">
+            {rows.map((item, i) => (
+              <div
+                key={`${item.label}-${i}`}
+                className="flex gap-5 items-start bg-cream/50 rounded-2xl p-5 border border-stone/20"
+              >
+                <div className="shrink-0 w-8 h-8 rounded-full bg-camp-red text-white flex items-center justify-center font-bold text-sm">
+                  {i + 1}
+                </div>
+                <div>
+                  <p className="font-semibold text-charcoal font-camp">{item.label}</p>
+                  <p className="text-bark leading-relaxed mt-0.5">{item.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </AnimateIn>
+      </Container>
+    </Section>
+  );
+}
+
+function ExtrasSection({ id, html }: { id: string; html: string }) {
+  return (
+    <Section id={id} bg="white" padding="sm">
+      <Container size="narrow">
+        <AnimateIn>
+          <div
+            className="prose prose-lg max-w-2xl mx-auto text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:text-center [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
+          />
+        </AnimateIn>
+      </Container>
+    </Section>
+  );
+}
+
+function PoliciesSection({
+  id,
+  heading,
+  html,
+}: {
+  id: string;
+  heading: string;
+  html: string;
+}) {
+  return (
+    <Section id={id} bg="cream" padding="default">
+      <Container size="narrow">
+        <AnimateIn>
+          <div className="space-y-6">
+            {heading && <h2 className="font-camp text-center">{heading}</h2>}
+            <div
+              className="prose prose-lg max-w-none text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
+            />
           </div>
         </AnimateIn>
       </Container>
@@ -233,83 +365,38 @@ export default async function RatesDatePage({
       </Section>
     ) : null,
     discounts: (
-      <Section id="discounts" bg="cream" padding="default">
-        <Container>
-          <AnimateIn>
-            <div className="text-center mb-10">
-              <h2 className="font-camp">Discounts</h2>
-            </div>
-          </AnimateIn>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {c.discounts.map((discount, i) => (
-              <AnimateIn key={`${discount.heading}-${i}`} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl p-6 shadow-sm h-full">
-                  <h3 className="font-camp text-lg mb-3 text-camp-red">{discount.heading}</h3>
-                  <p className="text-bark leading-relaxed">{discount.body}</p>
-                </div>
-              </AnimateIn>
-            ))}
-          </div>
-        </Container>
-      </Section>
+      <DiscountsSection id="discounts" heading={c.discountsHeading} rows={c.discounts} />
     ),
+    "discounts-2":
+      c.discounts2.length > 0 ? (
+        <DiscountsSection id="discounts-2" heading={c.discounts2Heading} rows={c.discounts2} />
+      ) : null,
     "payment-schedule": (
-      <Section id="payment-schedule" bg="white" padding="default">
-        <Container size="narrow">
-          <AnimateIn>
-            <div className="text-center mb-10">
-              <h2 className="font-camp">Payment Schedule</h2>
-            </div>
-          </AnimateIn>
-          <AnimateIn delay={0.1}>
-            <div className="space-y-4">
-              {c.paymentSchedule.map((item, i) => (
-                <div
-                  key={`${item.label}-${i}`}
-                  className="flex gap-5 items-start bg-cream/50 rounded-2xl p-5 border border-stone/20"
-                >
-                  <div className="shrink-0 w-8 h-8 rounded-full bg-camp-red text-white flex items-center justify-center font-bold text-sm">
-                    {i + 1}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-charcoal font-camp">{item.label}</p>
-                    <p className="text-bark leading-relaxed mt-0.5">{item.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </AnimateIn>
-        </Container>
-      </Section>
+      <PaymentScheduleSection
+        id="payment-schedule"
+        heading={c.paymentHeading}
+        rows={c.paymentSchedule}
+      />
     ),
+    "payment-schedule-2":
+      c.paymentSchedule2.length > 0 ? (
+        <PaymentScheduleSection
+          id="payment-schedule-2"
+          heading={c.payment2Heading}
+          rows={c.paymentSchedule2}
+        />
+      ) : null,
     "payment-extras": c.paymentExtrasHtml ? (
-      <Section id="payment-extras" bg="white" padding="sm">
-        <Container size="narrow">
-          <AnimateIn>
-            <div
-              className="prose prose-lg max-w-2xl mx-auto text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:text-center [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.paymentExtrasHtml) }}
-            />
-          </AnimateIn>
-        </Container>
-      </Section>
+      <ExtrasSection id="payment-extras" html={c.paymentExtrasHtml} />
+    ) : null,
+    "payment-extras-2": c.paymentExtras2Html ? (
+      <ExtrasSection id="payment-extras-2" html={c.paymentExtras2Html} />
     ) : null,
     policies: c.policiesBody ? (
-      <Section id="policies" bg="cream" padding="default">
-        <Container size="narrow">
-          <AnimateIn>
-            <div className="space-y-6">
-              {c.policiesHeading && (
-                <h2 className="font-camp text-center">{c.policiesHeading}</h2>
-              )}
-              <div
-                className="prose prose-lg max-w-none text-bark [&_h2]:font-camp [&_h2]:text-charcoal [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:font-camp [&_h3]:text-charcoal [&_h3]:mt-6 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.policiesBody) }}
-              />
-            </div>
-          </AnimateIn>
-        </Container>
-      </Section>
+      <PoliciesSection id="policies" heading={c.policiesHeading} html={c.policiesBody} />
+    ) : null,
+    "policies-2": c.policies2Body ? (
+      <PoliciesSection id="policies-2" heading={c.policies2Heading} html={c.policies2Body} />
     ) : null,
   };
 
