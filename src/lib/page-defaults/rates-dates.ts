@@ -49,6 +49,7 @@ export const RATES_DEFAULTS = {
   tuition2_heading: "2027 Tuition Rates",
   tuition2_note: "",
   tuition2_rows: [] as TuitionRow[],
+  discounts_heading: "Discounts",
   discounts: [
     {
       heading: "Sibling Discount (2nd Child)",
@@ -67,6 +68,7 @@ export const RATES_DEFAULTS = {
       body: "Receive a $100 discount on your summer tuition for each first-time camper you refer ($50 for Three-Quarter Day).",
     },
   ] as DiscountRow[],
+  payment_heading: "Payment Schedule",
   payment_schedule: [
     {
       label: "At Application",
@@ -76,4 +78,16 @@ export const RATES_DEFAULTS = {
     { label: "April 1", detail: "Final tuition payment due" },
   ] as PaymentRow[],
   payment_extras_html: "",
+
+  // ─── Second-season variants ─────────────────────────────
+  // All ship empty so the public page skips them until an admin fills
+  // them in; each pairs with a section that can also be hidden/shown
+  // with the layout toggle.
+  discounts2_heading: "2027 Discounts",
+  discounts2: [] as DiscountRow[],
+  payment2_heading: "2027 Payment Schedule",
+  payment_schedule2: [] as PaymentRow[],
+  payment_extras2_html: "",
+  policies2_heading: "2027 Policies",
+  policies2_body_html: "",
 };
