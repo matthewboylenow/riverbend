@@ -97,7 +97,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
     {
       key: "learn-more",
       label: "Learn More cards",
-      help: "Hrefs stay fixed (/programs, /rates-dates-application-2026, /sports); titles + images editable.",
+      help: "Hrefs stay fixed (/programs, /rates-dates-application, /sports); titles + images editable.",
       blocks: [
         { key: "learn_more_heading", type: "text", label: "Heading", defaultContent: { value: D.learn_more_heading } },
         { key: "learn_more_1_title", type: "text", label: "Card 1 — title", defaultContent: { value: D.learn_more_1_title } },

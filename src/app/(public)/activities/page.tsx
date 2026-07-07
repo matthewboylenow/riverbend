@@ -317,7 +317,7 @@ export default async function ActivitiesPage({
             />
             <LinkCard
               title={c.learnMore2Title}
-              href="/rates-dates-application-2026"
+              href="/rates-dates-application"
               image={c.learnMore2Image.url || D.learn_more_2_image}
               index={1}
             />

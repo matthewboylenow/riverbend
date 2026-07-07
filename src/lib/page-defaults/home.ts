@@ -48,7 +48,7 @@ export const HOME_DEFAULTS = {
   announcement_message:
     "Now accepting applications for 2026 season — Limited spaces still available",
   announcement_link_text: "Apply Now",
-  announcement_link_href: "/rates-dates-application-2026",
+  announcement_link_href: "/rates-dates-application",
 
   // ─── Philosophy section ────────────────────────────────
   philosophy_caption: "Our Philosophy",
@@ -126,7 +126,7 @@ export const HOME_DEFAULTS = {
   // Card 2: countdown (no image)
   bento_countdown_label: "First Day of Camp",
   bento_countdown_target: "2026-06-29T09:00:00",
-  bento_countdown_href: "/rates-dates-application-2026",
+  bento_countdown_href: "/rates-dates-application",
   // Card 3: stat tile
   bento_stat_number: "64",
   bento_stat_label: "Years of tradition",
@@ -135,7 +135,7 @@ export const HOME_DEFAULTS = {
   bento_card_4: {
     title: "Rates & Dates 2026",
     subtitle: "Apply now",
-    href: "/rates-dates-application-2026",
+    href: "/rates-dates-application",
     image_url: "/assets/site/Canoe.jpg",
     cta: "Apply now",
   },

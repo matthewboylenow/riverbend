@@ -83,7 +83,7 @@ export const PROGRAMS_SCHEMA: PageSchema = {
     },
     {
       label: "Learn More cards (bottom of page)",
-      help: "Three cards link to /activities, /rates-dates-application-2026, /about-riverbend respectively. Hrefs stay fixed; titles + images are editable.",
+      help: "Three cards link to /activities, /rates-dates-application, /about-riverbend respectively. Hrefs stay fixed; titles + images are editable.",
       blocks: [
         { key: "learn_more_heading", type: "text", label: "Heading", defaultContent: { value: D.learn_more_heading } },
         { key: "learn_more_1_title", type: "text", label: "Card 1 — title (Activities)", defaultContent: { value: D.learn_more_1_title } },

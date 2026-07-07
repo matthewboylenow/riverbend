@@ -2,9 +2,12 @@ import type { PageSchema } from "./types";
 import { RATES_DEFAULTS } from "@/lib/page-defaults/rates-dates";
 
 export const RATES_DATES_SCHEMA: PageSchema = {
+  // NOTE: the slug is a stable DB content key — existing page_content rows
+  // are stored under it. The public URL moved to the year-neutral
+  // /rates-dates-application; only publicHref/route changed, never this slug.
   slug: "rates-dates-application-2026",
   label: "Rates, Dates & Application",
-  publicHref: "/rates-dates-application-2026",
+  publicHref: "/rates-dates-application",
   sections: [
     {
       key: "page-header",
@@ -44,8 +47,15 @@ export const RATES_DATES_SCHEMA: PageSchema = {
     },
     {
       key: "tuition",
-      label: "Tuition rates table",
+      label: "Tuition rates table 1",
+      help: "Current season's rates. When the season ends, hide this section with the eye toggle — the content is kept, not deleted.",
       blocks: [
+        {
+          key: "tuition_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: RATES_DEFAULTS.tuition_heading },
+        },
         {
           key: "tuition_note",
           type: "text",
@@ -80,6 +90,42 @@ export const RATES_DATES_SCHEMA: PageSchema = {
           key: "tuition_extras",
           type: "richtext",
           defaultContent: { html: RATES_DEFAULTS.tuition_extras_html },
+        },
+      ],
+    },
+    {
+      key: "tuition-2",
+      label: "Tuition rates table 2",
+      help: "Second season's rates (e.g. next year). Stays off the public page while the table has no rows; use the eye toggle to hide/show it once filled in.",
+      blocks: [
+        {
+          key: "tuition2_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: RATES_DEFAULTS.tuition2_heading },
+        },
+        {
+          key: "tuition2_note",
+          type: "text",
+          label: "Note above table (orange banner)",
+          help: "Leave empty to hide the banner.",
+          placeholder: "(leave empty to hide)",
+          defaultContent: { value: RATES_DEFAULTS.tuition2_note },
+        },
+        {
+          key: "tuition2_rows",
+          type: "table",
+          label: "Tuition table",
+          help: "Edit column headers, add/remove columns, drag rows to reorder.",
+          defaultContent: {
+            columns: [
+              { key: "duration", label: "Duration" },
+              { key: "inCamp", label: "In Camp" },
+              { key: "dayTripper", label: "Day Tripper" },
+              { key: "threeQuarter", label: "Three-Quarter Day" },
+            ],
+            rows: RATES_DEFAULTS.tuition2_rows as unknown as Array<Record<string, string>>,
+          },
         },
       ],
     },

@@ -188,7 +188,7 @@ export const CLUBHOUSE_SCHEMA: PageSchema = {
     },
     {
       label: "Learn More cards (bottom of page)",
-      help: "Three cards link to /programs, /activities, and /rates-dates-application-2026 respectively. The destination links stay fixed; only the title and image are editable.",
+      help: "Three cards link to /programs, /activities, and /rates-dates-application respectively. The destination links stay fixed; only the title and image are editable.",
       blocks: [
         {
           key: "learn_more_1_title",

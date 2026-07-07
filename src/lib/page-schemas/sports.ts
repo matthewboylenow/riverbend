@@ -45,7 +45,7 @@ export const SPORTS_SCHEMA: PageSchema = {
     },
     {
       label: "Learn More cards",
-      help: "Hrefs stay fixed (/activities, /programs, /rates-dates-application-2026); titles + images are editable.",
+      help: "Hrefs stay fixed (/activities, /programs, /rates-dates-application); titles + images are editable.",
       blocks: [
         { key: "learn_more_heading", type: "text", label: "Heading", defaultContent: { value: D.learn_more_heading } },
         { key: "learn_more_1_title", type: "text", label: "Card 1 — title", defaultContent: { value: D.learn_more_1_title } },

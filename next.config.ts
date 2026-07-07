@@ -69,12 +69,19 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/rates-dates-application-2025-draft',
-        destination: '/rates-dates-application-2026',
+        destination: '/rates-dates-application',
         permanent: true,
       },
       {
         source: '/rates-dates',
-        destination: '/rates-dates-application-2026',
+        destination: '/rates-dates-application',
+        permanent: true,
+      },
+      // The rates page moved to a year-neutral URL so it no longer needs a
+      // rename (page + nav + redirects) every season.
+      {
+        source: '/rates-dates-application-2026',
+        destination: '/rates-dates-application',
         permanent: true,
       },
     ];

@@ -28,7 +28,7 @@ const DEFAULT_TUITION_COLUMNS = [
 ];
 
 export const metadata: Metadata = {
-  title: "2026 Rates, Dates & Application | Camp Riverbend",
+  title: "Rates, Dates & Application | Camp Riverbend",
   description:
     "Camp Riverbend is a 7 week program. Campers can register for anywhere from 2 consecutive weeks through the full 7 week season.",
 };
@@ -36,7 +36,26 @@ export const metadata: Metadata = {
 // Revalidate so admin edits show within a minute without redeploy
 export const revalidate = 60;
 
+// DB content key — predates the year-neutral URL move; existing
+// page_content/page_section_layout rows are stored under it, so it must
+// not change even though the route is now /rates-dates-application.
 const PAGE_SLUG = "rates-dates-application-2026";
+
+// Normalize a tuition "table" block: tolerate older "rows"-block content
+// that lacks a columns array (fall back to the default column layout), and
+// hide columns with no data — handles accidental "Add column" clicks in
+// the admin editor that left a placeholder column behind.
+function normalizeTable(raw: Partial<TableContent>) {
+  const rawColumns =
+    Array.isArray(raw.columns) && raw.columns.length > 0
+      ? raw.columns
+      : DEFAULT_TUITION_COLUMNS;
+  const rows = Array.isArray(raw.rows) ? raw.rows : [];
+  const columns = rawColumns.filter((col) =>
+    rows.some((row) => (row[col.key] ?? "").toString().trim() !== "")
+  );
+  return { columns, rows };
+}
 
 async function loadContent(mode: "published" | "draft") {
   let blocks = {};
@@ -46,31 +65,31 @@ async function loadContent(mode: "published" | "draft") {
     console.error("rates-dates: page content load failed, using defaults:", err);
   }
 
-  // tuition_rows is now a "table" block — content is { columns, rows }.
-  // Older saved content (from when it was a "rows" block) is missing
-  // columns; fall back to the schema's default column layout in that case.
-  const tuitionRaw = readBlock<Partial<TableContent>>(blocks, "tuition_rows", {
-    columns: DEFAULT_TUITION_COLUMNS,
-    rows: DEFAULTS.tuition_rows as unknown as Array<Record<string, string>>,
-  });
-  const rawColumns =
-    Array.isArray(tuitionRaw.columns) && tuitionRaw.columns.length > 0
-      ? tuitionRaw.columns
-      : DEFAULT_TUITION_COLUMNS;
-  const tuitionRows = Array.isArray(tuitionRaw.rows) ? tuitionRaw.rows : [];
-  // Hide columns with no data — handles accidental "Add column" clicks in
-  // the admin editor that left a placeholder column behind.
-  const tuitionColumns = rawColumns.filter((col) =>
-    tuitionRows.some((row) => (row[col.key] ?? "").toString().trim() !== "")
+  const tuition = normalizeTable(
+    readBlock<Partial<TableContent>>(blocks, "tuition_rows", {
+      columns: DEFAULT_TUITION_COLUMNS,
+      rows: DEFAULTS.tuition_rows as unknown as Array<Record<string, string>>,
+    })
+  );
+  const tuition2 = normalizeTable(
+    readBlock<Partial<TableContent>>(blocks, "tuition2_rows", {
+      columns: DEFAULT_TUITION_COLUMNS,
+      rows: DEFAULTS.tuition2_rows as unknown as Array<Record<string, string>>,
+    })
   );
 
   return {
     heroTitle: readBlock<{ value: string }>(blocks, "hero_title", { value: DEFAULTS.hero_title }).value,
     heroSubtitle: readBlock<{ value: string }>(blocks, "hero_subtitle", { value: DEFAULTS.hero_subtitle }).value,
     introHtml: readBlock<{ html: string }>(blocks, "intro", { html: DEFAULTS.intro_html }).html,
+    tuitionHeading: readBlock<{ value: string }>(blocks, "tuition_heading", { value: DEFAULTS.tuition_heading }).value,
     tuitionNote: readBlock<{ value: string }>(blocks, "tuition_note", { value: DEFAULTS.tuition_note }).value,
-    tuitionColumns,
-    tuitionRows,
+    tuitionColumns: tuition.columns,
+    tuitionRows: tuition.rows,
+    tuition2Heading: readBlock<{ value: string }>(blocks, "tuition2_heading", { value: DEFAULTS.tuition2_heading }).value,
+    tuition2Note: readBlock<{ value: string }>(blocks, "tuition2_note", { value: DEFAULTS.tuition2_note }).value,
+    tuition2Columns: tuition2.columns,
+    tuition2Rows: tuition2.rows,
     tuitionExtrasHtml: readBlock<{ html: string }>(blocks, "tuition_extras", { html: DEFAULTS.tuition_extras_html }).html,
     discounts: readBlock<{ rows: DiscountRow[] }>(blocks, "discounts", { rows: DEFAULTS.discounts }).rows,
     paymentSchedule: readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule", { rows: DEFAULTS.payment_schedule }).rows,
@@ -79,6 +98,72 @@ async function loadContent(mode: "published" | "draft") {
     policiesBody: readBlock<{ html: string }>(blocks, "policies_body", { html: "" }).html,
     heroBg: readBlock<{ url: string; alt?: string }>(blocks, "hero_bg", { url: DEFAULT_HERO_BG, alt: "" }),
   };
+}
+
+function TuitionTableSection({
+  id,
+  heading,
+  note,
+  columns,
+  rows,
+}: {
+  id: string;
+  heading: string;
+  note: string;
+  columns: Array<{ key: string; label: string }>;
+  rows: Array<Record<string, string>>;
+}) {
+  return (
+    <Section id={id} bg="white" padding="default">
+      <Container>
+        <AnimateIn>
+          <div className="text-center mb-8">
+            <h2 className="font-camp">{heading}</h2>
+          </div>
+        </AnimateIn>
+        <AnimateIn delay={0.1}>
+          {note && (
+            <div className="mb-4 flex justify-center">
+              <p className="inline-block bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-2 text-sm font-medium">
+                {note}
+              </p>
+            </div>
+          )}
+          <div className="overflow-x-auto rounded-2xl shadow-sm border border-stone/30">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b-2 border-camp-red">
+                  {columns.map((col) => (
+                    <th key={col.key} className="py-3 px-4 font-camp text-charcoal">
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone/30">
+                {rows.map((row, i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-cream/40"}>
+                    {columns.map((col, ci) => (
+                      <td
+                        key={col.key}
+                        className={
+                          ci === 0
+                            ? "py-3 px-4 font-semibold text-charcoal"
+                            : "py-3 px-4 text-bark"
+                        }
+                      >
+                        {row[col.key] ?? ""}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </AnimateIn>
+      </Container>
+    </Section>
+  );
 }
 
 export default async function RatesDatePage({
@@ -115,56 +200,26 @@ export default async function RatesDatePage({
       </Section>
     ),
     tuition: (
-      <Section id="tuition-rates" bg="white" padding="default">
-        <Container>
-          <AnimateIn>
-            <div className="text-center mb-8">
-              <h2 className="font-camp">2026 Tuition Rates</h2>
-            </div>
-          </AnimateIn>
-          <AnimateIn delay={0.1}>
-            {c.tuitionNote && (
-              <div className="mb-4 flex justify-center">
-                <p className="inline-block bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-2 text-sm font-medium">
-                  {c.tuitionNote}
-                </p>
-              </div>
-            )}
-            <div className="overflow-x-auto rounded-2xl shadow-sm border border-stone/30">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b-2 border-camp-red">
-                    {c.tuitionColumns.map((col) => (
-                      <th key={col.key} className="py-3 px-4 font-camp text-charcoal">
-                        {col.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone/30">
-                  {c.tuitionRows.map((row, i) => (
-                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-cream/40"}>
-                      {c.tuitionColumns.map((col, ci) => (
-                        <td
-                          key={col.key}
-                          className={
-                            ci === 0
-                              ? "py-3 px-4 font-semibold text-charcoal"
-                              : "py-3 px-4 text-bark"
-                          }
-                        >
-                          {row[col.key] ?? ""}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </AnimateIn>
-        </Container>
-      </Section>
+      <TuitionTableSection
+        id="tuition-rates"
+        heading={c.tuitionHeading}
+        note={c.tuitionNote}
+        columns={c.tuitionColumns}
+        rows={c.tuitionRows}
+      />
     ),
+    // Second season's table (e.g. next year). Collapses to nothing until
+    // the admin fills in rows; hide/show entirely via the section toggle.
+    "tuition-2":
+      c.tuition2Rows.length > 0 && c.tuition2Columns.length > 0 ? (
+        <TuitionTableSection
+          id="tuition-rates-2"
+          heading={c.tuition2Heading}
+          note={c.tuition2Note}
+          columns={c.tuition2Columns}
+          rows={c.tuition2Rows}
+        />
+      ) : null,
     "tuition-extras": c.tuitionExtrasHtml ? (
       <Section id="tuition-extras" bg="white" padding="sm">
         <Container>
