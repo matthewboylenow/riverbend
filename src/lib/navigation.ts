@@ -58,14 +58,14 @@ export const NAV_GROUPS: NavGroup[] = [
           { label: "Testimonials", href: "/testimonials" },
           { label: "FAQ", href: "/faq" },
           { label: "Health & Safety", href: "/health-safety" },
-          { label: "Rates, Dates & Application", href: "/rates-dates-application-2026" },
+          { label: "Rates, Dates & Application", href: "/rates-dates-application" },
         ],
       },
     ],
     featured: {
       title: "Summer 2026",
       description: "Limited space still available.",
-      href: "/rates-dates-application-2026",
+      href: "/rates-dates-application",
       cta: "View Rates & Dates",
     },
   },
@@ -98,7 +98,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         heading: "Apply & Connect",
         links: [
-          { label: "Rates, Dates & Application", href: "/rates-dates-application-2026", description: "View pricing and schedule" },
+          { label: "Rates, Dates & Application", href: "/rates-dates-application", description: "View pricing and schedule" },
           { label: "Submit an Inquiry", href: "https://riverbend.campintouch.com/v2/family/inquiryForm.aspx", external: true, description: "We'd love to hear from you" },
           { label: "Camper Application", href: "https://riverbend.campintouch.com/ui/forms/application/camper/App#ApplicationSeason", external: true, description: "Apply for summer 2026" },
           { label: "Book a Tour", href: "mailto:info@campriverbend.com", external: false, description: "Email us to schedule" },

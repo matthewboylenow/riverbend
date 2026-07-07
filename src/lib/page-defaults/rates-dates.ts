@@ -1,5 +1,5 @@
 /**
- * Default content for /rates-dates-application-2026.
+ * Default content for /rates-dates-application.
  *
  * Single source of truth — used by:
  *  - The public page as fallback when a block doesn't exist in the DB
@@ -32,6 +32,7 @@ export const RATES_DEFAULTS = {
   hero_subtitle: "2026 Season — June 29 through August 14",
   intro_html:
     "<p>Camp Riverbend is a 7 week program. Campers can attend from a minimum of 2 consecutive weeks up to the full 7 week season. Minimum enrollment for our Three-Quarter Day campers is 3 days per week. Grouping is done based on the grade a child will enter in September after the camp season.</p><p>Camp Riverbend will run Monday June 29 to Friday August 14, 2026. Camp will be closed on July 3. Camp hours are 9 am to 4 pm, with extended hours from 8 am to 6 pm.</p>",
+  tuition_heading: "2026 Tuition Rates",
   tuition_note: "2025 rates shown for reference. 2026 rates will be updated soon.",
   tuition_rows: [
     { duration: "7 Weeks", inCamp: "$8,375", dayTripper: "$9,170", threeQuarter: "$7,450" },
@@ -43,6 +44,11 @@ export const RATES_DEFAULTS = {
   ] as TuitionRow[],
   tuition_extras_html:
     "<p>3 and 4 Year Old Three-Quarter Day tuition rates and discounts listed above are for 5 days a week and will be pro-rated for 3 or 4 days a week.</p>",
+  // Second tuition table (e.g. next season's rates). Ships empty — the
+  // public page skips the section until rows are added in the admin.
+  tuition2_heading: "2027 Tuition Rates",
+  tuition2_note: "",
+  tuition2_rows: [] as TuitionRow[],
   discounts: [
     {
       heading: "Sibling Discount (2nd Child)",

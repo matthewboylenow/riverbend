@@ -156,7 +156,7 @@ export default async function SportsPage({
             />
             <LinkCard
               title={c.learnMore3Title}
-              href="/rates-dates-application-2026"
+              href="/rates-dates-application"
               image={c.learnMore3Image.url || D.learn_more_3_image}
               index={2}
             />

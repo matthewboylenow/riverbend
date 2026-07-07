@@ -168,7 +168,7 @@ export const ABOUT_RIVERBEND_SCHEMA: PageSchema = {
     },
     {
       label: "Learn More cards (bottom of page)",
-      help: "Three cards link to /activities, /rates-dates-application-2026, and /programs respectively. The destination links stay fixed; only the title and image are editable.",
+      help: "Three cards link to /activities, /rates-dates-application, and /programs respectively. The destination links stay fixed; only the title and image are editable.",
       blocks: [
         {
           key: "learn_more_1_title",

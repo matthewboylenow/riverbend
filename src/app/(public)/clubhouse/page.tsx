@@ -283,7 +283,7 @@ export default async function ClubhousePage({
               />
               <LinkCard
                 title={c.learnMore3Title}
-                href="/rates-dates-application-2026"
+                href="/rates-dates-application"
                 image={c.learnMore3Image.url || D.learn_more_card_3_image}
                 index={2}
               />
