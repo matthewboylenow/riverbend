@@ -10,13 +10,10 @@ import { EXTERNAL_LINKS } from "@/lib/navigation";
 import { getPageContent, readBlock, type TableContent } from "@/lib/page-content";
 import { loadContentMode } from "@/lib/preview-mode";
 import { loadOrderedSectionKeys } from "@/lib/page-section-layout";
-import { RATES_DATES_SCHEMA } from "@/lib/page-schemas/rates-dates";
+import { RATES_DATES_NEXT_SCHEMA } from "@/lib/page-schemas/rates-dates-next";
 import { sanitizeHtml } from "@/lib/sanitize";
-import {
-  RATES_DEFAULTS as DEFAULTS,
-  type DiscountRow,
-  type PaymentRow,
-} from "@/lib/page-defaults/rates-dates";
+import { RATES_NEXT_DEFAULTS as DEFAULTS } from "@/lib/page-defaults/rates-dates-next";
+import type { DiscountRow, PaymentRow } from "@/lib/page-defaults/rates-dates";
 import {
   DEFAULT_TUITION_COLUMNS,
   normalizeTable,
@@ -31,37 +28,28 @@ import {
 const DEFAULT_HERO_BG = "/assets/site/Canoe.jpg";
 
 export const metadata: Metadata = {
-  title: "Rates, Dates & Application | Camp Riverbend",
+  title: "2027 Rates, Dates & Application | Camp Riverbend",
   description:
-    "Camp Riverbend is a 7 week program. Campers can register for anywhere from 2 consecutive weeks through the full 7 week season.",
+    "Rates, session dates, and application information for Camp Riverbend's 2027 season.",
 };
 
 // Revalidate so admin edits show within a minute without redeploy
 export const revalidate = 60;
 
-// DB content key — predates the year-neutral URL move; existing
-// page_content/page_section_layout rows are stored under it, so it must
-// not change even though the route is now /rates-dates-application.
-const PAGE_SLUG = "rates-dates-application-2026";
+const PAGE_SLUG = RATES_DATES_NEXT_SCHEMA.slug;
 
 async function loadContent(mode: "published" | "draft") {
   let blocks = {};
   try {
     blocks = await getPageContent(PAGE_SLUG, mode);
   } catch (err) {
-    console.error("rates-dates: page content load failed, using defaults:", err);
+    console.error("rates-dates-next: page content load failed, using defaults:", err);
   }
 
   const tuition = normalizeTable(
     readBlock<Partial<TableContent>>(blocks, "tuition_rows", {
       columns: DEFAULT_TUITION_COLUMNS,
       rows: DEFAULTS.tuition_rows as unknown as Array<Record<string, string>>,
-    })
-  );
-  const tuition2 = normalizeTable(
-    readBlock<Partial<TableContent>>(blocks, "tuition2_rows", {
-      columns: DEFAULT_TUITION_COLUMNS,
-      rows: DEFAULTS.tuition2_rows as unknown as Array<Record<string, string>>,
     })
   );
 
@@ -73,44 +61,32 @@ async function loadContent(mode: "published" | "draft") {
     tuitionNote: readBlock<{ value: string }>(blocks, "tuition_note", { value: DEFAULTS.tuition_note }).value,
     tuitionColumns: tuition.columns,
     tuitionRows: tuition.rows,
-    tuition2Heading: readBlock<{ value: string }>(blocks, "tuition2_heading", { value: DEFAULTS.tuition2_heading }).value,
-    tuition2Note: readBlock<{ value: string }>(blocks, "tuition2_note", { value: DEFAULTS.tuition2_note }).value,
-    tuition2Columns: tuition2.columns,
-    tuition2Rows: tuition2.rows,
     tuitionExtrasHtml: readBlock<{ html: string }>(blocks, "tuition_extras", { html: DEFAULTS.tuition_extras_html }).html,
     discountsHeading: readBlock<{ value: string }>(blocks, "discounts_heading", { value: DEFAULTS.discounts_heading }).value,
     discounts: nonBlankRows(readBlock<{ rows: DiscountRow[] }>(blocks, "discounts", { rows: DEFAULTS.discounts }).rows),
-    discounts2Heading: readBlock<{ value: string }>(blocks, "discounts2_heading", { value: DEFAULTS.discounts2_heading }).value,
-    discounts2: nonBlankRows(readBlock<{ rows: DiscountRow[] }>(blocks, "discounts2", { rows: DEFAULTS.discounts2 }).rows),
     paymentHeading: readBlock<{ value: string }>(blocks, "payment_heading", { value: DEFAULTS.payment_heading }).value,
     paymentSchedule: nonBlankRows(readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule", { rows: DEFAULTS.payment_schedule }).rows),
-    payment2Heading: readBlock<{ value: string }>(blocks, "payment2_heading", { value: DEFAULTS.payment2_heading }).value,
-    paymentSchedule2: nonBlankRows(readBlock<{ rows: PaymentRow[] }>(blocks, "payment_schedule2", { rows: DEFAULTS.payment_schedule2 }).rows),
     paymentExtrasHtml: readBlock<{ html: string }>(blocks, "payment_extras", { html: DEFAULTS.payment_extras_html }).html,
-    paymentExtras2Html: readBlock<{ html: string }>(blocks, "payment_extras2", { html: DEFAULTS.payment_extras2_html }).html,
-    policiesHeading: readBlock<{ value: string }>(blocks, "policies_heading", { value: "Policies" }).value,
-    policiesBody: readBlock<{ html: string }>(blocks, "policies_body", { html: "" }).html,
-    policies2Heading: readBlock<{ value: string }>(blocks, "policies2_heading", { value: DEFAULTS.policies2_heading }).value,
-    policies2Body: readBlock<{ html: string }>(blocks, "policies2_body", { html: DEFAULTS.policies2_body_html }).html,
+    policiesHeading: readBlock<{ value: string }>(blocks, "policies_heading", { value: DEFAULTS.policies_heading }).value,
+    policiesBody: readBlock<{ html: string }>(blocks, "policies_body", { html: DEFAULTS.policies_body_html }).html,
     heroBg: readBlock<{ url: string; alt?: string }>(blocks, "hero_bg", { url: DEFAULT_HERO_BG, alt: "" }),
   };
 }
 
-export default async function RatesDatePage({
+export default async function RatesDatesNextPage({
   searchParams,
 }: {
   searchParams: Promise<{ preview?: string }>;
 }) {
   const mode = await loadContentMode(await searchParams);
   const c = await loadContent(mode);
-  const orderedKeys = await loadOrderedSectionKeys(RATES_DATES_SCHEMA);
+  const orderedKeys = await loadOrderedSectionKeys(RATES_DATES_NEXT_SCHEMA);
 
-  // Each editable section is rendered into a map keyed by its schema
-  // section key. The Page Header above is pinned and excluded from the
-  // ordered list. Empty optional sections (e.g. blank Policies body)
-  // simply return null so the page collapses cleanly.
+  // Every section collapses to nothing while its content is empty, so
+  // the page can be drafted incrementally in the admin — customers only
+  // ever see filled-in sections.
   const renderedByKey: Record<string, React.ReactNode> = {
-    intro: (
+    intro: c.introHtml ? (
       <Section id="overview" bg="cream" padding="default">
         <Container size="narrow">
           <AnimateIn>
@@ -128,26 +104,15 @@ export default async function RatesDatePage({
           </AnimateIn>
         </Container>
       </Section>
-    ),
-    tuition: (
-      <TuitionTableSection
-        id="tuition-rates"
-        heading={c.tuitionHeading}
-        note={c.tuitionNote}
-        columns={c.tuitionColumns}
-        rows={c.tuitionRows}
-      />
-    ),
-    // Second season's table (e.g. next year). Collapses to nothing until
-    // the admin fills in rows; hide/show entirely via the section toggle.
-    "tuition-2":
-      c.tuition2Rows.length > 0 && c.tuition2Columns.length > 0 ? (
+    ) : null,
+    tuition:
+      c.tuitionRows.length > 0 && c.tuitionColumns.length > 0 ? (
         <TuitionTableSection
-          id="tuition-rates-2"
-          heading={c.tuition2Heading}
-          note={c.tuition2Note}
-          columns={c.tuition2Columns}
-          rows={c.tuition2Rows}
+          id="tuition-rates"
+          heading={c.tuitionHeading}
+          note={c.tuitionNote}
+          columns={c.tuitionColumns}
+          rows={c.tuitionRows}
         />
       ) : null,
     "tuition-extras": c.tuitionExtrasHtml ? (
@@ -162,39 +127,23 @@ export default async function RatesDatePage({
         </Container>
       </Section>
     ) : null,
-    discounts: (
-      <DiscountsSection id="discounts" heading={c.discountsHeading} rows={c.discounts} />
-    ),
-    "discounts-2":
-      c.discounts2.length > 0 ? (
-        <DiscountsSection id="discounts-2" heading={c.discounts2Heading} rows={c.discounts2} />
+    discounts:
+      c.discounts.length > 0 ? (
+        <DiscountsSection id="discounts" heading={c.discountsHeading} rows={c.discounts} />
       ) : null,
-    "payment-schedule": (
-      <PaymentScheduleSection
-        id="payment-schedule"
-        heading={c.paymentHeading}
-        rows={c.paymentSchedule}
-      />
-    ),
-    "payment-schedule-2":
-      c.paymentSchedule2.length > 0 ? (
+    "payment-schedule":
+      c.paymentSchedule.length > 0 ? (
         <PaymentScheduleSection
-          id="payment-schedule-2"
-          heading={c.payment2Heading}
-          rows={c.paymentSchedule2}
+          id="payment-schedule"
+          heading={c.paymentHeading}
+          rows={c.paymentSchedule}
         />
       ) : null,
     "payment-extras": c.paymentExtrasHtml ? (
       <ExtrasSection id="payment-extras" html={c.paymentExtrasHtml} />
     ) : null,
-    "payment-extras-2": c.paymentExtras2Html ? (
-      <ExtrasSection id="payment-extras-2" html={c.paymentExtras2Html} />
-    ) : null,
     policies: c.policiesBody ? (
       <PoliciesSection id="policies" heading={c.policiesHeading} html={c.policiesBody} />
-    ) : null,
-    "policies-2": c.policies2Body ? (
-      <PoliciesSection id="policies-2" heading={c.policies2Heading} html={c.policies2Body} />
     ) : null,
   };
 
