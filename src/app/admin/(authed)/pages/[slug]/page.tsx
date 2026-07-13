@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import GenericPageEditor from "@/components/admin/GenericPageEditor";
 import { RATES_DATES_SCHEMA } from "@/lib/page-schemas/rates-dates";
+import { RATES_DATES_NEXT_SCHEMA } from "@/lib/page-schemas/rates-dates-next";
 import { ABOUT_RIVERBEND_SCHEMA } from "@/lib/page-schemas/about-riverbend";
 import { CALENDAR_SCHEMA } from "@/lib/page-schemas/calendar";
 import { LUNCH_SCHEMA } from "@/lib/page-schemas/lunch";
@@ -23,6 +24,7 @@ import type { PageSchema } from "@/lib/page-schemas/types";
 
 const SCHEMAS: Record<string, PageSchema> = {
   [RATES_DATES_SCHEMA.slug]: RATES_DATES_SCHEMA,
+  [RATES_DATES_NEXT_SCHEMA.slug]: RATES_DATES_NEXT_SCHEMA,
   [ABOUT_RIVERBEND_SCHEMA.slug]: ABOUT_RIVERBEND_SCHEMA,
   [CALENDAR_SCHEMA.slug]: CALENDAR_SCHEMA,
   [LUNCH_SCHEMA.slug]: LUNCH_SCHEMA,

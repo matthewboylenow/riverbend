@@ -28,6 +28,12 @@ const PAGES: PageEntry[] = [
     description: "Tuition table, discounts, payment schedule, intro/outro copy",
   },
   {
+    slug: "rates-dates-application-next",
+    label: "Rates, Dates & Application — 2027",
+    status: "ready",
+    description: "Next season's rates page — sections stay off the public page until filled in",
+  },
+  {
     slug: "about-riverbend",
     label: "About Riverbend",
     status: "ready",

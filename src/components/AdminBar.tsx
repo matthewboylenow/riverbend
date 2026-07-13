@@ -26,6 +26,7 @@ const PAGE_SLUG_BY_HREF: Record<string, string> = {
   "/health-safety": "health-safety",
   "/lunch": "lunch",
   "/rates-dates-application": "rates-dates-application-2026",
+  "/rates-dates-application-2027": "rates-dates-application-next",
   "/sports": "sports",
   "/testimonials": "testimonials",
   "/activities": "activities",
