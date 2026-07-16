@@ -48,42 +48,48 @@ export async function PUT(
   // Upsert each row, then delete any rows for this page whose sectionKey
   // wasn't in the payload (so removing a section from the schema/UI cleans
   // up its layout entry too).
-  await db.transaction(async (tx) => {
-    for (const row of incoming) {
-      await tx
-        .insert(pageSectionLayout)
-        .values({
-          pageSlug: slug,
-          sectionKey: row.sectionKey,
+  //
+  // NOTE: the neon-http driver has no interactive-transaction support —
+  // db.transaction() throws at runtime (which silently broke every layout
+  // save from May until July 2026). db.batch() sends all statements in one
+  // request and Neon runs them atomically, which is all we need here since
+  // no statement depends on another's result.
+  const upserts = incoming.map((row) =>
+    db
+      .insert(pageSectionLayout)
+      .values({
+        pageSlug: slug,
+        sectionKey: row.sectionKey,
+        sortOrder: row.sortOrder,
+        hidden: row.hidden,
+        updatedBy: session.user!.id,
+      })
+      .onConflictDoUpdate({
+        target: [pageSectionLayout.pageSlug, pageSectionLayout.sectionKey],
+        set: {
           sortOrder: row.sortOrder,
           hidden: row.hidden,
+          updatedAt: new Date(),
           updatedBy: session.user!.id,
-        })
-        .onConflictDoUpdate({
-          target: [pageSectionLayout.pageSlug, pageSectionLayout.sectionKey],
-          set: {
-            sortOrder: row.sortOrder,
-            hidden: row.hidden,
-            updatedAt: new Date(),
-            updatedBy: session.user!.id,
-          },
-        });
-    }
+        },
+      })
+  );
 
-    const keepKeys = incoming.map((r) => r.sectionKey);
-    if (keepKeys.length > 0) {
-      await tx
-        .delete(pageSectionLayout)
-        .where(
-          and(
-            eq(pageSectionLayout.pageSlug, slug),
-            not(inArray(pageSectionLayout.sectionKey, keepKeys))
+  const keepKeys = incoming.map((r) => r.sectionKey);
+  const cleanup =
+    keepKeys.length > 0
+      ? db
+          .delete(pageSectionLayout)
+          .where(
+            and(
+              eq(pageSectionLayout.pageSlug, slug),
+              not(inArray(pageSectionLayout.sectionKey, keepKeys))
+            )
           )
-        );
-    } else {
-      await tx.delete(pageSectionLayout).where(eq(pageSectionLayout.pageSlug, slug));
-    }
-  });
+      : db.delete(pageSectionLayout).where(eq(pageSectionLayout.pageSlug, slug));
+
+  const statements = [...upserts, cleanup] as const;
+  await db.batch(statements as unknown as [(typeof statements)[number], ...Array<(typeof statements)[number]>]);
 
   return NextResponse.json({ ok: true, count: incoming.length });
 }

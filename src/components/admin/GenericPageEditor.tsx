@@ -250,7 +250,12 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
     }
   }
 
-  async function persistLayout(next: LayoutEntry[]) {
+  // Persists the layout and reports whether the server accepted it. On
+  // failure the optimistic local state is rolled back — otherwise the
+  // editor shows a state the public site doesn't have (this masked a
+  // months-long bug where every layout save 500'd).
+  async function persistLayout(next: LayoutEntry[]): Promise<boolean> {
+    const prev = layout;
     setLayout(next);
     try {
       const res = await fetch(`/api/pages/${schema.slug}/layout`, {
@@ -265,15 +270,18 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
         }),
       });
       if (!res.ok) throw new Error("Layout save failed");
+      return true;
     } catch (e) {
-      const msg = (e as Error).message;
-      toast.error(msg);
+      setLayout(prev);
+      toast.error((e as Error).message);
+      return false;
     }
   }
 
-  function toggleHidden(key: string) {
+  async function toggleHidden(key: string) {
     const next = layout.map((e) => (e.key === key ? { ...e, hidden: !e.hidden } : e));
-    void persistLayout(next);
+    const saved = await persistLayout(next);
+    if (!saved) return;
     const nowHidden = next.find((e) => e.key === key)?.hidden;
     toast.success(nowHidden ? "Section hidden from public site" : "Section visible on public site");
   }
