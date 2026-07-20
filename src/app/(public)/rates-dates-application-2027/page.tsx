@@ -6,7 +6,6 @@ import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { Button } from "@/components/ui/Button";
-import { EXTERNAL_LINKS } from "@/lib/navigation";
 import { getPageContent, readBlock, type TableContent } from "@/lib/page-content";
 import { loadContentMode } from "@/lib/preview-mode";
 import { loadOrderedSectionKeys } from "@/lib/page-section-layout";
@@ -57,6 +56,13 @@ async function loadContent(mode: "published" | "draft") {
     heroTitle: readBlock<{ value: string }>(blocks, "hero_title", { value: DEFAULTS.hero_title }).value,
     heroSubtitle: readBlock<{ value: string }>(blocks, "hero_subtitle", { value: DEFAULTS.hero_subtitle }).value,
     introHtml: readBlock<{ html: string }>(blocks, "intro", { html: DEFAULTS.intro_html }).html,
+    introCtaLabel: readBlock<{ value: string }>(blocks, "intro_cta_label", { value: DEFAULTS.intro_cta_label }).value,
+    introCtaHref: readBlock<{ value: string }>(blocks, "intro_cta_href", { value: DEFAULTS.intro_cta_href }).value,
+    ctaHeading: readBlock<{ value: string }>(blocks, "cta_heading", { value: DEFAULTS.cta_heading }).value,
+    ctaPrimaryLabel: readBlock<{ value: string }>(blocks, "cta_primary_label", { value: DEFAULTS.cta_primary_label }).value,
+    ctaPrimaryHref: readBlock<{ value: string }>(blocks, "cta_primary_href", { value: DEFAULTS.cta_primary_href }).value,
+    ctaSecondaryLabel: readBlock<{ value: string }>(blocks, "cta_secondary_label", { value: DEFAULTS.cta_secondary_label }).value,
+    ctaSecondaryHref: readBlock<{ value: string }>(blocks, "cta_secondary_href", { value: DEFAULTS.cta_secondary_href }).value,
     tuitionHeading: readBlock<{ value: string }>(blocks, "tuition_heading", { value: DEFAULTS.tuition_heading }).value,
     tuitionNote: readBlock<{ value: string }>(blocks, "tuition_note", { value: DEFAULTS.tuition_note }).value,
     tuitionColumns: tuition.columns,
@@ -95,11 +101,18 @@ export default async function RatesDatesNextPage({
                 className="prose prose-lg max-w-none mx-auto text-bark [&_p]:text-body-lg [&_p]:leading-relaxed [&_p]:mb-6 [&_p:last-child]:mb-0"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.introHtml) }}
               />
-              <div className="pt-2">
-                <Button variant="primary" size="lg" href={EXTERNAL_LINKS.camperApp} external>
-                  Apply Now
-                </Button>
-              </div>
+              {c.introCtaLabel && c.introCtaHref && (
+                <div className="pt-2">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    href={c.introCtaHref}
+                    external={/^https?:\/\//.test(c.introCtaHref)}
+                  >
+                    {c.introCtaLabel}
+                  </Button>
+                </div>
+              )}
             </div>
           </AnimateIn>
         </Container>
@@ -163,24 +176,42 @@ export default async function RatesDatesNextPage({
         <Fragment key={k}>{renderedByKey[k]}</Fragment>
       ))}
 
-      {/* CTA — always pinned at the bottom */}
-      <Section id="cta" bg="dark" padding="default">
-        <Container size="narrow">
-          <AnimateIn>
-            <div className="text-center space-y-6">
-              <h2 className="font-camp text-white">Ready to Join Camp Riverbend?</h2>
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Button variant="primary" size="lg" href={EXTERNAL_LINKS.camperApp} external>
-                  Apply Now
-                </Button>
-                <Button variant="white" size="lg" href={EXTERNAL_LINKS.inquiryForm} external>
-                  Request Information
-                </Button>
+      {/* CTA — pinned at the bottom, content editable via the "Bottom
+          call-to-action" section. The section's hide toggle removes the
+          whole band (orderedKeys excludes hidden sections). */}
+      {orderedKeys.includes("cta") && (
+        <Section id="cta" bg="dark" padding="default">
+          <Container size="narrow">
+            <AnimateIn>
+              <div className="text-center space-y-6">
+                {c.ctaHeading && <h2 className="font-camp text-white">{c.ctaHeading}</h2>}
+                <div className="flex flex-wrap gap-4 justify-center">
+                  {c.ctaPrimaryLabel && c.ctaPrimaryHref && (
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      href={c.ctaPrimaryHref}
+                      external={/^https?:\/\//.test(c.ctaPrimaryHref)}
+                    >
+                      {c.ctaPrimaryLabel}
+                    </Button>
+                  )}
+                  {c.ctaSecondaryLabel && c.ctaSecondaryHref && (
+                    <Button
+                      variant="white"
+                      size="lg"
+                      href={c.ctaSecondaryHref}
+                      external={/^https?:\/\//.test(c.ctaSecondaryHref)}
+                    >
+                      {c.ctaSecondaryLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </AnimateIn>
-        </Container>
-      </Section>
+            </AnimateIn>
+          </Container>
+        </Section>
+      )}
     </InnerPageLayout>
   );
 }

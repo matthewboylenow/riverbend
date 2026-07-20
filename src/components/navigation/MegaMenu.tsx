@@ -94,8 +94,11 @@ function FeaturedCard({
   featured: NonNullable<NavGroup["featured"]>;
   onClose: () => void;
 }) {
+  const hasSecondary = !!(featured.secondaryLabel && featured.secondaryHref);
+  const secondaryExternal = /^https?:\/\//.test(featured.secondaryHref ?? "");
+
   const inner = (
-    <div className="h-full rounded-2xl bg-gradient-to-br from-camp-red via-camp-red to-camp-red-dark p-6 text-white flex flex-col justify-between min-h-[200px] transition-all duration-300 group-hover:shadow-xl group-hover:shadow-camp-red/20 group-hover:scale-[1.02] relative overflow-hidden">
+    <>
       {/* Decorative circles */}
       <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
       <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/5" />
@@ -118,8 +121,48 @@ function FeaturedCard({
         <span>{featured.cta}</span>
         <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-300" />
       </div>
-    </div>
+    </>
   );
+
+  const cardClass =
+    "h-full rounded-2xl bg-gradient-to-br from-camp-red via-camp-red to-camp-red-dark p-6 text-white flex flex-col justify-between min-h-[200px] transition-all duration-300 group-hover:shadow-xl group-hover:shadow-camp-red/20 group-hover:scale-[1.02] relative overflow-hidden";
+
+  // With a secondary link, the card can't be one big anchor (nested <a>
+  // is invalid HTML) — the main content becomes the primary link and the
+  // secondary link sits on its own row at the bottom of the card.
+  if (hasSecondary) {
+    const mainProps = { className: "group block flex-1", onClick: onClose };
+    const main = featured.external ? (
+      <a href={featured.href} target="_blank" rel="noopener noreferrer" {...mainProps}>
+        <div className={cardClass.replace(" h-full", "").replace(" min-h-[200px]", " min-h-[160px]")}>{inner}</div>
+      </a>
+    ) : (
+      <Link href={featured.href} {...mainProps}>
+        <div className={cardClass.replace(" h-full", "").replace(" min-h-[200px]", " min-h-[160px]")}>{inner}</div>
+      </Link>
+    );
+    const secondaryProps = {
+      className:
+        "mt-2 flex items-center justify-center gap-2 rounded-xl border border-camp-red/30 bg-camp-red/5 px-4 py-2.5 text-sm font-semibold text-camp-red hover:bg-camp-red hover:text-white transition-colors duration-300",
+      onClick: onClose,
+    };
+    return (
+      <div className="flex h-full flex-col">
+        {main}
+        {secondaryExternal ? (
+          <a href={featured.secondaryHref} target="_blank" rel="noopener noreferrer" {...secondaryProps}>
+            <span>{featured.secondaryLabel}</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </a>
+        ) : (
+          <Link href={featured.secondaryHref!} {...secondaryProps}>
+            <span>{featured.secondaryLabel}</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
+      </div>
+    );
+  }
 
   if (featured.external) {
     return (
@@ -130,14 +173,14 @@ function FeaturedCard({
         className="group block h-full"
         onClick={onClose}
       >
-        {inner}
+        <div className={cardClass}>{inner}</div>
       </a>
     );
   }
 
   return (
     <Link href={featured.href} className="group block h-full" onClick={onClose}>
-      {inner}
+      <div className={cardClass}>{inner}</div>
     </Link>
   );
 }

@@ -44,12 +44,26 @@ export const RATES_DATES_NEXT_SCHEMA: PageSchema = {
     {
       key: "intro",
       label: "Intro paragraphs",
-      help: "Shown with an Apply Now button. Leave empty to hide the whole section.",
+      help: "Shown with a button below the text. Leave the text empty to hide the whole section.",
       blocks: [
         {
           key: "intro",
           type: "richtext",
           defaultContent: { html: RATES_NEXT_DEFAULTS.intro_html },
+        },
+        {
+          key: "intro_cta_label",
+          type: "text",
+          label: "Button label",
+          help: 'e.g. "Applications open January 5, 2027". Leave empty to hide the button.',
+          placeholder: "(leave empty to hide)",
+          defaultContent: { value: RATES_NEXT_DEFAULTS.intro_cta_label },
+        },
+        {
+          key: "intro_cta_href",
+          type: "text",
+          label: "Button URL",
+          defaultContent: { value: RATES_NEXT_DEFAULTS.intro_cta_href },
         },
       ],
     },
@@ -175,6 +189,45 @@ export const RATES_DATES_NEXT_SCHEMA: PageSchema = {
           type: "richtext",
           label: "Body",
           defaultContent: { html: RATES_NEXT_DEFAULTS.policies_body_html },
+        },
+      ],
+    },
+    {
+      key: "cta",
+      label: "Bottom call-to-action (dark band)",
+      help: "Pinned to the bottom of the page. Edit the button labels to announce when applications open — e.g. \"Applications open January 5, 2027\". Leave a button label empty to hide that button.",
+      blocks: [
+        {
+          key: "cta_heading",
+          type: "text",
+          label: "Heading",
+          defaultContent: { value: RATES_NEXT_DEFAULTS.cta_heading },
+        },
+        {
+          key: "cta_primary_label",
+          type: "text",
+          label: "Primary (red) button label",
+          placeholder: "(leave empty to hide)",
+          defaultContent: { value: RATES_NEXT_DEFAULTS.cta_primary_label },
+        },
+        {
+          key: "cta_primary_href",
+          type: "text",
+          label: "Primary button URL",
+          defaultContent: { value: RATES_NEXT_DEFAULTS.cta_primary_href },
+        },
+        {
+          key: "cta_secondary_label",
+          type: "text",
+          label: "Secondary (white) button label",
+          placeholder: "(leave empty to hide)",
+          defaultContent: { value: RATES_NEXT_DEFAULTS.cta_secondary_label },
+        },
+        {
+          key: "cta_secondary_href",
+          type: "text",
+          label: "Secondary button URL",
+          defaultContent: { value: RATES_NEXT_DEFAULTS.cta_secondary_href },
         },
       ],
     },

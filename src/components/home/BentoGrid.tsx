@@ -314,6 +314,22 @@ export function BentoGrid({ content }: { content: BentoContent }) {
         index={10}
         cta={content.card10.cta}
       />
+
+      {/* Optional row 4: full-width promo card (e.g. next season's rates).
+          Renders only when the admin has given it a title — clearing the
+          title in the homepage editor hides it without leaving a gap. */}
+      {content.card11.title && (
+        <BentoCard
+          title={content.card11.title}
+          subtitle={content.card11.subtitle || undefined}
+          href={content.card11.href}
+          image={content.card11.imageUrl}
+          icon={<Calendar className="h-4 w-4" />}
+          className="col-span-2 lg:col-span-4 row-span-1"
+          index={11}
+          cta={content.card11.cta}
+        />
+      )}
     </div>
   );
 }

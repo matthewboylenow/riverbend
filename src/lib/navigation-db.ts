@@ -15,13 +15,38 @@ import type { NavGroup } from "@/lib/navigation";
 // Pulled fresh on every request. Inner pages already render dynamic so
 // the cost is one query per page load (small table). If this becomes a
 // hot path later, wrap with `unstable_cache` keyed by a "nav" tag.
+// Featured cards, tolerating a production DB that predates the
+// secondary_label/secondary_href columns: `select()` (all columns) fails
+// there, so fall back to an explicit legacy column list. Remove the
+// fallback once the migration has run everywhere.
+async function loadFeaturedCards() {
+  try {
+    return await db.select().from(navFeaturedCards).orderBy(asc(navFeaturedCards.sortOrder));
+  } catch {
+    const legacy = await db
+      .select({
+        id: navFeaturedCards.id,
+        groupId: navFeaturedCards.groupId,
+        title: navFeaturedCards.title,
+        description: navFeaturedCards.description,
+        href: navFeaturedCards.href,
+        cta: navFeaturedCards.cta,
+        external: navFeaturedCards.external,
+        sortOrder: navFeaturedCards.sortOrder,
+      })
+      .from(navFeaturedCards)
+      .orderBy(asc(navFeaturedCards.sortOrder));
+    return legacy.map((f) => ({ ...f, secondaryLabel: null, secondaryHref: null }));
+  }
+}
+
 export async function getNavGroups(): Promise<NavGroup[]> {
   try {
     const [groups, columns, links, featured] = await Promise.all([
       db.select().from(navGroups).orderBy(asc(navGroups.sortOrder), asc(navGroups.label)),
       db.select().from(navColumns).orderBy(asc(navColumns.sortOrder)),
       db.select().from(navLinks).orderBy(asc(navLinks.sortOrder)),
-      db.select().from(navFeaturedCards).orderBy(asc(navFeaturedCards.sortOrder)),
+      loadFeaturedCards(),
     ]);
 
     return groups.map((g) => {
@@ -51,6 +76,8 @@ export async function getNavGroups(): Promise<NavGroup[]> {
             href: myFeatured[0].href,
             cta: myFeatured[0].cta,
             external: myFeatured[0].external || undefined,
+            secondaryLabel: myFeatured[0].secondaryLabel ?? undefined,
+            secondaryHref: myFeatured[0].secondaryHref ?? undefined,
           }
         : undefined;
 
@@ -69,6 +96,8 @@ export async function getNavGroups(): Promise<NavGroup[]> {
           href: f.href,
           cta: f.cta,
           external: f.external || undefined,
+          secondaryLabel: f.secondaryLabel ?? undefined,
+          secondaryHref: f.secondaryHref ?? undefined,
         }));
       }
       return result;

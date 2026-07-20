@@ -181,4 +181,13 @@ export const HOME_DEFAULTS = {
     image_url: "/assets/site/2022-Camp-Map-JPG-scaled.jpg",
     cta: "View the map",
   },
+  // Card 11: optional full-width promo row (e.g. next season's rates).
+  // Hidden from the public page whenever its title is empty.
+  bento_card_11: {
+    title: "Rates & Dates 2027",
+    subtitle: "Get a head start on next summer",
+    href: "/rates-dates-application-2027",
+    image_url: "/assets/site/Canoe.jpg",
+    cta: "See 2027 details",
+  },
 } as const;

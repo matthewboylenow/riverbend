@@ -162,6 +162,11 @@ export const HOME_SCHEMA: PageSchema = {
     { label: "Bento Grid — Health & Safety", blocks: bentoCardBlocks(9, D.bento_card_9) },
     { label: "Bento Grid — Camp Map", blocks: bentoCardBlocks(10, D.bento_card_10) },
     {
+      label: "Bento Grid — Rates & Dates 2027 (optional full-width card)",
+      help: "Full-width card at the bottom of the grid. Clear the Title to hide it from the homepage; fill the Title back in to show it again.",
+      blocks: bentoCardBlocks(11, D.bento_card_11),
+    },
+    {
       label: "Philosophy section (dark band)",
       blocks: [
         { key: "philosophy_caption", type: "text", label: "Caption (small white label)", defaultContent: { value: D.philosophy_caption } },

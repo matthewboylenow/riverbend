@@ -16,6 +16,9 @@ export interface FeaturedCard {
   href: string;
   cta: string;
   external?: boolean;
+  /** Optional second link shown below the main CTA (e.g. "Visit Us" → Calendly). */
+  secondaryLabel?: string;
+  secondaryHref?: string;
 }
 
 export interface NavGroup {
