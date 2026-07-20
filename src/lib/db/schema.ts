@@ -233,6 +233,14 @@ export const navFeaturedCards = pgTable('nav_featured_cards', {
   href: text('href').notNull(),
   cta: text('cta').notNull(),
   external: boolean('external').default(false).notNull(),
+  // Optional second link rendered below the main CTA (e.g. "Visit Us" →
+  // Calendly on a card whose main link goes to the rates page). Requires
+  // migration: ALTER TABLE nav_featured_cards
+  //   ADD COLUMN secondary_label text, ADD COLUMN secondary_href text;
+  // (or `npm run db:push`). Readers/writers probe for these columns and
+  // degrade gracefully until the migration has run.
+  secondaryLabel: text('secondary_label'),
+  secondaryHref: text('secondary_href'),
   sortOrder: integer('sort_order').default(0).notNull(),
 });
 

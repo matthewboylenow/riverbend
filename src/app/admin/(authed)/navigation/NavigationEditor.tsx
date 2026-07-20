@@ -33,6 +33,8 @@ interface FeaturedRow {
   href: string;
   cta: string;
   external: boolean;
+  secondaryLabel: string;
+  secondaryHref: string;
 }
 interface GroupRow {
   label: string;
@@ -49,6 +51,8 @@ const blankFeatured = (): FeaturedRow => ({
   href: "",
   cta: "Learn more",
   external: false,
+  secondaryLabel: "",
+  secondaryHref: "",
 });
 const blankGroup = (): GroupRow => ({
   label: "New Group",
@@ -117,6 +121,8 @@ export default function NavigationEditor() {
               href: string;
               cta: string;
               external: boolean;
+              secondaryLabel?: string | null;
+              secondaryHref?: string | null;
             }>;
           }): GroupRow => ({
             label: g.label,
@@ -136,6 +142,8 @@ export default function NavigationEditor() {
               href: f.href,
               cta: f.cta,
               external: !!f.external,
+              secondaryLabel: f.secondaryLabel || "",
+              secondaryHref: f.secondaryHref || "",
             })),
           })
         )
@@ -164,8 +172,13 @@ export default function NavigationEditor() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Save failed");
       }
+      const data = (await res.json().catch(() => ({}))) as { warning?: string };
       setSavedAt(new Date());
-      toast.success("Navigation saved");
+      if (data.warning) {
+        toast.warning(data.warning);
+      } else {
+        toast.success("Navigation saved");
+      }
     } catch (e) {
       const msg = (e as Error).message;
       setError(msg);
@@ -357,6 +370,8 @@ function GroupCard({
           href: link.href,
           cta: "Learn more",
           external: link.external,
+          secondaryLabel: "",
+          secondaryHref: "",
         },
       ],
       columns: group.columns.map((c, i) =>
@@ -604,6 +619,20 @@ function GroupCard({
                   value={f.href}
                   onChange={(e) => updateFeatured(fi, { href: e.target.value })}
                   className="sm:col-span-2 px-2 py-1.5 rounded border border-stone/30 font-mono text-xs"
+                />
+                <input
+                  type="text"
+                  placeholder="Second link label (optional, e.g. Visit Us)"
+                  value={f.secondaryLabel}
+                  onChange={(e) => updateFeatured(fi, { secondaryLabel: e.target.value })}
+                  className="px-2 py-1.5 rounded border border-stone/30"
+                />
+                <input
+                  type="text"
+                  placeholder="Second link URL (e.g. https://calendly.com/…)"
+                  value={f.secondaryHref}
+                  onChange={(e) => updateFeatured(fi, { secondaryHref: e.target.value })}
+                  className="px-2 py-1.5 rounded border border-stone/30 font-mono text-xs"
                 />
               </div>
               <div className="flex items-center justify-between mt-2">

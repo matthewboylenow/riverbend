@@ -62,6 +62,8 @@ export interface BentoContent {
   card8: BentoCardContent;
   card9: BentoCardContent;
   card10: BentoCardContent;
+  /** Optional full-width promo card — hidden when its title is empty. */
+  card11: BentoCardContent;
 }
 
 export interface PhilosophyContent {
@@ -184,6 +186,7 @@ export async function loadHomeContent(mode: ReadMode = "published"): Promise<Hom
       card8: bentoCard(8, D.bento_card_8),
       card9: bentoCard(9, D.bento_card_9),
       card10: bentoCard(10, D.bento_card_10),
+      card11: bentoCard(11, D.bento_card_11),
     },
     philosophy: {
       caption: t("philosophy_caption", D.philosophy_caption),

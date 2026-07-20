@@ -14,6 +14,15 @@ export const RATES_NEXT_DEFAULTS = {
   hero_title: "2027 Rates, Dates & Application",
   hero_subtitle: "2027 Season",
   intro_html: "",
+  intro_cta_label: "Apply Now",
+  intro_cta_href:
+    "https://riverbend.campintouch.com/ui/forms/application/camper/App#ApplicationSeason",
+  cta_heading: "Ready to Join Camp Riverbend?",
+  cta_primary_label: "Apply Now",
+  cta_primary_href:
+    "https://riverbend.campintouch.com/ui/forms/application/camper/App#ApplicationSeason",
+  cta_secondary_label: "Request Information",
+  cta_secondary_href: "https://riverbend.campintouch.com/v2/family/inquiryForm.aspx",
   tuition_heading: "2027 Tuition Rates",
   tuition_note: "",
   tuition_rows: [] as TuitionRow[],

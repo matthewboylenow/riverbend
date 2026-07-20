@@ -13,6 +13,45 @@ import { navGroups, navColumns, navLinks, navFeaturedCards } from "@/lib/db/sche
 import { asc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
+// Featured cards, tolerating a DB that predates the secondary_label /
+// secondary_href columns (see migration note in schema.ts). Remove the
+// fallback once the migration has run everywhere.
+async function loadFeaturedCards() {
+  try {
+    return await db.select().from(navFeaturedCards).orderBy(asc(navFeaturedCards.sortOrder));
+  } catch {
+    const legacy = await db
+      .select({
+        id: navFeaturedCards.id,
+        groupId: navFeaturedCards.groupId,
+        title: navFeaturedCards.title,
+        description: navFeaturedCards.description,
+        href: navFeaturedCards.href,
+        cta: navFeaturedCards.cta,
+        external: navFeaturedCards.external,
+        sortOrder: navFeaturedCards.sortOrder,
+      })
+      .from(navFeaturedCards)
+      .orderBy(asc(navFeaturedCards.sortOrder));
+    return legacy.map((f) => ({ ...f, secondaryLabel: null, secondaryHref: null }));
+  }
+}
+
+// True once the secondary-link migration has run. Checked before the
+// wipe-and-rewrite in PUT so a missing column can never fail a save
+// halfway through (the wipe is not transactional on neon-http).
+async function hasSecondaryColumns(): Promise<boolean> {
+  try {
+    await db
+      .select({ s: navFeaturedCards.secondaryLabel })
+      .from(navFeaturedCards)
+      .limit(1);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,7 +60,7 @@ export async function GET() {
     db.select().from(navGroups).orderBy(asc(navGroups.sortOrder)),
     db.select().from(navColumns).orderBy(asc(navColumns.sortOrder)),
     db.select().from(navLinks).orderBy(asc(navLinks.sortOrder)),
-    db.select().from(navFeaturedCards).orderBy(asc(navFeaturedCards.sortOrder)),
+    loadFeaturedCards(),
   ]);
 
   return NextResponse.json({
@@ -54,6 +93,8 @@ export async function GET() {
           href: f.href,
           cta: f.cta,
           external: f.external,
+          secondaryLabel: f.secondaryLabel,
+          secondaryHref: f.secondaryHref,
           sortOrder: f.sortOrder,
         })),
     })),
@@ -76,6 +117,8 @@ interface IncomingFeatured {
   href: string;
   cta: string;
   external?: boolean;
+  secondaryLabel?: string | null;
+  secondaryHref?: string | null;
 }
 interface IncomingGroup {
   label: string;
@@ -112,6 +155,10 @@ export async function PUT(request: NextRequest) {
       }
     }
   }
+
+  // Probe BEFORE the destructive wipe: if the secondary-link migration
+  // hasn't run yet, save without those fields rather than failing mid-write.
+  const secondarySupported = await hasSecondaryColumns();
 
   // Wipe-and-rewrite. CASCADE on FKs cleans up columns/links/featured automatically.
   await db.delete(navGroups);
@@ -160,10 +207,24 @@ export async function PUT(request: NextRequest) {
         href: f.href.trim(),
         cta: f.cta.trim(),
         external: !!f.external,
+        ...(secondarySupported
+          ? {
+              secondaryLabel: f.secondaryLabel?.trim() || null,
+              secondaryHref: f.secondaryHref?.trim() || null,
+            }
+          : {}),
         sortOrder: featOrder++,
       });
     }
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({
+    success: true,
+    ...(secondarySupported
+      ? {}
+      : {
+          warning:
+            "Second-link fields were not saved: run the nav_featured_cards migration (npm run db:push) to enable them.",
+        }),
+  });
 }
