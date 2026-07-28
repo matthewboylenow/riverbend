@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, Upload, ExternalLink, RefreshCw, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import slugify from "slugify";
+import { publicUrl } from "@/lib/public-url";
 
 interface Document {
   id: string;
@@ -107,7 +108,8 @@ export default function AdminDocumentsPage() {
   }
 
   async function copyUrl(url: string) {
-    await navigator.clipboard.writeText(url);
+    // Copy the full shareable URL (with domain), not the site-relative path.
+    await navigator.clipboard.writeText(publicUrl(url));
     setCopied(url);
     setTimeout(() => setCopied(null), 1500);
   }
