@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadToBlob, buildMediaPathname } from "@/lib/client-upload";
+import { publicUrl } from "@/lib/public-url";
 
 export interface MediaAsset {
   id: string;
@@ -182,31 +183,44 @@ export default function MediaLibrary() {
 
 // ─── Tile ────────────────────────────────────────────────
 function AssetTile({ item, onClick }: { item: MediaAsset; onClick: () => void }) {
+  const [copied, setCopied] = useState(false);
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group bg-white rounded-xl border border-stone/30 overflow-hidden text-left hover:shadow-md hover:border-camp-red/40 transition-all"
-    >
-      <div className="relative aspect-square bg-cream/50 flex items-center justify-center">
-        {item.kind === "image" ? (
-          <Image
-            src={item.url}
-            alt={item.alt || item.title}
-            fill
-            sizes="(max-width: 768px) 33vw, 16vw"
-            className="object-cover"
-            unoptimized
-          />
-        ) : (
-          <FileText className="h-12 w-12 text-bark/40" />
-        )}
-      </div>
-      <div className="p-2">
-        <p className="text-xs font-medium text-charcoal truncate">{item.title}</p>
-        <p className="text-[10px] text-bark/60 truncate">{item.key}</p>
-      </div>
-    </button>
+    <div className="group relative bg-white rounded-xl border border-stone/30 overflow-hidden hover:shadow-md hover:border-camp-red/40 transition-all">
+      <button type="button" onClick={onClick} className="block w-full text-left">
+        <div className="relative aspect-square bg-cream/50 flex items-center justify-center">
+          {item.kind === "image" ? (
+            <Image
+              src={item.url}
+              alt={item.alt || item.title}
+              fill
+              sizes="(max-width: 768px) 33vw, 16vw"
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <FileText className="h-12 w-12 text-bark/40" />
+          )}
+        </div>
+        <div className="p-2">
+          <p className="text-xs font-medium text-charcoal truncate">{item.title}</p>
+          <p className="text-[10px] text-bark/60 truncate">{item.key}</p>
+        </div>
+      </button>
+      {/* One-click copy of the full public URL, without opening the item */}
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard.writeText(publicUrl(item.url));
+          setCopied(true);
+          toast.success("URL copied");
+          setTimeout(() => setCopied(false), 1500);
+        }}
+        title="Copy public URL"
+        className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-white/90 border border-stone/30 shadow-sm text-bark hover:text-camp-red opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+      >
+        {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+      </button>
+    </div>
   );
 }
 
@@ -359,12 +373,12 @@ function AssetDrawer({
             <input
               type="text"
               readOnly
-              value={asset.url}
+              value={publicUrl(asset.url)}
               className="flex-1 px-3 py-2 text-xs rounded-lg border border-stone/30 bg-cream/50 font-mono"
             />
             <button
               onClick={() => {
-                navigator.clipboard.writeText(asset.url);
+                navigator.clipboard.writeText(publicUrl(asset.url));
                 setCopied(true);
                 setTimeout(() => setCopied(false), 1500);
               }}
