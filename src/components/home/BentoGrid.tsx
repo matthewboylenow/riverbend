@@ -204,9 +204,34 @@ function StatCard({
   );
 }
 
-export function BentoGrid({ content }: { content: BentoContent }) {
+export function BentoGrid({
+  content,
+  promoPosition = "bottom",
+}: {
+  content: BentoContent;
+  /** Where the optional card11 promo row renders (admin-controlled). */
+  promoPosition?: "top" | "bottom" | "hidden";
+}) {
+  // Full-width promo row (e.g. next season's rates). Renders only when the
+  // admin has given it a title AND its section isn't hidden in the editor.
+  const promoRow =
+    content.card11.title && promoPosition !== "hidden" ? (
+      <BentoCard
+        title={content.card11.title}
+        subtitle={content.card11.subtitle || undefined}
+        href={content.card11.href}
+        image={content.card11.imageUrl}
+        icon={<Calendar className="h-4 w-4" />}
+        className="col-span-2 lg:col-span-4 row-span-1"
+        index={promoPosition === "top" ? 0 : 11}
+        cta={content.card11.cta}
+      />
+    ) : null;
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[180px] sm:auto-rows-[220px] lg:auto-rows-[200px] gap-3 sm:gap-4">
+      {promoPosition === "top" && promoRow}
+
       {/* Row 1: Featured large card + tall card + 2 stat cards stacked */}
       <BentoCard
         title={content.card0.title}
@@ -315,21 +340,7 @@ export function BentoGrid({ content }: { content: BentoContent }) {
         cta={content.card10.cta}
       />
 
-      {/* Optional row 4: full-width promo card (e.g. next season's rates).
-          Renders only when the admin has given it a title — clearing the
-          title in the homepage editor hides it without leaving a gap. */}
-      {content.card11.title && (
-        <BentoCard
-          title={content.card11.title}
-          subtitle={content.card11.subtitle || undefined}
-          href={content.card11.href}
-          image={content.card11.imageUrl}
-          icon={<Calendar className="h-4 w-4" />}
-          className="col-span-2 lg:col-span-4 row-span-1"
-          index={11}
-          cta={content.card11.cta}
-        />
-      )}
+      {promoPosition === "bottom" && promoRow}
     </div>
   );
 }

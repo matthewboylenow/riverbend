@@ -18,9 +18,12 @@ import type { HomeContent } from "@/lib/home-content";
 export function HomepageContent({
   navGroups,
   content,
+  bento2027 = "bottom",
 }: {
   navGroups?: NavGroup[];
   content: HomeContent;
+  /** Placement of the optional 2027 promo card, from the saved section order. */
+  bento2027?: "top" | "bottom" | "hidden";
 }) {
   return (
     <>
@@ -41,7 +44,7 @@ export function HomepageContent({
         {/* Section 2: Bento Grid */}
         <Section bg="cream" padding="default">
           <Container size="wide">
-            <BentoGrid content={content.bento} />
+            <BentoGrid content={content.bento} promoPosition={bento2027} />
           </Container>
         </Section>
 

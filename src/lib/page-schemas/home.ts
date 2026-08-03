@@ -162,8 +162,11 @@ export const HOME_SCHEMA: PageSchema = {
     { label: "Bento Grid — Health & Safety", blocks: bentoCardBlocks(9, D.bento_card_9) },
     { label: "Bento Grid — Camp Map", blocks: bentoCardBlocks(10, D.bento_card_10) },
     {
+      // Explicit key pinned to the value previously derived from the label,
+      // so layout rows saved before the key was added still match.
+      key: "bento-grid-rates-dates-2027-optional-full-width-card",
       label: "Bento Grid — Rates & Dates 2027 (optional full-width card)",
-      help: "Full-width card at the bottom of the grid. Clear the Title to hide it from the homepage; fill the Title back in to show it again.",
+      help: "Full-width promo card in the bento grid. Drag this section above the other Bento Grid sections to show the card at the TOP of the grid (below it = bottom). Hide it with the eye toggle, or by clearing the Title.",
       blocks: bentoCardBlocks(11, D.bento_card_11),
     },
     {
@@ -195,3 +198,11 @@ export const HOME_SCHEMA: PageSchema = {
     { label: "Program 3 — Day Trippers", blocks: programCardBlocks(3) },
   ],
 };
+
+/**
+ * Layout key of the optional 2027 promo card section. The homepage uses the
+ * saved section order to decide whether the card renders at the top or the
+ * bottom of the bento grid (see HomePage in src/app/(public)/page.tsx).
+ */
+export const HOME_BENTO_2027_KEY =
+  "bento-grid-rates-dates-2027-optional-full-width-card";
