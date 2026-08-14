@@ -14,17 +14,49 @@ import { EXTERNAL_LINKS, type NavGroup } from "@/lib/navigation";
 import { Button } from "@/components/ui/Button";
 import { sanitizeHtml } from "@/lib/sanitize";
 import type { HomeContent } from "@/lib/home-content";
+import { HOME_KEYS as K } from "@/lib/page-schemas/home";
 
 export function HomepageContent({
   navGroups,
   content,
-  bento2027 = "bottom",
+  visibleSections,
 }: {
   navGroups?: NavGroup[];
   content: HomeContent;
-  /** Placement of the optional 2027 promo card, from the saved section order. */
-  bento2027?: "top" | "bottom" | "hidden";
+  /**
+   * Visible section keys in saved order (hero excluded — it's pinned).
+   * Omitted (e.g. previews without a layout) = everything visible.
+   */
+  visibleSections?: string[];
 }) {
+  const show = (key: string) => !visibleSections || visibleSections.includes(key);
+
+  // 2027 promo card: hidden via eye toggle, top when dragged above the
+  // other Bento Grid sections, bottom row otherwise.
+  const bentoOrder = (visibleSections ?? []).filter((k) => k.startsWith("bento-grid-"));
+  const promoPosition: "top" | "bottom" | "hidden" = !show(K.card11)
+    ? "hidden"
+    : bentoOrder.length > 0 && bentoOrder[0] === K.card11
+      ? "top"
+      : "bottom";
+
+  const hiddenTiles = (
+    [
+      [K.card0, "card0"],
+      [K.card1, "card1"],
+      [K.countdown, "countdown"],
+      [K.stat, "stat"],
+      [K.card4, "card4"],
+      [K.card5, "card5"],
+      [K.card6, "card6"],
+      [K.card7, "card7"],
+      [K.card8, "card8"],
+      [K.card9, "card9"],
+      [K.card10, "card10"],
+    ] as const
+  )
+    .filter(([key]) => !show(key))
+    .map(([, tile]) => tile);
   return (
     <>
       {/* Nav */}
@@ -35,20 +67,27 @@ export function HomepageContent({
         <Hero content={content.hero} />
 
         {/* Announcement bar — red bar below video */}
-        <AnnouncementBar
-          message={content.announcement.message}
-          href={content.announcement.linkHref}
-          linkText={content.announcement.linkText}
-        />
+        {show(K.announcement) && (
+          <AnnouncementBar
+            message={content.announcement.message}
+            href={content.announcement.linkHref}
+            linkText={content.announcement.linkText}
+          />
+        )}
 
         {/* Section 2: Bento Grid */}
         <Section bg="cream" padding="default">
           <Container size="wide">
-            <BentoGrid content={content.bento} promoPosition={bento2027} />
+            <BentoGrid
+              content={content.bento}
+              promoPosition={promoPosition}
+              hiddenTiles={hiddenTiles}
+            />
           </Container>
         </Section>
 
         {/* Section 3: Big statement / philosophy */}
+        {show(K.philosophy) && (
         <section className="relative py-24 sm:py-32 overflow-hidden bg-charcoal">
           {/* Subtle background texture */}
           <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -86,35 +125,40 @@ export function HomepageContent({
             </AnimateIn>
           </Container>
         </section>
+        )}
 
         {/* Section 4: Program Detail Blocks */}
         <Section bg="white" padding="default">
           <Container>
-            <AnimateIn>
-              <div className="text-center mb-16">
-                <span className="text-caption text-camp-red tracking-widest">
-                  {content.programsCaption}
-                </span>
-                <h2 className="font-camp mt-2">{content.programsHeading}</h2>
-              </div>
-            </AnimateIn>
+            {show(K.programsHeading) && (
+              <AnimateIn>
+                <div className="text-center mb-16">
+                  <span className="text-caption text-camp-red tracking-widest">
+                    {content.programsCaption}
+                  </span>
+                  <h2 className="font-camp mt-2">{content.programsHeading}</h2>
+                </div>
+              </AnimateIn>
+            )}
 
             <div className="space-y-20 lg:space-y-28">
-              {content.programs.map((program) => (
-                <ProgramCard
-                  key={program.title}
-                  badge={program.badge}
-                  title={program.title}
-                  description={htmlToPlain(program.description)}
-                  links={[
-                    { label: program.link1Label, href: program.link1Href },
-                    { label: program.link2Label, href: program.link2Href },
-                  ]}
-                  image={program.imageUrl}
-                  imageAlt={program.imageAlt}
-                  reversed={program.reversed}
-                />
-              ))}
+              {content.programs
+                .filter((_, i) => show([K.program1, K.program2, K.program3][i] ?? ""))
+                .map((program, idx) => (
+                  <ProgramCard
+                    key={program.title}
+                    badge={program.badge}
+                    title={program.title}
+                    description={htmlToPlain(program.description)}
+                    links={[
+                      { label: program.link1Label, href: program.link1Href },
+                      { label: program.link2Label, href: program.link2Href },
+                    ]}
+                    image={program.imageUrl}
+                    imageAlt={program.imageAlt}
+                    reversed={idx % 2 === 1}
+                  />
+                ))}
             </div>
           </Container>
         </Section>

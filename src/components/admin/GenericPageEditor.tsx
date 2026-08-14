@@ -389,6 +389,33 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
 
       {(() => {
         const ordered = applyLayoutClient(schema, layout);
+
+        // Pages without layout support render hand-designed, fixed public
+        // layouts — showing drag handles and hide toggles there would offer
+        // switches that do nothing, so render plain section cards instead.
+        if (!schema.layoutSupport) {
+          return (
+            <div className="space-y-8">
+              <p className="text-xs text-bark bg-cream/70 border border-stone/30 rounded-lg px-3 py-2">
+                This page has a custom-designed layout: sections always appear on the
+                public page in a fixed arrangement. Content edits publish normally.
+              </p>
+              {ordered.map((section) => (
+                <SectionCard
+                  key={section._key}
+                  section={section}
+                  pageSlug={schema.slug}
+                  state={state}
+                  setState={setState}
+                  draftedKeys={draftedKeys}
+                  onRestored={load}
+                  pinned
+                />
+              ))}
+            </div>
+          );
+        }
+
         const pinned = ordered[0];
         const reorderable = ordered.slice(1);
         const reorderEntries = reorderable.map((s) => ({ key: s._key, hidden: s._hidden }));
@@ -404,6 +431,13 @@ export default function GenericPageEditor({ schema }: { schema: PageSchema }) {
 
         return (
           <div className="space-y-8">
+            {schema.layoutSupport === "hide" && (
+              <p className="text-xs text-bark bg-cream/70 border border-stone/30 rounded-lg px-3 py-2">
+                The Hide buttons remove sections from the public page. This page&apos;s
+                arrangement is otherwise fixed by its design — drag order only moves the
+                &quot;Rates &amp; Dates 2027&quot; card to the top or bottom of the bento grid.
+              </p>
+            )}
             {pinned && (
               <SectionCard
                 section={pinned}

@@ -100,6 +100,16 @@ export interface PageSchema {
   label: string;
   /** Public URL path (e.g. `/about-riverbend`). Used for the "View public page" link. */
   publicHref: string;
+  /**
+   * How much of the saved section layout the PUBLIC page honors:
+   * - "full": section order and hide toggles (page renders via loadOrderedSectionKeys)
+   * - "hide": hide toggles only; order is fixed by the page design (the
+   *   homepage additionally uses order to place the 2027 promo card)
+   * - undefined: none — the public page is hand-designed with a fixed
+   *   layout. The editor hides the drag/eye controls so admins aren't
+   *   offered switches that do nothing.
+   */
+  layoutSupport?: "full" | "hide";
   sections: SectionSchema[];
 }
 

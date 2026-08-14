@@ -15,6 +15,7 @@ export const RATES_DATES_NEXT_SCHEMA: PageSchema = {
   slug: "rates-dates-application-next",
   label: "Rates, Dates & Application — 2027",
   publicHref: "/rates-dates-application-2027",
+  layoutSupport: "full",
   sections: [
     {
       key: "page-header",

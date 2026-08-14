@@ -8,6 +8,7 @@ export const RATES_DATES_SCHEMA: PageSchema = {
   slug: "rates-dates-application-2026",
   label: "Rates, Dates & Application",
   publicHref: "/rates-dates-application",
+  layoutSupport: "full",
   sections: [
     {
       key: "page-header",

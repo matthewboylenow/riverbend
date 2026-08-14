@@ -4,7 +4,7 @@ import { getNavGroups } from "@/lib/navigation-db";
 import { loadHomeContent } from "@/lib/home-content";
 import { loadContentMode } from "@/lib/preview-mode";
 import { loadOrderedSectionKeys } from "@/lib/page-section-layout";
-import { HOME_SCHEMA, HOME_BENTO_2027_KEY } from "@/lib/page-schemas/home";
+import { HOME_SCHEMA } from "@/lib/page-schemas/home";
 
 export const metadata: Metadata = {
   title: "Camp Riverbend | Summer Day Camp in Warren, NJ",
@@ -37,16 +37,10 @@ export default async function HomePage({
     loadOrderedSectionKeys(HOME_SCHEMA),
   ]);
 
-  // The homepage layout is hand-designed, so section drag-order is mostly
-  // cosmetic in the editor — EXCEPT for the optional 2027 promo card: drag
-  // it above the other Bento Grid sections to pin it to the top of the
-  // grid, and its eye toggle hides it entirely.
-  const bentoKeys = orderedKeys.filter((k) => k.startsWith("bento-grid-"));
-  const bento2027: "top" | "bottom" | "hidden" = !bentoKeys.includes(HOME_BENTO_2027_KEY)
-    ? "hidden"
-    : bentoKeys[0] === HOME_BENTO_2027_KEY
-      ? "top"
-      : "bottom";
-
-  return <HomepageContent navGroups={navGroups} content={content} bento2027={bento2027} />;
+  // The homepage layout is hand-designed, so the editor's drag order is
+  // mostly cosmetic — but hide toggles are honored for every section, and
+  // the 2027 promo card moves to the top of the bento grid when dragged
+  // above the other Bento Grid sections. orderedKeys carries both signals
+  // (hidden sections are excluded; order is preserved).
+  return <HomepageContent navGroups={navGroups} content={content} visibleSections={orderedKeys} />;
 }
