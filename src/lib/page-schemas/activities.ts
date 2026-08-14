@@ -5,6 +5,7 @@ export const ACTIVITIES_SCHEMA: PageSchema = {
   slug: "activities",
   label: "Activities",
   publicHref: "/activities",
+  layoutSupport: "full",
   sections: [
     {
       key: "page-header",

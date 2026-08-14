@@ -89,12 +89,42 @@ const bentoCardBlocks = (
   },
 ];
 
+/**
+ * Stable layout keys for the homepage sections. Pinned to the values that
+ * were previously derived from the labels, so layout rows saved before the
+ * keys became explicit still match. The public homepage uses these to honor
+ * the editor's hide toggles (and drag order, for the 2027 promo card).
+ */
+export const HOME_KEYS = {
+  hero: "hero",
+  announcement: "announcement-bar-red-bar-below-hero",
+  card0: "bento-grid-featured-large-card-top-left",
+  card1: "bento-grid-activities-top-right",
+  countdown: "bento-grid-countdown-tile",
+  stat: "bento-grid-stat-tile",
+  card4: "bento-grid-rates-dates",
+  card5: "bento-grid-legacy-tradition",
+  card6: "bento-grid-video-library",
+  card7: "bento-grid-transportation",
+  card8: "bento-grid-lunch-snacks",
+  card9: "bento-grid-health-safety",
+  card10: "bento-grid-camp-map",
+  card11: "bento-grid-rates-dates-2027-optional-full-width-card",
+  philosophy: "philosophy-section-dark-band",
+  programsHeading: "programs-section-heading",
+  program1: "program-1-the-clubhouse",
+  program2: "program-2-riverbend-experience",
+  program3: "program-3-day-trippers",
+} as const;
+
 export const HOME_SCHEMA: PageSchema = {
   slug: "home",
   label: "Homepage",
   publicHref: "/",
+  layoutSupport: "hide",
   sections: [
     {
+      key: HOME_KEYS.hero,
       label: "Hero",
       help: "The full-screen video hero at the top of the page. The fallback image shows when the video can't play.",
       blocks: [
@@ -115,7 +145,9 @@ export const HOME_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: HOME_KEYS.announcement,
       label: "Announcement bar (red bar below hero)",
+      help: "Hide this section with the eye toggle to remove the red bar from the homepage.",
       blocks: [
         { key: "announcement_message", type: "text", label: "Message", defaultContent: { value: D.announcement_message } },
         { key: "announcement_link_text", type: "text", label: "Link text", defaultContent: { value: D.announcement_link_text } },
@@ -123,14 +155,17 @@ export const HOME_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: HOME_KEYS.card0,
       label: "Bento Grid — featured large card (top-left)",
       blocks: bentoCardBlocks(0, D.bento_card_0),
     },
     {
+      key: HOME_KEYS.card1,
       label: "Bento Grid — Activities (top-right)",
       blocks: bentoCardBlocks(1, D.bento_card_1),
     },
     {
+      key: HOME_KEYS.countdown,
       label: "Bento Grid — countdown tile",
       help: "The red countdown tile that counts down to the first day of camp.",
       blocks: [
@@ -146,6 +181,7 @@ export const HOME_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: HOME_KEYS.stat,
       label: "Bento Grid — stat tile",
       help: "The green stat tile (e.g. 64 Years of Tradition).",
       blocks: [
@@ -154,22 +190,21 @@ export const HOME_SCHEMA: PageSchema = {
         { key: "bento_stat_href", type: "text", label: "Click destination URL", defaultContent: { value: D.bento_stat_href } },
       ],
     },
-    { label: "Bento Grid — Rates & Dates", blocks: bentoCardBlocks(4, D.bento_card_4) },
-    { label: "Bento Grid — Legacy & Tradition", blocks: bentoCardBlocks(5, D.bento_card_5) },
-    { label: "Bento Grid — Video Library", blocks: bentoCardBlocks(6, D.bento_card_6) },
-    { label: "Bento Grid — Transportation", blocks: bentoCardBlocks(7, D.bento_card_7) },
-    { label: "Bento Grid — Lunch & Snacks", blocks: bentoCardBlocks(8, D.bento_card_8) },
-    { label: "Bento Grid — Health & Safety", blocks: bentoCardBlocks(9, D.bento_card_9) },
-    { label: "Bento Grid — Camp Map", blocks: bentoCardBlocks(10, D.bento_card_10) },
+    { key: HOME_KEYS.card4, label: "Bento Grid — Rates & Dates", blocks: bentoCardBlocks(4, D.bento_card_4) },
+    { key: HOME_KEYS.card5, label: "Bento Grid — Legacy & Tradition", blocks: bentoCardBlocks(5, D.bento_card_5) },
+    { key: HOME_KEYS.card6, label: "Bento Grid — Video Library", blocks: bentoCardBlocks(6, D.bento_card_6) },
+    { key: HOME_KEYS.card7, label: "Bento Grid — Transportation", blocks: bentoCardBlocks(7, D.bento_card_7) },
+    { key: HOME_KEYS.card8, label: "Bento Grid — Lunch & Snacks", blocks: bentoCardBlocks(8, D.bento_card_8) },
+    { key: HOME_KEYS.card9, label: "Bento Grid — Health & Safety", blocks: bentoCardBlocks(9, D.bento_card_9) },
+    { key: HOME_KEYS.card10, label: "Bento Grid — Camp Map", blocks: bentoCardBlocks(10, D.bento_card_10) },
     {
-      // Explicit key pinned to the value previously derived from the label,
-      // so layout rows saved before the key was added still match.
-      key: "bento-grid-rates-dates-2027-optional-full-width-card",
+      key: HOME_KEYS.card11,
       label: "Bento Grid — Rates & Dates 2027 (optional full-width card)",
       help: "Full-width promo card in the bento grid. Drag this section above the other Bento Grid sections to show the card at the TOP of the grid (below it = bottom). Hide it with the eye toggle, or by clearing the Title.",
       blocks: bentoCardBlocks(11, D.bento_card_11),
     },
     {
+      key: HOME_KEYS.philosophy,
       label: "Philosophy section (dark band)",
       blocks: [
         { key: "philosophy_caption", type: "text", label: "Caption (small white label)", defaultContent: { value: D.philosophy_caption } },
@@ -187,15 +222,16 @@ export const HOME_SCHEMA: PageSchema = {
       ],
     },
     {
+      key: HOME_KEYS.programsHeading,
       label: "Programs section heading",
       blocks: [
         { key: "programs_caption", type: "text", label: "Caption (small red label)", defaultContent: { value: D.programs_caption } },
         { key: "programs_heading", type: "text", label: "Heading", defaultContent: { value: D.programs_heading } },
       ],
     },
-    { label: "Program 1 — The Clubhouse", blocks: programCardBlocks(1) },
-    { label: "Program 2 — Riverbend Experience", blocks: programCardBlocks(2) },
-    { label: "Program 3 — Day Trippers", blocks: programCardBlocks(3) },
+    { key: HOME_KEYS.program1, label: "Program 1 — The Clubhouse", blocks: programCardBlocks(1) },
+    { key: HOME_KEYS.program2, label: "Program 2 — Riverbend Experience", blocks: programCardBlocks(2) },
+    { key: HOME_KEYS.program3, label: "Program 3 — Day Trippers", blocks: programCardBlocks(3) },
   ],
 };
 
@@ -204,5 +240,4 @@ export const HOME_SCHEMA: PageSchema = {
  * saved section order to decide whether the card renders at the top or the
  * bottom of the bento grid (see HomePage in src/app/(public)/page.tsx).
  */
-export const HOME_BENTO_2027_KEY =
-  "bento-grid-rates-dates-2027-optional-full-width-card";
+export const HOME_BENTO_2027_KEY = HOME_KEYS.card11;

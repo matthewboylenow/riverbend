@@ -5,6 +5,7 @@ export const LUNCH_SCHEMA: PageSchema = {
   slug: "lunch",
   label: "Lunch & Snacks",
   publicHref: "/lunch",
+  layoutSupport: "full",
   sections: [
     {
       key: "page-header",

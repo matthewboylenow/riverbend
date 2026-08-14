@@ -207,11 +207,15 @@ function StatCard({
 export function BentoGrid({
   content,
   promoPosition = "bottom",
+  hiddenTiles = [],
 }: {
   content: BentoContent;
   /** Where the optional card11 promo row renders (admin-controlled). */
   promoPosition?: "top" | "bottom" | "hidden";
+  /** Tiles hidden via the homepage editor's eye toggles. */
+  hiddenTiles?: string[];
 }) {
+  const tileShown = (tile: string) => !hiddenTiles.includes(tile);
   // Full-width promo row (e.g. next season's rates). Renders only when the
   // admin has given it a title AND its section isn't hidden in the editor.
   const promoRow =
@@ -229,116 +233,138 @@ export function BentoGrid({
     ) : null;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[180px] sm:auto-rows-[220px] lg:auto-rows-[200px] gap-3 sm:gap-4">
+    <div className="grid grid-flow-dense grid-cols-2 lg:grid-cols-4 auto-rows-[180px] sm:auto-rows-[220px] lg:auto-rows-[200px] gap-3 sm:gap-4">
       {promoPosition === "top" && promoRow}
 
       {/* Row 1: Featured large card + tall card + 2 stat cards stacked */}
-      <BentoCard
-        title={content.card0.title}
-        subtitle={content.card0.subtitle || undefined}
-        href={content.card0.href}
-        image={content.card0.imageUrl}
-        icon={<Heart className="h-4 w-4" />}
-        className="col-span-2 row-span-2"
-        index={0}
-        cta={content.card0.cta}
-      />
-      <BentoCard
-        title={content.card1.title}
-        subtitle={content.card1.subtitle || undefined}
-        href={content.card1.href}
-        image={content.card1.imageUrl}
-        className="col-span-1 row-span-2"
-        index={1}
-        cta={content.card1.cta}
-      />
-      <CountdownCard
-        targetDate={new Date(content.countdown.targetIso)}
-        label={content.countdown.label}
-        href={content.countdown.href}
-        index={2}
-        className="col-span-1 row-span-1"
-      />
-      <StatCard
-        number={content.stat.number}
-        label={content.stat.label}
-        href={content.stat.href}
-        index={3}
-        className="col-span-1 row-span-1"
-      />
+      {tileShown("card0") && (
+        <BentoCard
+          title={content.card0.title}
+          subtitle={content.card0.subtitle || undefined}
+          href={content.card0.href}
+          image={content.card0.imageUrl}
+          icon={<Heart className="h-4 w-4" />}
+          className="col-span-2 row-span-2"
+          index={0}
+          cta={content.card0.cta}
+        />
+      )}
+      {tileShown("card1") && (
+        <BentoCard
+          title={content.card1.title}
+          subtitle={content.card1.subtitle || undefined}
+          href={content.card1.href}
+          image={content.card1.imageUrl}
+          className="col-span-1 row-span-2"
+          index={1}
+          cta={content.card1.cta}
+        />
+      )}
+      {tileShown("countdown") && (
+        <CountdownCard
+          targetDate={new Date(content.countdown.targetIso)}
+          label={content.countdown.label}
+          href={content.countdown.href}
+          index={2}
+          className="col-span-1 row-span-1"
+        />
+      )}
+      {tileShown("stat") && (
+        <StatCard
+          number={content.stat.number}
+          label={content.stat.label}
+          href={content.stat.href}
+          index={3}
+          className="col-span-1 row-span-1"
+        />
+      )}
 
       {/* Row 2: 4 standard cards */}
-      <BentoCard
-        title={content.card4.title}
-        subtitle={content.card4.subtitle || undefined}
-        href={content.card4.href}
-        image={content.card4.imageUrl}
-        icon={<Calendar className="h-4 w-4" />}
-        className="col-span-1 row-span-1"
-        index={4}
-        cta={content.card4.cta}
-      />
-      <BentoCard
-        title={content.card5.title}
-        subtitle={content.card5.subtitle || undefined}
-        href={content.card5.href}
-        image={content.card5.imageUrl}
-        className="col-span-1 row-span-1"
-        index={5}
-        cta={content.card5.cta}
-      />
-      <BentoCard
-        title={content.card6.title}
-        subtitle={content.card6.subtitle || undefined}
-        href={content.card6.href}
-        image={content.card6.imageUrl}
-        icon={<Play className="h-4 w-4" />}
-        className="col-span-2 row-span-1"
-        index={6}
-        cta={content.card6.cta}
-      />
+      {tileShown("card4") && (
+        <BentoCard
+          title={content.card4.title}
+          subtitle={content.card4.subtitle || undefined}
+          href={content.card4.href}
+          image={content.card4.imageUrl}
+          icon={<Calendar className="h-4 w-4" />}
+          className="col-span-1 row-span-1"
+          index={4}
+          cta={content.card4.cta}
+        />
+      )}
+      {tileShown("card5") && (
+        <BentoCard
+          title={content.card5.title}
+          subtitle={content.card5.subtitle || undefined}
+          href={content.card5.href}
+          image={content.card5.imageUrl}
+          className="col-span-1 row-span-1"
+          index={5}
+          cta={content.card5.cta}
+        />
+      )}
+      {tileShown("card6") && (
+        <BentoCard
+          title={content.card6.title}
+          subtitle={content.card6.subtitle || undefined}
+          href={content.card6.href}
+          image={content.card6.imageUrl}
+          icon={<Play className="h-4 w-4" />}
+          className="col-span-2 row-span-1"
+          index={6}
+          cta={content.card6.cta}
+        />
+      )}
 
       {/* Row 3: Practical links — varied sizes */}
-      <BentoCard
-        title={content.card7.title}
-        subtitle={content.card7.subtitle || undefined}
-        href={content.card7.href}
-        image={content.card7.imageUrl}
-        icon={<Bus className="h-4 w-4" />}
-        className="col-span-1 row-span-1"
-        index={7}
-        cta={content.card7.cta}
-      />
-      <BentoCard
-        title={content.card8.title}
-        subtitle={content.card8.subtitle || undefined}
-        href={content.card8.href}
-        image={content.card8.imageUrl}
-        icon={<Utensils className="h-4 w-4" />}
-        className="col-span-1 row-span-1"
-        index={8}
-        cta={content.card8.cta}
-      />
-      <BentoCard
-        title={content.card9.title}
-        subtitle={content.card9.subtitle || undefined}
-        href={content.card9.href}
-        image={content.card9.imageUrl}
-        icon={<Shield className="h-4 w-4" />}
-        className="col-span-1 row-span-1"
-        index={9}
-        cta={content.card9.cta}
-      />
-      <BentoCard
-        title={content.card10.title}
-        subtitle={content.card10.subtitle || undefined}
-        href={content.card10.href}
-        image={content.card10.imageUrl}
-        icon={<MapPin className="h-4 w-4" />}
-        className="col-span-1 row-span-1"
-        index={10}
-        cta={content.card10.cta}
-      />
+      {tileShown("card7") && (
+        <BentoCard
+          title={content.card7.title}
+          subtitle={content.card7.subtitle || undefined}
+          href={content.card7.href}
+          image={content.card7.imageUrl}
+          icon={<Bus className="h-4 w-4" />}
+          className="col-span-1 row-span-1"
+          index={7}
+          cta={content.card7.cta}
+        />
+      )}
+      {tileShown("card8") && (
+        <BentoCard
+          title={content.card8.title}
+          subtitle={content.card8.subtitle || undefined}
+          href={content.card8.href}
+          image={content.card8.imageUrl}
+          icon={<Utensils className="h-4 w-4" />}
+          className="col-span-1 row-span-1"
+          index={8}
+          cta={content.card8.cta}
+        />
+      )}
+      {tileShown("card9") && (
+        <BentoCard
+          title={content.card9.title}
+          subtitle={content.card9.subtitle || undefined}
+          href={content.card9.href}
+          image={content.card9.imageUrl}
+          icon={<Shield className="h-4 w-4" />}
+          className="col-span-1 row-span-1"
+          index={9}
+          cta={content.card9.cta}
+        />
+      )}
+      {tileShown("card10") && (
+        <BentoCard
+          title={content.card10.title}
+          subtitle={content.card10.subtitle || undefined}
+          href={content.card10.href}
+          image={content.card10.imageUrl}
+          icon={<MapPin className="h-4 w-4" />}
+          className="col-span-1 row-span-1"
+          index={10}
+          cta={content.card10.cta}
+        />
+      )}
 
       {promoPosition === "bottom" && promoRow}
     </div>
